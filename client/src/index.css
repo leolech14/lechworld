@@ -1,0 +1,548 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(220, 13%, 13%);
+  --muted: hsl(220, 13%, 95%);
+  --muted-foreground: hsl(220, 9%, 46%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(220, 13%, 13%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(220, 13%, 13%);
+  --border: hsl(220, 13%, 91%);
+  --input: hsl(220, 13%, 91%);
+  --primary: hsl(210, 85%, 65%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(220, 13%, 95%);
+  --secondary-foreground: hsl(220, 13%, 13%);
+  --accent: hsl(220, 13%, 95%);
+  --accent-foreground: hsl(220, 13%, 13%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(210, 85%, 65%);
+  --radius: 0.5rem;
+
+  /* Blue-White theme colors with orange details */
+  --navy: hsl(220, 13%, 13%);
+  --royal: hsl(210, 85%, 60%);
+  --sky: hsl(210, 85%, 75%);
+  --powder: hsl(210, 85%, 80%);
+  --glass: hsla(210, 85%, 75%, 0.2);
+  --glass-border: hsla(210, 85%, 75%, 0.3);
+  --bg-glass: hsla(210, 85%, 75%, 0.15);
+  
+  /* Enhanced liquid glass variables - Blue primary */
+  --liquid-glass-bg: rgba(240, 248, 255, 0.25);
+  --liquid-glass-border: rgba(96, 165, 250, 0.3);
+  --liquid-glass-shadow: 0 8px 32px 0 rgba(96, 165, 250, 0.2);
+  --liquid-glass-blur: blur(20px);
+  --liquid-glass-hover: rgba(240, 248, 255, 0.35);
+  
+  /* Orange accent colors - for details only */
+  --orange-accent: hsl(25, 85%, 65%);
+  --orange-accent-hover: hsl(25, 85%, 55%);
+  
+  /* Blue primary colors */
+  --blue-accent: hsl(210, 85%, 65%);
+  --blue-accent-hover: hsl(210, 85%, 55%);
+  
+  /* Mobile app animation variables */
+  --mobile-blue-primary: hsl(210, 100%, 60%);
+  --mobile-blue-secondary: hsl(210, 100%, 70%);
+  --mobile-blue-accent: hsl(210, 100%, 80%);
+  --mobile-blue-glow: rgba(59, 130, 246, 0.4);
+  --mobile-animation-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --mobile-animation-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --mobile-haptic-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.dark {
+  --background: hsl(220, 13%, 13%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(220, 13%, 20%);
+  --muted-foreground: hsl(220, 9%, 65%);
+  --popover: hsl(220, 13%, 13%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(220, 13%, 13%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(220, 13%, 20%);
+  --input: hsl(220, 13%, 20%);
+  --primary: hsl(213, 94%, 68%);
+  --primary-foreground: hsl(220, 13%, 13%);
+  --secondary: hsl(220, 13%, 20%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(220, 13%, 20%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(213, 94%, 68%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased text-gray-800;
+    background: radial-gradient(circle at 20% 50%, hsla(210, 85%, 75%, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, hsla(210, 85%, 80%, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, hsla(210, 85%, 85%, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 60% 40%, hsla(25, 85%, 85%, 0.03) 0%, transparent 50%),
+                linear-gradient(135deg, hsl(0, 0%, 100%) 0%, hsl(210, 85%, 98%) 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-glass-blur);
+    border: 1px solid var(--liquid-glass-border);
+    box-shadow: var(--liquid-glass-shadow);
+    transition: all 0.3s ease;
+  }
+  
+  .glass-card:hover:not([role="dialog"]) {
+    background: var(--liquid-glass-hover);
+    box-shadow: 0 12px 40px 0 rgba(96, 165, 250, 0.25);
+    transform: translateY(-2px);
+  }
+  
+  .glass-nav {
+    background: rgba(240, 248, 255, 0.9);
+    backdrop-filter: blur(25px);
+    border-bottom: 1px solid rgba(96, 165, 250, 0.3);
+  }
+  
+  .blue-gradient {
+    background: linear-gradient(135deg, hsl(210, 85%, 65%) 0%, hsl(210, 85%, 75%) 100%);
+  }
+  
+  .orange-gradient {
+    background: linear-gradient(135deg, hsl(25, 85%, 75%) 0%, hsl(25, 85%, 65%) 100%);
+  }
+  
+  .liquid-glass-panel {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-glass-blur);
+    border: 1px solid var(--liquid-glass-border);
+    box-shadow: var(--liquid-glass-shadow);
+    border-radius: 16px;
+  }
+  
+  .ripple-effect {
+    @apply relative overflow-hidden;
+  }
+  
+  .ripple-effect::before {
+    content: '';
+    @apply absolute top-1/2 left-1/2 w-0 h-0 rounded-full;
+    background: hsla(210, 85%, 75%, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+  
+  .ripple-effect:hover::before {
+    @apply w-[300px] h-[300px];
+  }
+  
+  .particle {
+    @apply absolute rounded-full pointer-events-none;
+    background: hsla(210, 85%, 75%, 0.4);
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .search-glow:focus {
+    box-shadow: 0 0 0 2px hsla(210, 85%, 75%, 0.5);
+  }
+  
+  .data-row:hover {
+    background: var(--liquid-glass-hover);
+  }
+  
+  .status-active {
+    background: hsla(142, 76%, 36%, 0.1);
+    color: hsl(142, 76%, 36%);
+  }
+  
+  .status-inactive {
+    background: hsla(0, 84%, 60%, 0.1);
+    color: hsl(0, 84%, 60%);
+  }
+  
+  .points-badge {
+    background: linear-gradient(45deg, hsl(210, 85%, 65%), hsl(210, 85%, 75%));
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .glass-panel {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-glass-blur);
+    border: 1px solid var(--liquid-glass-border);
+    box-shadow: var(--liquid-glass-shadow);
+    border-radius: 16px;
+  }
+  
+  .glass-card-hover:hover {
+    background: var(--liquid-glass-hover);
+    box-shadow: 0 12px 40px 0 rgba(255, 165, 105, 0.25);
+    transform: translateY(-2px);
+  }
+  
+  .glass-text {
+    color: var(--powder);
+  }
+  
+  .glass-border {
+    border-color: var(--liquid-glass-border);
+  }
+
+  /* Toast styling to match glassmorphism theme - Radix UI Toast */
+  [data-radix-toast-root] {
+    background: var(--liquid-glass-bg) !important;
+    backdrop-filter: var(--liquid-glass-blur);
+    border: 1px solid var(--liquid-glass-border) !important;
+    box-shadow: var(--liquid-glass-shadow);
+    color: var(--white) !important;
+  }
+  
+  [data-radix-toast-root][data-state="open"] {
+    animation: slideInFromTop 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  [data-radix-toast-root][data-state="closed"] {
+    animation: slideOutToTop 100ms ease-in;
+  }
+  
+  /* Success variant */
+  .toast-success {
+    background: rgba(34, 197, 94, 0.1) !important;
+    border-color: rgba(34, 197, 94, 0.3) !important;
+    color: rgb(34, 197, 94) !important;
+  }
+  
+  /* Error/destructive variant */
+  .toast-destructive {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: rgb(239, 68, 68) !important;
+  }
+
+  @keyframes slideInFromTop {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes slideOutToTop {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(-100%); opacity: 0; }
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  .animate-ripple {
+    animation: ripple 0.6s linear;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 20px var(--mobile-blue-glow); }
+  100% { box-shadow: 0 0 30px var(--mobile-blue-glow), 0 0 40px var(--mobile-blue-glow); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-blue {
+  0%, 100% { 
+    background-color: var(--mobile-blue-primary);
+    transform: scale(1);
+  }
+  50% { 
+    background-color: var(--mobile-blue-secondary);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes wave {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Mobile-native animations */
+.mobile-slide-up {
+  animation: slideInUp 0.4s var(--mobile-animation-spring);
+}
+
+.mobile-slide-down {
+  animation: slideInDown 0.3s var(--mobile-animation-smooth);
+}
+
+.mobile-bounce-in {
+  animation: bounceIn 0.6s var(--mobile-haptic-bounce);
+}
+
+.mobile-pulse {
+  animation: pulse-blue 2s ease-in-out infinite;
+}
+
+.mobile-tap-feedback {
+  transition: all 0.15s var(--mobile-animation-smooth);
+}
+
+.mobile-tap-feedback:active {
+  transform: scale(0.95);
+  background-color: var(--mobile-blue-accent);
+}
+
+.mobile-swipe-indicator {
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile-swipe-indicator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--mobile-blue-glow),
+    transparent
+  );
+  animation: wave 2s ease-in-out infinite;
+}
+
+.mobile-card {
+  background: var(--liquid-glass-bg);
+  backdrop-filter: var(--liquid-glass-blur);
+  border: 1px solid var(--mobile-blue-accent);
+  border-radius: 20px;
+  box-shadow: 
+    0 10px 30px rgba(59, 130, 246, 0.2),
+    0 4px 12px rgba(59, 130, 246, 0.1);
+  transition: all 0.3s var(--mobile-animation-spring);
+}
+
+.mobile-card:hover, .mobile-card:focus {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 20px 40px rgba(59, 130, 246, 0.3),
+    0 8px 20px rgba(59, 130, 246, 0.2);
+  border-color: var(--mobile-blue-primary);
+}
+
+.mobile-button {
+  background: linear-gradient(135deg, var(--mobile-blue-primary), var(--mobile-blue-secondary));
+  border: none;
+  border-radius: 16px;
+  padding: 12px 24px;
+  color: white;
+  font-weight: 600;
+  transition: all 0.2s var(--mobile-animation-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+}
+
+.mobile-button:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.mobile-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px var(--mobile-blue-glow);
+}
+
+.mobile-nav-tab {
+  position: relative;
+  padding: 12px 20px;
+  border-radius: 12px;
+  transition: all 0.3s var(--mobile-animation-spring);
+  background: transparent;
+}
+
+.mobile-nav-tab.active {
+  background: var(--mobile-blue-primary);
+  color: white;
+  box-shadow: 0 4px 12px var(--mobile-blue-glow);
+}
+
+.mobile-nav-tab:not(.active) {
+  color: var(--mobile-blue-primary);
+}
+
+.mobile-nav-tab:hover:not(.active) {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* Mobile-specific responsive styles */
+@media (max-width: 768px) {
+  .mobile-container {
+    padding: 16px;
+  }
+  
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(240, 248, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    padding: 16px;
+    margin: -16px -16px 16px -16px;
+  }
+  
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(240, 248, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(59, 130, 246, 0.2);
+    padding: 12px 16px;
+    z-index: 50;
+  }
+  
+  .mobile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .mobile-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 20px hsla(213, 94%, 68%, 0.3); }
+  100% { box-shadow: 0 0 30px hsla(213, 94%, 68%, 0.6); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-dots {
+  @apply inline-block w-5 h-5 border-2 border-t-blue-400 border-blue-200/20 rounded-full;
+  animation: spin 1s ease-in-out infinite;
+}
+
+/* WhatsApp Mobile Button */
+.whatsapp-mobile-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background: #25D366;
+  border-radius: 50%;
+  border: none;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.whatsapp-mobile-button:hover {
+  background: #128C7E;
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.4);
+}
+
+.whatsapp-mobile-button:active {
+  transform: scale(0.95);
+}
+
+/* WhatsApp Pull Gesture Animations */
+.whatsapp-pull-indicator {
+  background: linear-gradient(45deg, #25D366, #128C7E);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.whatsapp-progress-circle {
+  background: conic-gradient(from 0deg, #25D366 0deg, #128C7E 180deg, #25D366 360deg);
+  border-radius: 50%;
+  animation: spin 2s linear infinite;
+}
+
+/* Mobile responsive for WhatsApp button */
+@media (max-width: 768px) {
+  .whatsapp-mobile-button {
+    bottom: 80px;
+    right: 16px;
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+}
