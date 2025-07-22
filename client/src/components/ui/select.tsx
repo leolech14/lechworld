@@ -1,3 +1,8 @@
+/**
+ * @purpose: UI/COMPONENT/select
+ * @connects-to: Various components that use this UI primitive
+ */
+
 "use client"
 
 import * as React from "react"

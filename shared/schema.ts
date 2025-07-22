@@ -1,3 +1,14 @@
+/**
+ * @purpose Database schema definitions and TypeScript types for all entities
+ * @connects-to server/storage.ts
+ * @connects-to server/routes.ts
+ * @connects-to client/src/store/auth-store.ts
+ * @connects-to client/src/components/members-table.tsx
+ * @connects-to client/src/components/edit-member-modal.tsx
+ * @connects-to client/src/components/new-member-modal.tsx
+ * @connects-to client/src/components/edit-program-modal.tsx
+ * @connects-to client/src/components/new-program-modal.tsx
+ */
 import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -39,6 +50,7 @@ export const loyaltyPrograms = pgTable("loyalty_programs", {
   website: text("website"),
   phoneNumber: text("phone_number"),
   isActive: boolean("is_active").default(true),
+  iconUrl: text("icon_url"), // Custom icon URL
 });
 
 export const memberPrograms = pgTable("member_programs", {
@@ -46,8 +58,13 @@ export const memberPrograms = pgTable("member_programs", {
   memberId: integer("member_id").references(() => familyMembers.id),
   programId: integer("program_id").references(() => loyaltyPrograms.id),
   accountNumber: text("account_number"),
-  loginCredentials: text("login_credentials"), // encrypted JSON
+  login: text("login"),
+  password: text("password"), 
+  cpf: text("cpf"),
   pointsBalance: integer("points_balance").default(0),
+  eliteTier: text("elite_tier"),
+  notes: text("notes"),
+  customFields: json("custom_fields"),
   estimatedValue: text("estimated_value"),
   expirationDate: timestamp("expiration_date"),
   statusLevel: text("status_level").default("basic"), // basic, silver, gold, platinum

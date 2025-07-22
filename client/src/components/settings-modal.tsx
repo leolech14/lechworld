@@ -11,7 +11,9 @@ import NewMemberModal from "./new-member-modal";
 import NewProgramModal from "./new-program-modal";
 import EditMemberModal from "./edit-member-modal";
 import EditProgramModal from "./edit-program-modal";
+import ProgramIconModal from "./program-icon-modal";
 import { getMemberColor, getMemberEmoji } from "@/lib/member-colors";
+import { getProgramIcon } from "@/lib/program-icons";
 import MemberFrame from "./member-frame";
 import type { FamilyMember, LoyaltyProgram } from "@shared/schema";
 
@@ -80,6 +82,7 @@ export default function SettingsModal({ isOpen, onClose, userId }: SettingsModal
   const [showNewProgramModal, setShowNewProgramModal] = useState(false);
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
   const [editingProgram, setEditingProgram] = useState<LoyaltyProgram | null>(null);
+  const [editingProgramIcon, setEditingProgramIcon] = useState<LoyaltyProgram | null>(null);
   const [deletingMemberId, setDeletingMemberId] = useState<number | null>(null);
   const [deletingProgramId, setDeletingProgramId] = useState<number | null>(null);
   
@@ -260,10 +263,29 @@ export default function SettingsModal({ isOpen, onClose, userId }: SettingsModal
                       className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 border"
                     >
                       <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-lg"
-                          style={{ backgroundColor: program.logoColor }}
-                        />
+                        {(() => {
+                          const icon = getProgramIcon(program);
+                          return icon.type === 'png' ? (
+                            <img 
+                              src={icon.value} 
+                              alt={program.name}
+                              className="w-10 h-10 rounded-lg object-contain cursor-pointer hover:opacity-80"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingProgramIcon(program);
+                              }}
+                            />
+                          ) : (
+                            <div
+                              className="w-10 h-10 rounded-lg cursor-pointer hover:opacity-80"
+                              style={{ backgroundColor: icon.value }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingProgramIcon(program);
+                              }}
+                            />
+                          );
+                        })()}
                         <div>
                           <p className="font-medium">{program.name}</p>
                           <p className="text-sm text-gray-500">{program.company}</p>
@@ -608,6 +630,21 @@ export default function SettingsModal({ isOpen, onClose, userId }: SettingsModal
         <EditProgramModal
           program={editingProgram}
           onClose={() => setEditingProgram(null)}
+        />
+      )}
+      
+      {editingProgramIcon && (
+        <ProgramIconModal
+          program={editingProgramIcon}
+          open={!!editingProgramIcon}
+          onClose={() => setEditingProgramIcon(null)}
+          onUpdate={async () => {
+            // Force refresh of programs data
+            await queryClient.invalidateQueries({ 
+              queryKey: [`/api/programs`],
+              refetchType: 'all'
+            });
+          }}
         />
       )}
     </>

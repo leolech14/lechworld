@@ -1,3 +1,8 @@
+/**
+ * @purpose: UI/COMPONENT/toggle
+ * @connects-to: Various components that use this UI primitive
+ */
+
 import * as React from "react"
 import * as TogglePrimitive from "@radix-ui/react-toggle"
 import { cva, type VariantProps } from "class-variance-authority"

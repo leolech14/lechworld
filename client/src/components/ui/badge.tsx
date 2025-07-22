@@ -1,3 +1,8 @@
+/**
+ * @purpose: UI/COMPONENT/badge
+ * @connects-to: Various components that use this UI primitive
+ */
+
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 

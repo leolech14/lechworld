@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuthStore } from "@/store/auth-store";
-const logoPath = "/logo.png";
+const logoPath = "/lech-world-logo.png";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Login é obrigatório"),
@@ -65,46 +65,46 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md animate-float glass-panel">
+      <Card className="w-full max-w-md animate-float" style={{ backgroundColor: '#2d3748', border: '1px solid #4a5568' }}>
         <CardContent className="pt-6">
           <div className="text-center mb-8">
             <img 
               src={logoPath} 
               alt="lech.world logo" 
-              className="w-48 h-48 object-contain animate-glow mx-auto"
+              className="h-24 object-contain mx-auto"
             />
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-blue-800 font-semibold">Login:</Label>
+              <Label htmlFor="email" className="text-gray-200 font-semibold">Login:</Label>
               <Input
                 id="email"
                 type="text"
-                className="bg-blue-50/30 border-blue-200/50 text-blue-800 placeholder:text-blue-600/60 focus:border-blue-400/70"
+                className="bg-gray-800/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-400"
                 {...register("email")}
               />
               {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
+                <p className="text-sm text-red-400">{errors.email.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-blue-800 font-semibold">Senha:</Label>
+              <Label htmlFor="password" className="text-gray-200 font-semibold">Senha:</Label>
               <Input
                 id="password"
                 type="password"
-                className="bg-blue-50/30 border-blue-200/50 text-blue-800 placeholder:text-blue-600/60 focus:border-blue-400/70"
+                className="bg-gray-800/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-400"
                 {...register("password")}
               />
               {errors.password && (
-                <p className="text-sm text-red-500">{errors.password.message}</p>
+                <p className="text-sm text-red-400">{errors.password.message}</p>
               )}
             </div>
 
             <Button
               type="submit"
-              className="w-full blue-gradient hover:scale-105 transition-transform ripple-effect"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending ? (

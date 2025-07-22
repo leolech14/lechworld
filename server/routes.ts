@@ -1,3 +1,15 @@
+/**
+ * @purpose API route definitions for user authentication, members, programs, and activities
+ * @connects-to server/storage.ts
+ * @connects-to shared/schema.ts
+ * @handles-routes POST /api/auth/login, POST /api/auth/register
+ * @handles-routes GET /api/dashboard/stats/:userId, GET /api/dashboard/members-with-programs/:userId
+ * @handles-routes GET /api/members/:userId, POST /api/members, PUT /api/members/:id, DELETE /api/members/:id
+ * @handles-routes GET /api/programs, POST /api/programs, PUT /api/programs/:id, DELETE /api/programs/:id
+ * @handles-routes GET /api/member-programs/:memberId, POST /api/member-programs, PUT /api/member-programs/:id, DELETE /api/member-programs/:id
+ * @handles-routes PUT /api/members/:memberId/programs/:companyId, PUT /api/members/:memberId/programs/:companyId/fields
+ * @handles-routes GET /api/activity/:userId
+ */
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";

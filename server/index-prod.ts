@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { serveStatic, log } from "./vite-prod";
+import { setupVite, serveStatic, log } from "./vite-prod";
 import { storage } from "./storage";
 
 const app = express();
@@ -57,7 +57,10 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // Setup static file serving for production
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  // Always use static serving in production build
   serveStatic(app);
 
   // ALWAYS serve the app on port 3000 (or from PORT env var)

@@ -41,9 +41,9 @@
 }
 
 .stats-number {
-  font-size: 3.5rem;
+  font-size: 2rem;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 700;
   font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: -0.03em;
   margin-bottom: 8px;
@@ -110,7 +110,7 @@
   }
   
   .stats-number {
-    font-size: 2.5rem;
+    font-size: 1.75rem;
   }
   
   .stats-icon-wrapper {

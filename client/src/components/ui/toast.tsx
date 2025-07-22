@@ -1,3 +1,8 @@
+/**
+ * @purpose: UI/COMPONENT/toast
+ * @connects-to: Various components that use this UI primitive
+ */
+
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"

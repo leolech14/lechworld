@@ -1,13 +1,11 @@
-/* Import member frame styles */
+/* Import component-specific styles */
 @import './styles/member-frame.css';
-/* Import enhanced stats cards */
 @import './styles/stats-cards.css';
-/* Import pastel theme */
-@import './styles/pastel-theme.css';
-/* Import dark minimal theme */
-@import './styles/dark-minimal.css';
-/* Import pastel override to ensure it works */
-@import './styles/pastel-override.css';
+
+/* Import theme files */
+@import './styles/themes/light-theme.css';
+@import './styles/themes/dark-theme.css';
+@import './styles/themes/minimal-dark-theme.css';
 
 @tailwind base;
 @tailwind components;

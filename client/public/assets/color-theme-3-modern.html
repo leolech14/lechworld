@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template de Cores 3 - Modern Minimalist Tech</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            background: #F8F9FA;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(132, 79, 193, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(144, 205, 244, 0.05) 0%, transparent 50%);
+        }
+        
+        :root {
+            /* Modern Minimalist Tech Palette */
+            --creative-purple: #844FC1;
+            --deep-blue: #0A3157;
+            --creamy-white: #F8F9FA;
+            --neon-black: #0A0A0A;
+            --pastel-pink: #FBB6CE;
+            --pastel-blue: #90CDF4;
+            --text-dark: #1A202C;
+            --text-light: #718096;
+            --border-light: #E2E8F0;
+            --gradient-purple: linear-gradient(135deg, #844FC1, #A78BFA);
+            --gradient-blue: linear-gradient(135deg, #0A3157, #1E40AF);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        h1 {
+            background: var(--gradient-purple);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 800;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 3rem;
+            font-size: 1.125rem;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .color-card {
+            border-radius: 20px;
+            overflow: hidden;
+            background: white;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid var(--border-light);
+            position: relative;
+        }
+        
+        .color-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent, rgba(132, 79, 193, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .color-card:hover::before {
+            opacity: 1;
+        }
+        
+        .color-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(132, 79, 193, 0.15);
+        }
+        
+        .color-display {
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.125rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+        
+        .color-display::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%) rotate(45deg) translateY(100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .color-display:hover::after {
+            transform: translate(-50%, -50%) rotate(45deg) translateY(-100%);
+        }
+        
+        .color-info {
+            padding: 1.25rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .color-name {
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+        }
+        
+        .color-hex {
+            color: var(--text-light);
+            font-family: 'SF Mono', 'Monaco', monospace;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .demo-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--pastel-blue) 0%, transparent 70%);
+            opacity: 0.1;
+            transform: translate(50%, -50%);
+        }
+        
+        .demo-header {
+            background: var(--gradient-purple);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            margin-bottom: 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .demo-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.05) 2px,
+                    rgba(255, 255, 255, 0.05) 4px
+                );
+        }
+        
+        .demo-nav {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .demo-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        
+        .demo-nav-item {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            opacity: 0.9;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .demo-nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: white;
+            transition: width 0.3s ease;
+        }
+        
+        .demo-nav-item:hover::after {
+            width: 100%;
+        }
+        
+        .demo-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .demo-card {
+            background: linear-gradient(135deg, white, #FAFAFB);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .demo-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: var(--gradient-purple);
+            border-radius: 16px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .demo-card:hover::before {
+            opacity: 1;
+        }
+        
+        .demo-card:hover {
+            transform: translateY(-8px);
+            border-color: transparent;
+        }
+        
+        .demo-stat {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient-purple);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+        
+        .demo-label {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .demo-button {
+            background: var(--gradient-purple);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 1rem;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+        
+        .demo-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.5s ease;
+        }
+        
+        .demo-button:hover::before {
+            left: 100%;
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(132, 79, 193, 0.3);
+        }
+        
+        .demo-button-secondary {
+            background: var(--gradient-blue);
+        }
+        
+        .demo-button-secondary:hover {
+            box-shadow: 0 10px 30px rgba(10, 49, 87, 0.3);
+        }
+        
+        .demo-button-accent {
+            background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-blue));
+            color: var(--deep-blue);
+        }
+        
+        .demo-button-accent:hover {
+            box-shadow: 0 10px 30px rgba(251, 182, 206, 0.3);
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(132, 79, 193, 0.05), rgba(144, 205, 244, 0.05));
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--creative-purple);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            background: var(--gradient-purple);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .dark-mode-preview {
+            background: var(--neon-black);
+            color: white;
+            padding: 3rem;
+            border-radius: 24px;
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dark-mode-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(132, 79, 193, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(144, 205, 244, 0.2) 0%, transparent 50%);
+        }
+        
+        .dark-mode-preview .demo-card {
+            background: #1A1A1A;
+            border-color: #2A2A2A;
+        }
+        
+        .copy-notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--gradient-purple);
+            color: white;
+            padding: 1.25rem 2rem;
+            border-radius: 12px;
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(132, 79, 193, 0.3);
+        }
+        
+        .copy-notification.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        
+        .gradient-text {
+            background: var(--gradient-purple);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Template 3: Modern Minimalist Tech</h1>
+        <p class="subtitle">
+            Uma paleta moderna e minimalista para interfaces tecnológicas inovadoras
+        </p>
+        
+        <div class="color-grid">
+            <div class="color-card">
+                <div class="color-display" style="background: var(--creative-purple);" onclick="copyColor('#844FC1')">
+                    #844FC1
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Creative Purple</div>
+                    <div class="color-hex">#844FC1</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-display" style="background: var(--deep-blue);" onclick="copyColor('#0A3157')">
+                    #0A3157
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Deep Blue</div>
+                    <div class="color-hex">#0A3157</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-display" style="background: var(--pastel-pink);" onclick="copyColor('#FBB6CE')">
+                    #FBB6CE
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Pastel Pink</div>
+                    <div class="color-hex">#FBB6CE</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-display" style="background: var(--pastel-blue);" onclick="copyColor('#90CDF4')">
+                    #90CDF4
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Pastel Blue</div>
+                    <div class="color-hex">#90CDF4</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-display" style="background: var(--neon-black);" onclick="copyColor('#0A0A0A')">
+                    #0A0A0A
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Neon Black</div>
+                    <div class="color-hex">#0A0A0A</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-display" style="background: var(--creamy-white); color: var(--text-dark);" onclick="copyColor('#F8F9FA')">
+                    #F8F9FA
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Creamy White</div>
+                    <div class="color-hex">#F8F9FA</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2 style="margin-bottom: 2rem; color: var(--text-dark);">Interface Demonstration</h2>
+            
+            <div class="demo-header">
+                <nav class="demo-nav">
+                    <div class="demo-logo">LechWorld</div>
+                    <a href="#" class="demo-nav-item">Overview</a>
+                    <a href="#" class="demo-nav-item">Analytics</a>
+                    <a href="#" class="demo-nav-item">Integrations</a>
+                </nav>
+            </div>
+            
+            <div class="demo-cards">
+                <div class="demo-card">
+                    <div class="demo-stat">87.4%</div>
+                    <div class="demo-label">Efficiency Score</div>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-stat" style="background: var(--gradient-blue); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">2.4M</div>
+                    <div class="demo-label">Data Points</div>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-stat" style="background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI+</div>
+                    <div class="demo-label">Intelligence Level</div>
+                </div>
+            </div>
+            
+            <div style="margin: 3rem 0;">
+                <button class="demo-button">Launch Dashboard</button>
+                <button class="demo-button demo-button-secondary">Configure</button>
+                <button class="demo-button demo-button-accent">Upgrade Plan</button>
+            </div>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">◈</div>
+                    <h3 class="gradient-text">Advanced AI</h3>
+                    <p style="color: var(--text-light); margin-top: 0.5rem;">
+                        Powered by next-gen algorithms
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: var(--gradient-blue);">◉</div>
+                    <h3 style="color: var(--deep-blue);">Real-time Sync</h3>
+                    <p style="color: var(--text-light); margin-top: 0.5rem;">
+                        Instant data synchronization
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-blue));">◆</div>
+                    <h3 style="color: var(--creative-purple);">Immersive UX</h3>
+                    <p style="color: var(--text-light); margin-top: 0.5rem;">
+                        Beautiful, intuitive interface
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dark-mode-preview">
+            <h2 style="margin-bottom: 2rem; position: relative; z-index: 1;">Dark Mode Experience</h2>
+            
+            <div class="demo-cards" style="position: relative; z-index: 1;">
+                <div class="demo-card">
+                    <div class="demo-stat" style="color: var(--creative-purple);">87.4%</div>
+                    <div class="demo-label" style="color: #A0AEC0;">Efficiency Score</div>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-stat" style="color: var(--pastel-blue);">2.4M</div>
+                    <div class="demo-label" style="color: #A0AEC0;">Data Points</div>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-stat" style="color: var(--pastel-pink);">AI+</div>
+                    <div class="demo-label" style="color: #A0AEC0;">Intelligence Level</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="copy-notification" id="copyNotification">
+        Color copied successfully! ✨
+    </div>
+    
+    <script>
+        function copyColor(color) {
+            navigator.clipboard.writeText(color);
+            const notification = document.getElementById('copyNotification');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>

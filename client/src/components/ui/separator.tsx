@@ -1,3 +1,8 @@
+/**
+ * @purpose: UI/COMPONENT/separator
+ * @connects-to: Various components that use this UI primitive
+ */
+
 import * as React from "react"
 import * as SeparatorPrimitive from "@radix-ui/react-separator"
 

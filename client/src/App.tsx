@@ -6,13 +6,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
+import ProtectedRoute from "@/components/protected-route";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Login} />
       <Route path="/login" component={Login} />
-      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/dashboard">
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );

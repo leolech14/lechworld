@@ -1,3 +1,9 @@
+/**
+ * @purpose Global authentication state management using Zustand
+ * @connects-to shared/schema.ts (User type)
+ * @connects-to client/src/pages/dashboard.tsx
+ * @connects-to client/src/components/navigation.tsx
+ */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User } from "@shared/schema";

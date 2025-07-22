@@ -8,6 +8,7 @@ export function getMemberColor(member: any): MemberColors {
   const frameColor = member.frameColor || member.frame_color;
   const frameBorderColor = member.frameBorderColor || member.frame_border_color;
   
+  
   // Se o membro tem cores personalizadas, usa elas
   if (frameColor && frameBorderColor) {
     return { bg: frameColor, border: frameBorderColor };

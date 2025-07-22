@@ -77,40 +77,40 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold text-gray-800">Ações Rápidas</h3>
             <div className="p-2 bg-sky/10 rounded-full">
-              <Activity className="w-6 h-6 text-[#8CC8FF]" />
+              <Activity className="w-6 h-6 icon-primary" />
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button 
-            className="w-full h-16 bg-[#D6ECFF] hover:bg-[#B3D9FF] text-gray-700 transition-all duration-300 justify-start text-base font-semibold hover:scale-105 border border-[#8CC8FF] shadow-md"
+            className="w-full h-16 btn-primary transition-all duration-300 justify-start text-base font-semibold hover:scale-105 shadow-md"
             onClick={() => setShowNewMemberModal(true)}
           >
-            <div className="flex items-center justify-center w-10 h-10 bg-[#B3D9FF] rounded-full mr-4">
-              <UserPlus className="w-6 h-6 text-[#5A9FDB]" />
+            <div className="flex items-center justify-center w-10 h-10 bg-trust-blue-pastel-light rounded-full mr-4">
+              <UserPlus className="w-6 h-6 icon-primary" />
             </div>
             Adicionar Membro
           </Button>
           <Button 
-            className="w-full h-16 bg-[#D6FFEC] hover:bg-[#B3FFD9] text-gray-700 transition-all duration-300 justify-start text-base font-semibold hover:scale-105 border border-[#8CFFC8] shadow-md"
+            className="w-full h-16 btn-accent transition-all duration-300 justify-start text-base font-semibold hover:scale-105 shadow-md"
             onClick={() => setShowWhatsAppModal(true)}
           >
-            <div className="flex items-center justify-center w-10 h-10 bg-[#B3FFD9] rounded-full mr-4">
-              <MessageCircle className="w-6 h-6 text-[#5AC89F]" />
+            <div className="flex items-center justify-center w-10 h-10 bg-cyber-green-pastel-light rounded-full mr-4">
+              <MessageCircle className="w-6 h-6 icon-secondary" />
             </div>
             Envie pelo WhatsApp
           </Button>
           <Button 
-            className="w-full h-16 bg-[#ECD6FF] hover:bg-[#D9B3FF] text-gray-700 transition-all duration-300 justify-start text-base font-semibold hover:scale-105 border border-[#C88CFF] shadow-md"
+            className="w-full h-16 btn-secondary transition-all duration-300 justify-start text-base font-semibold hover:scale-105 shadow-md"
             onClick={() => setShowNewProgramModal(true)}
           >
-            <div className="flex items-center justify-center w-10 h-10 bg-[#D9B3FF] rounded-full mr-4">
-              <CreditCard className="w-6 h-6 text-[#A875DB]" />
+            <div className="flex items-center justify-center w-10 h-10 bg-silver-pastel-light rounded-full mr-4">
+              <CreditCard className="w-6 h-6 icon-accent" />
             </div>
             Novo Programa
           </Button>
           <Button 
-            className="w-full bg-[#FFF2D6] hover:bg-[#FFE6B3] text-gray-700 transition-colors justify-start border border-[#FFD98C]"
+            className="w-full btn-secondary transition-colors justify-start"
             onClick={() => {
               toast({
                 title: "Funcionalidade em desenvolvimento",
@@ -118,7 +118,7 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
               });
             }}
           >
-            <RefreshCw className="w-5 h-5 mr-3 text-[#E5B84B]" />
+            <RefreshCw className="w-5 h-5 mr-3 icon-accent" />
             Atualizar Pontos
           </Button>
         </CardContent>

@@ -1,3 +1,8 @@
+/**
+ * @purpose: UI/COMPONENT/label
+ * @connects-to: Various components that use this UI primitive
+ */
+
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { cva, type VariantProps } from "class-variance-authority"

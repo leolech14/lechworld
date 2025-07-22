@@ -1,8 +1,15 @@
+/**
+ * @purpose Database access layer for managing users, members, programs, and activities
+ * @connects-to shared/schema.ts
+ * @connects-to server/miles-values.ts
+ * @connects-to PostgreSQL database (via DATABASE_URL)
+ */
 import { Pool } from 'pg';
 import type { 
   User, FamilyMember, LoyaltyProgram, MemberProgram, ActivityLog,
   InsertUser, InsertFamilyMember, InsertLoyaltyProgram, InsertMemberProgram
 } from "@shared/schema";
+import { calculateEstimatedValue } from './miles-values';
 
 // Use Fly.io's DATABASE_URL
 const pool = new Pool({
@@ -104,7 +111,16 @@ export const storage = {
       'SELECT * FROM family_members WHERE user_id = $1 ORDER BY name',
       [userId]
     );
-    return rows;
+    
+    // Transform snake_case to camelCase
+    return rows.map(member => ({
+      ...member,
+      userId: member.user_id,
+      isActive: member.is_active,
+      frameColor: member.frame_color,
+      frameBorderColor: member.frame_border_color,
+      profileEmoji: member.profile_emoji,
+    }));
   },
 
   async getFamilyMember(id: number): Promise<FamilyMember | null> {
@@ -112,7 +128,20 @@ export const storage = {
       'SELECT * FROM family_members WHERE id = $1',
       [id]
     );
-    return rows[0] || null;
+    
+    if (rows[0]) {
+      const member = rows[0];
+      return {
+        ...member,
+        userId: member.user_id,
+        isActive: member.is_active,
+        frameColor: member.frame_color,
+        frameBorderColor: member.frame_border_color,
+        profileEmoji: member.profile_emoji,
+      };
+    }
+    
+    return null;
   },
 
   async createFamilyMember(memberData: InsertFamilyMember): Promise<FamilyMember> {
@@ -120,6 +149,19 @@ export const storage = {
       'INSERT INTO family_members (user_id, name, email, phone) VALUES ($1, $2, $3, $4) RETURNING *',
       [memberData.userId, memberData.name, memberData.email, memberData.phone]
     );
+    
+    if (rows[0]) {
+      const member = rows[0];
+      return {
+        ...member,
+        userId: member.user_id,
+        isActive: member.is_active,
+        frameColor: member.frame_color,
+        frameBorderColor: member.frame_border_color,
+        profileEmoji: member.profile_emoji,
+      };
+    }
+    
     return rows[0];
   },
 
@@ -156,6 +198,21 @@ export const storage = {
       `UPDATE family_members SET ${fields.join(', ')} WHERE id = $${index} RETURNING *`,
       values
     );
+    
+    
+    // Transform snake_case to camelCase for consistency
+    if (rows[0]) {
+      const member = rows[0];
+      return {
+        ...member,
+        userId: member.user_id,
+        isActive: member.is_active,
+        frameColor: member.frame_color,
+        frameBorderColor: member.frame_border_color,
+        profileEmoji: member.profile_emoji,
+      };
+    }
+    
     return rows[0];
   },
 
@@ -203,7 +260,8 @@ export const storage = {
       category: 'category',
       website: 'website',
       phoneNumber: 'phone_number',
-      isActive: 'is_active'
+      isActive: 'is_active',
+      iconUrl: 'icon_url'
     };
 
     for (const [key, value] of Object.entries(updates)) {
@@ -246,20 +304,18 @@ export const storage = {
   async createMemberProgram(memberProgramData: InsertMemberProgram): Promise<MemberProgram> {
     const { rows } = await pool.query(
       `INSERT INTO member_programs 
-       (member_id, program_id, account_number, login, password, cpf, points_balance, elite_tier, is_active, notes, custom_fields, last_updated) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW()) 
+       (member_id, program_id, account_number, login, password, cpf, points_balance, is_active, custom_fields, last_updated) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) 
        RETURNING *`,
       [
         memberProgramData.memberId,
         memberProgramData.programId,
         memberProgramData.accountNumber,
-        memberProgramData.login,
-        memberProgramData.password,
-        memberProgramData.cpf,
+        memberProgramData.login || '',
+        memberProgramData.password || '',
+        memberProgramData.cpf || '',
         memberProgramData.pointsBalance || 0,
-        memberProgramData.eliteTier,
         memberProgramData.isActive ?? true,
-        memberProgramData.notes,
         JSON.stringify(memberProgramData.customFields || {})
       ]
     );
@@ -271,13 +327,29 @@ export const storage = {
     const values = [];
     let index = 1;
 
+    // Map JavaScript field names to database column names
+    const fieldMap: Record<string, string> = {
+      memberId: 'member_id',
+      programId: 'program_id',
+      accountNumber: 'account_number',
+      login: 'login',
+      password: 'password',
+      cpf: 'cpf',
+      pointsBalance: 'points_balance',
+      eliteTier: 'elite_tier',
+      isActive: 'is_active',
+      notes: 'notes',
+      customFields: 'custom_fields',
+      lastUpdated: 'last_updated'
+    };
+
     for (const [key, value] of Object.entries(updates)) {
-      if (key !== 'id') {
+      if (key !== 'id' && fieldMap[key]) {
         if (key === 'customFields') {
-          fields.push(`custom_fields = $${index}`);
+          fields.push(`${fieldMap[key]} = $${index}`);
           values.push(JSON.stringify(value));
         } else {
-          fields.push(`${key} = $${index}`);
+          fields.push(`${fieldMap[key]} = $${index}`);
           values.push(value);
         }
         index++;
@@ -343,17 +415,23 @@ export const storage = {
           json_agg(
             json_build_object(
               'id', mp.id,
-              'program', json_build_object(
-                'id', lp.id,
-                'name', lp.name,
-                'company', lp.company,
-                'logoColor', lp.logo_color
-              ),
+              'memberId', mp.member_id,
+              'programId', mp.program_id,
               'accountNumber', mp.account_number,
               'pointsBalance', mp.points_balance,
               'eliteTier', mp.elite_tier,
               'isActive', mp.is_active,
-              'lastUpdated', mp.last_updated
+              'lastUpdated', mp.last_updated,
+              'login', mp.login,
+              'password', mp.password,
+              'customFields', mp.custom_fields,
+              'program', json_build_object(
+                'id', lp.id,
+                'name', lp.name,
+                'company', lp.company,
+                'logoColor', lp.logo_color,
+                'website', lp.website
+              )
             )
           ) FILTER (WHERE mp.id IS NOT NULL), 
           '[]'
@@ -367,7 +445,22 @@ export const storage = {
     `;
     
     const { rows } = await pool.query(query, [userId]);
-    return rows;
+    
+    
+    // Transform snake_case to camelCase for all members
+    return rows.map(member => ({
+      ...member,
+      userId: member.user_id,
+      isActive: member.is_active,
+      frameColor: member.frame_color,
+      frameBorderColor: member.frame_border_color,
+      profileEmoji: member.profile_emoji,
+      createdAt: member.created_at,
+      // Keep the original snake_case fields too for backward compatibility
+      frame_color: member.frame_color,
+      frame_border_color: member.frame_border_color,
+      profile_emoji: member.profile_emoji,
+    }));
   },
 
   async getDashboardStats(userId: number): Promise<any> {
@@ -391,14 +484,40 @@ export const storage = {
       WHERE fm.user_id = $1
     `;
     
+    // Query para pegar pontos e programas para calcular valor estimado
+    const pointsByProgramQuery = `
+      SELECT lp.company, SUM(mp.points_balance) as points
+      FROM member_programs mp
+      JOIN family_members fm ON mp.member_id = fm.id
+      JOIN loyalty_programs lp ON mp.program_id = lp.id
+      WHERE fm.user_id = $1 AND mp.points_balance > 0
+      GROUP BY lp.company
+    `;
+    
     const { rows: [programs] } = await pool.query(programsQuery, [userId]);
     const { rows: [points] } = await pool.query(pointsQuery, [userId]);
+    const { rows: pointsByProgram } = await pool.query(pointsByProgramQuery, [userId]);
+    
+    // Calcula o valor total estimado
+    let totalEstimatedValue = 0;
+    pointsByProgram.forEach(row => {
+      totalEstimatedValue += calculateEstimatedValue(parseInt(row.points) || 0, row.company);
+    });
+    
+    // Formata o valor em reais
+    const estimatedValue = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(totalEstimatedValue);
     
     return {
       totalMembers: parseInt(members[0].count) || 0,
       totalPrograms: parseInt(programs.count) || 0,
       totalPoints: parseInt(points.total) || 0,
-      activePrograms: parseInt(programs.count) || 0
+      activePrograms: parseInt(programs.count) || 0,
+      estimatedValue
     };
   },
 

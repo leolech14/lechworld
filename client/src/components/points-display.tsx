@@ -25,12 +25,12 @@ export default function PointsDisplay({ points, className = '' }: PointsDisplayP
     <span 
       className={`${colorClass} ${className}`}
       style={{ 
-        textShadow: '0 2px 4px rgba(0,0,0,0.1)',
         fontFamily: "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif",
-        fontWeight: 800,
-        fontSize: '2rem',
-        letterSpacing: '-0.02em',
-        color: color
+        fontWeight: 900,
+        fontSize: '2.25rem',
+        letterSpacing: '-0.03em',
+        color: color,
+        lineHeight: 1
       }}
     >
       {points.toLocaleString('pt-BR')}

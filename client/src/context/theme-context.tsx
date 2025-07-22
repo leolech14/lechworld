@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Theme = 'light' | 'dark-minimal';
+type Theme = 'light' | 'dark' | 'minimal-dark';
 
 interface ThemeContextType {
   theme: Theme;
+  setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
 }
 
@@ -18,20 +19,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem('theme', theme);
     
-    // Apply theme to document
-    if (theme === 'dark-minimal') {
-      document.documentElement.classList.add('dark-minimal');
-    } else {
-      document.documentElement.classList.remove('dark-minimal');
-    }
+    // Remove all theme classes
+    document.documentElement.classList.remove('light-theme', 'dark-theme', 'minimal-dark-theme');
+    document.documentElement.classList.remove('dark-minimal'); // Remove old class
+    
+    // Apply new theme class
+    document.documentElement.classList.add(`${theme}-theme`);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark-minimal' : 'light');
+    setTheme(prev => {
+      if (prev === 'light') return 'dark';
+      if (prev === 'dark') return 'minimal-dark';
+      return 'light';
+    });
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

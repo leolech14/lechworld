@@ -68,6 +68,11 @@ export class SupabaseStorage {
       name: member.name,
       email: member.email,
       phone: member.phone,
+      cpf: member.cpf,
+      birthdate: member.birthdate,
+      frameColor: member.frame_color,
+      frameBorderColor: member.frame_border_color,
+      profileEmoji: member.profile_emoji,
       createdAt: new Date(member.created_at),
       updatedAt: new Date(member.updated_at)
     }));
@@ -88,6 +93,11 @@ export class SupabaseStorage {
       name: data.name,
       email: data.email,
       phone: data.phone,
+      cpf: data.cpf,
+      birthdate: data.birthdate,
+      frameColor: data.frame_color,
+      frameBorderColor: data.frame_border_color,
+      profileEmoji: data.profile_emoji,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at)
     };
@@ -100,7 +110,12 @@ export class SupabaseStorage {
         user_id: memberData.userId!,
         name: memberData.name,
         email: memberData.email,
-        phone: memberData.phone
+        phone: memberData.phone,
+        cpf: memberData.cpf,
+        birthdate: memberData.birthdate,
+        frame_color: memberData.frameColor || '#FED7E2',
+        frame_border_color: memberData.frameBorderColor || '#F687B3',
+        profile_emoji: memberData.profileEmoji || '👤'
       })
       .select()
       .single();
@@ -113,20 +128,34 @@ export class SupabaseStorage {
       name: data.name,
       email: data.email,
       phone: data.phone,
+      cpf: data.cpf,
+      birthdate: data.birthdate,
+      frameColor: data.frame_color,
+      frameBorderColor: data.frame_border_color,
+      profileEmoji: data.profile_emoji,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at)
     };
   }
 
   async updateFamilyMember(id: number, updates: Partial<FamilyMember>): Promise<FamilyMember> {
+    const updateData: any = {
+      updated_at: new Date().toISOString()
+    };
+    
+    // Map camelCase to snake_case and only include provided fields
+    if (updates.name !== undefined) updateData.name = updates.name;
+    if (updates.email !== undefined) updateData.email = updates.email;
+    if (updates.phone !== undefined) updateData.phone = updates.phone;
+    if (updates.cpf !== undefined) updateData.cpf = updates.cpf;
+    if (updates.birthdate !== undefined) updateData.birthdate = updates.birthdate;
+    if (updates.frameColor !== undefined) updateData.frame_color = updates.frameColor;
+    if (updates.frameBorderColor !== undefined) updateData.frame_border_color = updates.frameBorderColor;
+    if (updates.profileEmoji !== undefined) updateData.profile_emoji = updates.profileEmoji;
+    
     const { data, error } = await supabase
       .from('family_members')
-      .update({
-        name: updates.name,
-        email: updates.email,
-        phone: updates.phone,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
@@ -139,6 +168,11 @@ export class SupabaseStorage {
       name: data.name,
       email: data.email,
       phone: data.phone,
+      cpf: data.cpf,
+      birthdate: data.birthdate,
+      frameColor: data.frame_color,
+      frameBorderColor: data.frame_border_color,
+      profileEmoji: data.profile_emoji,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at)
     };
@@ -481,6 +515,9 @@ export class SupabaseStorage {
     return members.map(member => ({
       ...member,
       userId: member.user_id,
+      frameColor: member.frame_color,
+      frameBorderColor: member.frame_border_color,
+      profileEmoji: member.profile_emoji,
       createdAt: new Date(member.created_at),
       updatedAt: new Date(member.updated_at),
       programs: member.member_programs.map((mp: any) => ({

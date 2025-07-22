@@ -1,3 +1,8 @@
+/**
+ * @purpose: UI/COMPONENT/scroll-area
+ * @connects-to: Various components that use this UI primitive
+ */
+
 import * as React from "react"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
 

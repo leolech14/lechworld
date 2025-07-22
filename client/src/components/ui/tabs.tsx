@@ -1,3 +1,8 @@
+/**
+ * @purpose: UI/COMPONENT/tabs
+ * @connects-to: Various components that use this UI primitive
+ */
+
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 

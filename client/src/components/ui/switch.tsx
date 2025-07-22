@@ -1,3 +1,8 @@
+/**
+ * @purpose: UI/COMPONENT/switch
+ * @connects-to: Various components that use this UI primitive
+ */
+
 import * as React from "react"
 import * as SwitchPrimitives from "@radix-ui/react-switch"
 

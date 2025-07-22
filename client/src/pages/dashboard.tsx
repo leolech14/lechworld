@@ -1,3 +1,18 @@
+/**
+ * @purpose Main dashboard page component for managing loyalty programs
+ * @connects-to components/navigation.tsx
+ * @connects-to components/stats-cards.tsx
+ * @connects-to components/members-table.tsx
+ * @connects-to components/quick-actions.tsx
+ * @connects-to components/new-member-modal.tsx
+ * @connects-to components/mobile-dashboard.tsx
+ * @connects-to components/whatsapp-share.tsx
+ * @connects-to components/mobile-whatsapp-button.tsx
+ * @connects-to components/settings-modal.tsx
+ * @connects-to components/theme-toggle.tsx
+ * @connects-to store/auth-store.ts
+ * @api-endpoints GET /api/dashboard/stats/:userId, GET /api/dashboard/members-with-programs/:userId, GET /api/activity/:userId
+ */
 import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import StatsCards from "@/components/stats-cards";
@@ -68,9 +83,6 @@ export default function Dashboard() {
     enabled: !!user?.id,
   });
 
-  if (!user) {
-    return <div>Please log in</div>;
-  }
 
   // If mobile view is enabled, render the mobile dashboard
   if (isMobileView) {
@@ -78,16 +90,16 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       <Navigation onSettingsClick={() => setShowSettingsModal(true)} />
       
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 pt-8 pb-8">
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2 text-blue-800">Dashboard</h2>
-              <p className="text-blue-600">Gerencie seus programas de pontos e família</p>
+              <p className="text-xl text-blue-600 italic font-medium">"Quem ta ponto ta ponto, quem não ta ponto não ta ponto... Nenê junto!"</p>
+              <p className="text-blue-500 text-sm mt-1">— João Lech, um viajante</p>
             </div>
             <div className="flex items-center space-x-4">
               {/* Theme Toggle */}

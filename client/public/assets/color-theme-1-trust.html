@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template de Cores 1 - Trust & Innovation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            background: #f0f4f8;
+        }
+        
+        :root {
+            /* Trust & Innovation Palette */
+            --primary-blue: #1A73E8;
+            --silver: #C0C8D0;
+            --white: #FFFFFF;
+            --dark-bg: #181824;
+            --cyber-green: #39FF14;
+            --text-dark: #1F2937;
+            --text-light: #6B7280;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary-blue);
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 2.5rem;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .color-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: white;
+            transition: transform 0.3s ease;
+        }
+        
+        .color-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .color-display {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .color-info {
+            padding: 1rem;
+        }
+        
+        .color-name {
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .color-hex {
+            color: var(--text-light);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .demo-header {
+            background: var(--primary-blue);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        .demo-nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .demo-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .demo-nav-item {
+            color: white;
+            text-decoration: none;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+        
+        .demo-nav-item:hover {
+            opacity: 1;
+        }
+        
+        .demo-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .demo-card {
+            background: var(--white);
+            border: 1px solid var(--silver);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-card:hover {
+            border-color: var(--primary-blue);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15);
+        }
+        
+        .demo-stat {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+        
+        .demo-label {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .demo-button {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 1rem;
+        }
+        
+        .demo-button:hover {
+            background: #1557b0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(26, 115, 232, 0.25);
+        }
+        
+        .demo-button-secondary {
+            background: var(--silver);
+            color: var(--text-dark);
+        }
+        
+        .demo-button-secondary:hover {
+            background: #a8b0b8;
+        }
+        
+        .demo-button-accent {
+            background: var(--cyber-green);
+            color: var(--dark-bg);
+        }
+        
+        .demo-button-accent:hover {
+            background: #2ecc0f;
+        }
+        
+        .dark-mode-preview {
+            background: var(--dark-bg);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+        
+        .dark-mode-preview .demo-card {
+            background: #252535;
+            border-color: #353545;
+            color: white;
+        }
+        
+        .dark-mode-preview .demo-label {
+            color: #9CA3AF;
+        }
+        
+        .alert-cyber {
+            background: var(--cyber-green);
+            color: var(--dark-bg);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-blue);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .copy-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Template 1: Trust & Innovation</h1>
+        <p style="text-align: center; color: var(--text-light); margin-bottom: 3rem;">
+            Uma paleta profissional que transmite confiança e inovação tecnológica
+        </p>
+        
+        <div class="color-grid">
+            <div class="color-card">
+                <div class="color-display" style="background: var(--primary-blue);" onclick="copyColor('#1A73E8')">
+                    #1A73E8
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Primary Blue</div>
+                    <div class="color-hex">#1A73E8</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-display" style="background: var(--silver); color: var(--text-dark);" onclick="copyColor('#C0C8D0')">
+                    #C0C8D0
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Glossy Silver</div>
+                    <div class="color-hex">#C0C8D0</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-display" style="background: var(--cyber-green); color: var(--dark-bg);" onclick="copyColor('#39FF14')">
+                    #39FF14
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Cyber Green</div>
+                    <div class="color-hex">#39FF14</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-display" style="background: var(--dark-bg);" onclick="copyColor('#181824')">
+                    #181824
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Dark Background</div>
+                    <div class="color-hex">#181824</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2 style="margin-bottom: 2rem; color: var(--text-dark);">Demonstração Light Mode</h2>
+            
+            <div class="demo-header">
+                <nav class="demo-nav">
+                    <div class="demo-logo">LechWorld</div>
+                    <a href="#" class="demo-nav-item">Dashboard</a>
+                    <a href="#" class="demo-nav-item">Membros</a>
+                    <a href="#" class="demo-nav-item">Programas</a>
+                </nav>
+            </div>
+            
+            <div class="alert-cyber">
+                <strong>Novo!</strong> Sistema atualizado com melhorias de performance
+            </div>
+            
+            <div class="demo-cards">
+                <div class="demo-card">
+                    <div class="demo-stat">2,547</div>
+                    <div class="demo-label">Total de Pontos</div>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-stat">8</div>
+                    <div class="demo-label">Membros Ativos</div>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-stat">12</div>
+                    <div class="demo-label">Programas</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <button class="demo-button">Ação Principal</button>
+                <button class="demo-button demo-button-secondary">Ação Secundária</button>
+                <button class="demo-button demo-button-accent">Nova Feature</button>
+            </div>
+        </div>
+        
+        <div class="dark-mode-preview">
+            <h2 style="margin-bottom: 2rem;">Demonstração Dark Mode</h2>
+            
+            <div class="demo-cards">
+                <div class="demo-card">
+                    <div class="demo-stat" style="color: var(--cyber-green);">2,547</div>
+                    <div class="demo-label">Total de Pontos</div>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-stat" style="color: var(--primary-blue);">8</div>
+                    <div class="demo-label">Membros Ativos</div>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-stat" style="color: var(--silver);">12</div>
+                    <div class="demo-label">Programas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="copy-notification" id="copyNotification">
+        Cor copiada para a área de transferência!
+    </div>
+    
+    <script>
+        function copyColor(color) {
+            navigator.clipboard.writeText(color);
+            const notification = document.getElementById('copyNotification');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

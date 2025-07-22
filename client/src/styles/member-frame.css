@@ -109,3 +109,38 @@
   width: 100%;
   max-width: 200px;
 }
+
+/* Clickable member frame styles */
+.member-frame.cursor-pointer {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.member-frame.cursor-pointer:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 20px rgba(168, 204, 236, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.05);
+  border-color: var(--trust-blue-pastel-dark, #7FB2E5);
+}
+
+.member-frame.cursor-pointer:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 4px 12px rgba(168, 204, 236, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.member-frame.cursor-pointer:focus-visible {
+  outline: 2px solid var(--trust-blue-pastel, #A8CCEC);
+  outline-offset: 2px;
+}
+
+/* Add hover effect to name */
+.member-frame.cursor-pointer:hover .member-frame-name {
+  text-decoration: underline;
+  text-decoration-color: var(--trust-blue-pastel, #A8CCEC);
+  text-underline-offset: 2px;
+}

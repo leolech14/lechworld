@@ -1,18 +1,36 @@
+/**
+ * @purpose Display and manage family members and their loyalty programs
+ * @connects-to server/routes.ts (DELETE /api/members/:id)
+ * @connects-to components/edit-member-modal.tsx
+ * @connects-to components/edit-program-modal.tsx
+ * @connects-to components/new-member-modal.tsx
+ * @connects-to components/new-program-modal.tsx
+ * @connects-to components/member-frame.tsx
+ * @connects-to components/points-display.tsx
+ * @connects-to components/program-details-modal.tsx
+ * @connects-to components/member-details-modal.tsx
+ * @api-endpoints DELETE /api/members/:id
+ */
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Eye, Trash2, UserPlus, Plus } from "lucide-react";
-import type { MemberWithPrograms } from "@shared/schema";
+import type { MemberWithPrograms, LoyaltyProgram } from "@shared/schema";
 import EditMemberModal from "./edit-member-modal";
+import EditProgramModal from "./edit-program-modal";
 import NewMemberModal from "./new-member-modal";
 import NewProgramModal from "./new-program-modal";
+import ProgramDetailsModal from "./program-details-modal";
+import MemberDetailsModal from "./member-details-modal";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { getMemberColor, getMemberEmoji } from "@/lib/member-colors";
+import { getProgramIcon } from "@/lib/program-icons";
 import MemberFrame from "./member-frame";
 import PointsDisplay from "./points-display";
+import { formatEstimatedValue } from "@/lib/miles-values";
 
 interface MembersTableProps {
   data?: MemberWithPrograms[];
@@ -28,10 +46,17 @@ export default function MembersTable({
   sortOrder 
 }: MembersTableProps) {
   const [editingMember, setEditingMember] = useState<MemberWithPrograms | null>(null);
+  const [editingProgram, setEditingProgram] = useState<LoyaltyProgram | null>(null);
   const [showNewMemberModal, setShowNewMemberModal] = useState(false);
   const [showNewProgramModal, setShowNewProgramModal] = useState(false);
   const [deletingMember, setDeletingMember] = useState<{ id: number, name: string } | null>(null);
   const [viewingMember, setViewingMember] = useState<MemberWithPrograms | null>(null);
+  const [programDetails, setProgramDetails] = useState<{ 
+    program: LoyaltyProgram; 
+    memberProgram?: any;
+    memberId: number;
+    memberName: string;
+  } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const sortedData = useMemo(() => {
@@ -141,20 +166,20 @@ export default function MembersTable({
       <Card className="glass-card mb-8 overflow-hidden">
         <CardHeader className="p-6 border-b border-sky/20">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold">Membros e Programas</h3>
+            <h3 className="text-xl font-semibold">Contas de Pontos</h3>
             <div className="flex items-center space-x-4">
               <Button 
                 onClick={() => setShowNewMemberModal(true)}
-                className="text-sm bg-[#D6ECFF] hover:bg-[#B3D9FF] text-gray-700 border border-[#8CC8FF]"
+                className="text-sm btn-primary"
               >
-                <UserPlus className="w-4 h-4 mr-2 text-[#5A9FDB]" />
+                <UserPlus className="w-4 h-4 mr-2 icon-primary" />
                 Adicionar Membro
               </Button>
               <Button 
                 onClick={() => setShowNewProgramModal(true)}
-                className="text-sm bg-[#ECD6FF] hover:bg-[#D9B3FF] text-gray-700 border border-[#C88CFF]"
+                className="text-sm btn-accent"
               >
-                <Plus className="w-4 h-4 mr-2 text-[#A875DB]" />
+                <Plus className="w-4 h-4 mr-2 icon-secondary" />
                 Adicionar Programa
               </Button>
             </div>
@@ -176,6 +201,9 @@ export default function MembersTable({
                   Pontos
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-powder uppercase tracking-wider">
+                  Valor Estimado
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-powder uppercase tracking-wider">
                   Última Atualização
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-powder uppercase tracking-wider">
@@ -188,24 +216,62 @@ export default function MembersTable({
                 <tr key={index} className="data-row hover:bg-sky/5 transition-colors">
                   <td className="px-6 py-4">
                     <div style={{ minWidth: '140px', display: 'inline-block' }}>
-                      <MemberFrame member={item.member} variant="compact" />
+                      <MemberFrame 
+                        member={item.member} 
+                        variant="compact" 
+                        clickable={true}
+                        onClick={() => setViewingMember(item.member)}
+                      />
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <div 
-                        className="w-8 h-8 rounded mr-3"
-                        style={{ backgroundColor: item.program.logoColor }}
-                      ></div>
-                      <div>
-                        <div className="text-sm font-medium">{item.program.name}</div>
-                        <div className="text-xs text-powder">{item.program.company}</div>
+                    <div 
+                      className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => setProgramDetails({
+                        program: item.program,
+                        memberProgram: item.memberProgram,
+                        memberId: item.member.id,
+                        memberName: item.member.name
+                      })}
+                      title={`Clique para ver detalhes de ${item.program.company}`}
+                    >
+                      {(() => {
+                        const icon = getProgramIcon(item.program);
+                        return icon.type === 'png' ? (
+                          <img 
+                            src={icon.value} 
+                            alt={item.program.name}
+                            className="w-12 h-12 rounded mr-3 object-contain"
+                          />
+                        ) : (
+                          <div 
+                            className="w-12 h-12 rounded mr-3"
+                            style={{ backgroundColor: icon.value }}
+                          />
+                        );
+                      })()}
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium truncate hover:underline">{item.program.company}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-2xl font-bold points-display-wrapper">
+                    <div 
+                      className="text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => setProgramDetails({
+                        program: item.program,
+                        memberProgram: item.memberProgram,
+                        memberId: item.member.id,
+                        memberName: item.member.name
+                      })}
+                      title={`Clique para ver detalhes da conta de ${item.member.name} em ${item.program.company}`}
+                    >
                       <PointsDisplay points={item.memberProgram.pointsBalance || 0} />
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-lg font-semibold text-cyber-green-pastel">
+                      {formatEstimatedValue(item.memberProgram.pointsBalance || 0, item.program.company)}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-powder">
@@ -219,7 +285,7 @@ export default function MembersTable({
                         className="hover:bg-pastel-blue/20"
                         onClick={() => setEditingMember(item.member)}
                       >
-                        <Edit className="w-4 h-4 text-[#5A9FDB]" />
+                        <Edit className="w-4 h-4 icon-primary" />
                       </Button>
                       <Button 
                         variant="ghost" 
@@ -232,7 +298,7 @@ export default function MembersTable({
                           });
                         }}
                       >
-                        <Eye className="w-4 h-4 text-[#A875DB]" />
+                        <Eye className="w-4 h-4 icon-secondary" />
                       </Button>
                       <Button 
                         variant="ghost" 
@@ -240,7 +306,7 @@ export default function MembersTable({
                         className="hover:bg-pastel-pink/20"
                         onClick={() => setDeletingMember({ id: item.member.id, name: item.member.name })}
                       >
-                        <Trash2 className="w-4 h-4 text-[#DB75A4]" />
+                        <Trash2 className="w-4 h-4 icon-accent" />
                       </Button>
                     </div>
                   </td>
@@ -263,6 +329,33 @@ export default function MembersTable({
         member={editingMember}
         open={!!editingMember}
         onClose={() => setEditingMember(null)} 
+      />
+    )}
+    
+    {editingProgram && (
+      <EditProgramModal
+        program={editingProgram}
+        open={!!editingProgram}
+        onClose={() => setEditingProgram(null)}
+      />
+    )}
+    
+    {programDetails && (
+      <ProgramDetailsModal
+        isOpen={true}
+        onClose={() => setProgramDetails(null)}
+        program={programDetails.program}
+        memberProgram={programDetails.memberProgram}
+        memberId={programDetails.memberId}
+        memberName={programDetails.memberName}
+      />
+    )}
+    
+    {viewingMember && (
+      <MemberDetailsModal
+        isOpen={true}
+        onClose={() => setViewingMember(null)}
+        member={viewingMember}
       />
     )}
     
@@ -289,7 +382,7 @@ export default function MembersTable({
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleDeleteMember}
-            className="bg-[#FFD6EC] hover:bg-[#FFB3D9] text-gray-700 border border-[#FF8CC8]"
+            className="btn-accent"
           >
             Excluir
           </AlertDialogAction>

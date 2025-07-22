@@ -26,8 +26,14 @@ RUN npm ci --only=production
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
 
+# Set production environment
+ENV NODE_ENV=production
+
 # Expose port
-EXPOSE 5000
+EXPOSE 3000
+
+# Set working directory
+WORKDIR /app
 
 # Start the application
-CMD ["node", "dist/index-prod.js"]
+CMD ["node", "dist/server/index-prod.js"]

@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { Search, Bell, Settings } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-const logoPath = "/logo.png";
+const logoPath = "/lech-world-logo.png";
 
 interface NavigationProps {
   onSettingsClick?: () => void;
@@ -50,20 +50,16 @@ export default function Navigation({ onSettingsClick }: NavigationProps) {
   };
 
   return (
-    <nav className="glass-nav sticky top-0 z-50 px-6 py-4">
+    <nav className="glass-nav px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="w-14 h-14 orange-gradient rounded-xl flex items-center justify-center shadow-md">
-            <img 
-              src={logoPath} 
-              alt="lech.world logo" 
-              className="w-10 h-10 object-contain animate-glow"
-            />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold glass-text">lech.world</h1>
-            <p className="text-sm text-gray-600">Programas de Pontos</p>
-          </div>
+        <div className="flex items-center">
+          <img 
+            src={logoPath} 
+            alt="lech.world logo" 
+            className="h-16 object-contain nav-logo"
+            id="main-logo"
+            style={{ display: 'block', visibility: 'visible' }}
+          />
         </div>
         
         <div className="flex items-center space-x-4">

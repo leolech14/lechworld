@@ -1,3 +1,10 @@
+/**
+ * @purpose API client and query configuration for React Query
+ * @connects-to server/routes.ts (all API endpoints)
+ * @connects-to client/src/pages/dashboard.tsx
+ * @connects-to client/src/pages/Dashboard.tsx
+ * @connects-to client/src/components/* (all components using useQuery)
+ */
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {

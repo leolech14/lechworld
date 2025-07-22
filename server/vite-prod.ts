@@ -1,6 +1,13 @@
+/**
+ * @purpose: CONFIG/SETUP/vite-production
+ * @connects-to: server/index.ts
+ * @description: Production version of vite utilities without vite dependency
+ */
+
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
+import { type Server } from "http";
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -13,12 +20,13 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
-export async function setupVite(_app: Express, _server: any) {
-  throw new Error("Vite should not be used in production");
+export async function setupVite(app: Express, server: Server) {
+  // No-op in production
+  throw new Error("setupVite should not be called in production");
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(process.cwd(), "dist", "public");
+  const distPath = "/app/dist/public";
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
