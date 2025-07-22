@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, CreditCard, Star, TrendingUp } from "lucide-react";
 import type { DashboardStats } from "@shared/schema";
+import PointsDisplay from "./points-display";
 
 interface StatsCardsProps {
   stats?: DashboardStats;
@@ -32,28 +33,28 @@ export default function StatsCards({ stats, isLoading }: StatsCardsProps) {
       value: stats?.totalMembers || 0,
       change: "+12%",
       icon: Users,
-      color: "text-blue-600",
+      color: "text-[#5A9FDB]",
     },
     {
       title: "Programas Ativos",
       value: stats?.activePrograms || 0,
       change: "+8%",
       icon: CreditCard,
-      color: "text-blue-600",
+      color: "text-[#A875DB]",
     },
     {
       title: "Pontos Totais",
       value: stats?.totalPoints?.toLocaleString('pt-BR') || "0",
       change: "+24%",
       icon: Star,
-      color: "text-blue-600",
+      color: "text-[#E5B84B]",
     },
     {
       title: "Valor Estimado",
       value: stats?.estimatedValue || "R$ 0,00",
       change: "+18%",
       icon: TrendingUp,
-      color: "text-orange-600",
+      color: "text-[#E5A14B]",
     },
   ];
 
@@ -61,19 +62,28 @@ export default function StatsCards({ stats, isLoading }: StatsCardsProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {cards.map((card, index) => {
         const Icon = card.icon;
+        const isPointsCard = card.title === "Pontos Totais";
+        const pointsValue = stats?.totalPoints || 0;
+        
         return (
-          <Card key={index} className="glass-card">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-sky/20 rounded-lg flex items-center justify-center">
-                  <Icon className={`w-6 h-6 ${card.color}`} />
-                </div>
-                <span className="text-xs text-powder">{card.change}</span>
+          <div key={index} className="stats-card-enhanced glass-card">
+            <div className="flex items-center justify-between mb-6">
+              <div className="p-3 rounded-lg bg-gradient-to-br from-white/40 to-white/20 backdrop-blur-sm border border-white/30">
+                <Icon className={`w-7 h-7 ${card.color}`} />
               </div>
-              <h3 className="text-2xl font-bold mb-1">{card.value}</h3>
-              <p className="text-sm text-powder">{card.title}</p>
-            </CardContent>
-          </Card>
+              <span className="text-sm font-semibold text-[#5AC89F]">{card.change}</span>
+            </div>
+            <div>
+              {isPointsCard ? (
+                <div className="stats-number">
+                  <PointsDisplay points={pointsValue} />
+                </div>
+              ) : (
+                <h3 className="stats-number">{card.value}</h3>
+              )}
+              <p className="stats-label">{card.title}</p>
+            </div>
+          </div>
         );
       })}
     </div>

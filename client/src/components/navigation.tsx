@@ -4,9 +4,13 @@ import { useLocation } from "wouter";
 import { Search, Bell, Settings } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import logoPath from "@assets/lech-world-logo_1752602073107.png";
+const logoPath = "/logo.png";
 
-export default function Navigation() {
+interface NavigationProps {
+  onSettingsClick?: () => void;
+}
+
+export default function Navigation({ onSettingsClick }: NavigationProps) {
   const { user, logout } = useAuthStore();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -35,10 +39,14 @@ export default function Navigation() {
   };
 
   const handleSettingsClick = () => {
-    toast({
-      title: "Configurações",
-      description: "Painel de configurações será implementado em breve!",
-    });
+    if (onSettingsClick) {
+      onSettingsClick();
+    } else {
+      toast({
+        title: "Configurações",
+        description: "Painel de configurações será implementado em breve!",
+      });
+    }
   };
 
   return (

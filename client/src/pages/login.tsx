@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuthStore } from "@/store/auth-store";
-import logoPath from "@assets/lech-world-logo_1752602073107.png";
+const logoPath = "/logo.png";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Login é obrigatório"),

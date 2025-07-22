@@ -7,6 +7,12 @@ import type { MemberWithPrograms } from "@shared/schema";
 import EditMemberModal from "./edit-member-modal";
 import NewMemberModal from "./new-member-modal";
 import NewProgramModal from "./new-program-modal";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { getMemberColor, getMemberEmoji } from "@/lib/member-colors";
+import MemberFrame from "./member-frame";
+import PointsDisplay from "./points-display";
 
 interface MembersTableProps {
   data?: MemberWithPrograms[];
@@ -24,6 +30,10 @@ export default function MembersTable({
   const [editingMember, setEditingMember] = useState<MemberWithPrograms | null>(null);
   const [showNewMemberModal, setShowNewMemberModal] = useState(false);
   const [showNewProgramModal, setShowNewProgramModal] = useState(false);
+  const [deletingMember, setDeletingMember] = useState<{ id: number, name: string } | null>(null);
+  const [viewingMember, setViewingMember] = useState<MemberWithPrograms | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const sortedData = useMemo(() => {
     if (!data) return [];
     
@@ -50,8 +60,8 @@ export default function MembersTable({
           valueB = b.program.company.toLowerCase();
           break;
         case 'points':
-          valueA = parseInt(a.memberProgram.points?.toString() || '0');
-          valueB = parseInt(b.memberProgram.points?.toString() || '0');
+          valueA = parseInt(a.memberProgram.pointsBalance?.toString() || '0');
+          valueB = parseInt(b.memberProgram.pointsBalance?.toString() || '0');
           break;
         default:
           return 0;
@@ -69,6 +79,36 @@ export default function MembersTable({
 
 
 
+  const handleDeleteMember = async () => {
+    if (!deletingMember) return;
+    
+    try {
+      const response = await fetch(`/api/members/${deletingMember.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete member');
+      }
+      
+      toast({
+        title: "Membro excluído",
+        description: `${deletingMember.name} foi removido com sucesso.`,
+      });
+      
+      // Refresh the data
+      queryClient.invalidateQueries();
+    } catch (error) {
+      toast({
+        title: "Erro ao excluir",
+        description: "Não foi possível excluir o membro. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingMember(null);
+    }
+  };
+
   const formatLastUpdated = (date: string | Date) => {
     const now = new Date();
     const updated = new Date(date);
@@ -80,6 +120,7 @@ export default function MembersTable({
     if (diffDays < 30) return `${Math.ceil(diffDays / 7)} semana${Math.ceil(diffDays / 7) > 1 ? 's' : ''} atrás`;
     return `${Math.ceil(diffDays / 30)} mês${Math.ceil(diffDays / 30) > 1 ? 'es' : ''} atrás`;
   };
+
 
   if (isLoading) {
     return (
@@ -104,16 +145,16 @@ export default function MembersTable({
             <div className="flex items-center space-x-4">
               <Button 
                 onClick={() => setShowNewMemberModal(true)}
-                className="bg-sky/20 hover:bg-sky/30 transition-colors text-sm"
+                className="text-sm bg-[#D6ECFF] hover:bg-[#B3D9FF] text-gray-700 border border-[#8CC8FF]"
               >
-                <UserPlus className="w-4 h-4 mr-2" />
+                <UserPlus className="w-4 h-4 mr-2 text-[#5A9FDB]" />
                 Adicionar Membro
               </Button>
               <Button 
                 onClick={() => setShowNewProgramModal(true)}
-                className="bg-royal hover:bg-sky transition-colors text-sm"
+                className="text-sm bg-[#ECD6FF] hover:bg-[#D9B3FF] text-gray-700 border border-[#C88CFF]"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4 mr-2 text-[#A875DB]" />
                 Adicionar Programa
               </Button>
             </div>
@@ -135,9 +176,6 @@ export default function MembersTable({
                   Pontos
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-powder uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-powder uppercase tracking-wider">
                   Última Atualização
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-powder uppercase tracking-wider">
@@ -149,10 +187,8 @@ export default function MembersTable({
               {sortedData.map((item, index) => (
                 <tr key={index} className="data-row hover:bg-sky/5 transition-colors">
                   <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <div>
-                        <div className="text-sm font-medium">{item.member.name}</div>
-                      </div>
+                    <div style={{ minWidth: '140px', display: 'inline-block' }}>
+                      <MemberFrame member={item.member} variant="compact" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -168,16 +204,9 @@ export default function MembersTable({
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <Badge className="points-badge">
-                      {item.memberProgram.pointsBalance?.toLocaleString('pt-BR') || '0'}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Badge 
-                      className={item.memberProgram.isActive ? "status-active" : "status-inactive"}
-                    >
-                      {item.memberProgram.isActive ? "Ativo" : "Inativo"}
-                    </Badge>
+                    <div className="text-2xl font-bold points-display-wrapper">
+                      <PointsDisplay points={item.memberProgram.pointsBalance || 0} />
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-powder">
                     {formatLastUpdated(item.memberProgram.lastUpdated!)}
@@ -187,16 +216,31 @@ export default function MembersTable({
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="hover:bg-sky/20"
+                        className="hover:bg-pastel-blue/20"
                         onClick={() => setEditingMember(item.member)}
                       >
-                        <Edit className="w-4 h-4" />
+                        <Edit className="w-4 h-4 text-[#5A9FDB]" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="hover:bg-sky/20">
-                        <Eye className="w-4 h-4" />
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="hover:bg-pastel-purple/20"
+                        onClick={() => {
+                          toast({
+                            title: "Visualização em desenvolvimento",
+                            description: "A visualização detalhada será implementada em breve.",
+                          });
+                        }}
+                      >
+                        <Eye className="w-4 h-4 text-[#A875DB]" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="hover:bg-red-500/20">
-                        <Trash2 className="w-4 h-4" />
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="hover:bg-pastel-pink/20"
+                        onClick={() => setDeletingMember({ id: item.member.id, name: item.member.name })}
+                      >
+                        <Trash2 className="w-4 h-4 text-[#DB75A4]" />
                       </Button>
                     </div>
                   </td>
@@ -216,7 +260,8 @@ export default function MembersTable({
     
     {editingMember && (
       <EditMemberModal 
-        member={editingMember} 
+        member={editingMember}
+        open={!!editingMember}
         onClose={() => setEditingMember(null)} 
       />
     )}
@@ -230,6 +275,27 @@ export default function MembersTable({
       open={showNewProgramModal}
       onClose={() => setShowNewProgramModal(false)}
     />
+    
+    <AlertDialog open={!!deletingMember} onOpenChange={() => setDeletingMember(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+          <AlertDialogDescription>
+            Tem certeza que deseja excluir o membro <strong>{deletingMember?.name}</strong>? 
+            Esta ação também removerá todos os programas associados e não pode ser desfeita.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleDeleteMember}
+            className="bg-[#FFD6EC] hover:bg-[#FFB3D9] text-gray-700 border border-[#FF8CC8]"
+          >
+            Excluir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 }

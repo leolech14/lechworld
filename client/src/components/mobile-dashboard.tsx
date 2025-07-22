@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { MemberWithPrograms, DashboardStats } from "@shared/schema";
 import { WhatsAppShare } from "./whatsapp-share";
 import NewMemberModal from "./new-member-modal";
+import { getMemberColor, getMemberEmoji } from "@/lib/member-colors";
 
 const mobileVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -32,6 +33,7 @@ const navTabs = [
   { id: "programs", label: "Programas", icon: CreditCard },
   { id: "settings", label: "Config", icon: Settings },
 ];
+
 
 interface MobileDashboardProps {
   onReturnToWebView?: () => void;
@@ -175,7 +177,7 @@ export default function MobileDashboard({ onReturnToWebView }: MobileDashboardPr
                     onClick={() => setShowWhatsAppModal(true)}
                   >
                     <MessageCircle className="w-5 h-5" />
-                    <span>Enviar WhatsApp</span>
+                    <span>Envie pelo WhatsApp</span>
                   </motion.button>
                 </div>
               </motion.div>
@@ -201,8 +203,17 @@ export default function MobileDashboard({ onReturnToWebView }: MobileDashboardPr
                               {member.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                             </AvatarFallback>
                           </Avatar>
-                          <div>
-                            <p className="font-medium text-gray-800">{member.name}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{getMemberEmoji(member)}</span>
+                            <div 
+                              className="px-3 py-1 rounded-lg inline-block"
+                              style={{ 
+                                backgroundColor: getMemberColor(member).bg,
+                                border: `2px solid ${getMemberColor(member).border}`
+                              }}
+                            >
+                              <p className="font-medium text-gray-800">{member.name}</p>
+                            </div>
                           </div>
                         </div>
                         <Badge className="bg-blue-100 text-blue-700">
@@ -245,7 +256,20 @@ export default function MobileDashboard({ onReturnToWebView }: MobileDashboardPr
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-semibold text-gray-800">{member.name}</p>
+                          <div className="flex items-center gap-2 mb-1">
+                            {member.profileEmoji && (
+                              <span className="text-xl">{member.profileEmoji}</span>
+                            )}
+                            <div 
+                              className="px-3 py-1 rounded-lg inline-block"
+                              style={{ 
+                                backgroundColor: getMemberColor(member).bg,
+                                border: `2px solid ${getMemberColor(member).border}`
+                              }}
+                            >
+                              <p className="font-semibold text-gray-800">{member.name}</p>
+                            </div>
+                          </div>
                           <p className="text-sm text-gray-600">{member.email}</p>
                           <p className="text-xs text-blue-600">{member.role}</p>
                         </div>
@@ -306,7 +330,20 @@ export default function MobileDashboard({ onReturnToWebView }: MobileDashboardPr
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800">{member.name}</h3>
+                          <div className="flex items-center gap-2">
+                            {member.profileEmoji && (
+                              <span className="text-xl">{member.profileEmoji}</span>
+                            )}
+                            <div 
+                              className="px-3 py-1 rounded-lg inline-block"
+                              style={{ 
+                                backgroundColor: getMemberColor(member).bg,
+                                border: `2px solid ${getMemberColor(member).border}`
+                              }}
+                            >
+                              <h3 className="text-lg font-semibold text-gray-800">{member.name}</h3>
+                            </div>
+                          </div>
                         </div>
                       </div>
                       <Badge className="bg-blue-100 text-blue-700">

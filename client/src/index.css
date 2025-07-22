@@ -1,3 +1,14 @@
+/* Import member frame styles */
+@import './styles/member-frame.css';
+/* Import enhanced stats cards */
+@import './styles/stats-cards.css';
+/* Import pastel theme */
+@import './styles/pastel-theme.css';
+/* Import dark minimal theme */
+@import './styles/dark-minimal.css';
+/* Import pastel override to ensure it works */
+@import './styles/pastel-override.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -544,5 +555,37 @@
     width: 56px;
     height: 56px;
     font-size: 20px;
+  }
+}
+
+/* Toggle switch styles */
+input[type="checkbox"].toggle {
+  @apply relative inline-flex h-6 w-11 cursor-pointer rounded-full bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="checkbox"].toggle:checked {
+  @apply bg-blue-600;
+}
+
+input[type="checkbox"].toggle::before {
+  @apply absolute left-0.5 top-0.5 h-5 w-5 transform rounded-full bg-white transition-transform;
+  content: "";
+}
+
+input[type="checkbox"].toggle:checked::before {
+  @apply translate-x-5;
+}
+
+/* Settings Modal Responsive Styles */
+@media (max-width: 768px) {
+  .settings-modal-sidebar {
+    @apply w-full border-r-0 border-b;
+    max-height: 200px;
+  }
+  
+  .settings-modal-content {
+    @apply flex-col;
   }
 }

@@ -1,0 +1,41 @@
+#!/bin/bash
+# This script checks what we CAN do automatically vs what needs manual steps
+
+echo "🔍 Checking what we can automate..."
+echo ""
+
+# Check current status
+echo "✅ What I CAN do:"
+echo "- Deploy to Fly.io (already created)"
+echo "- Run database migrations"
+echo "- Configure environment files"
+echo "- Test connections"
+echo ""
+
+echo "❌ What I CANNOT do:"
+echo "- Create a Supabase account for you"
+echo "- Access Supabase web dashboard"
+echo "- Generate Supabase project credentials"
+echo ""
+
+echo "📋 What YOU need to do first (5 minutes):"
+echo ""
+echo "1. Open browser: https://supabase.com"
+echo "2. Click 'Start your project' or 'Sign up'"
+echo "3. Create account (use Google for quick setup)"
+echo "4. Click 'New Project'"
+echo "5. Enter:"
+echo "   - Project name: lechworld"
+echo "   - Password: LechWorld2025!@# (or your choice)"
+echo "   - Region: South America (São Paulo)"
+echo "6. Click 'Create new project'"
+echo "7. Wait 2 minutes for setup"
+echo "8. Go to Settings → API"
+echo "9. Copy these 3 values:"
+echo ""
+echo "   Project URL: https://[YOUR-PROJECT-REF].supabase.co"
+echo "   anon (public) key: eyJ..."
+echo "   service_role (secret) key: eyJ..."
+echo ""
+echo "Once you have these, come back and tell me the values."
+echo "Then I can run the rest automatically!"

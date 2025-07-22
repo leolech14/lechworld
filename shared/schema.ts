@@ -18,6 +18,13 @@ export const familyMembers = pgTable("family_members", {
   role: text("role").notNull(), // primary, extended, view_only
   userId: integer("user_id").references(() => users.id),
   isActive: boolean("is_active").default(true),
+  // New profile fields
+  cpf: text("cpf"),
+  phone: text("phone"),
+  birthdate: text("birthdate"),
+  frameColor: text("frame_color").default("#FED7E2"),
+  frameBorderColor: text("frame_border_color").default("#F687B3"),
+  profileEmoji: text("profile_emoji").default("👤"),
 });
 
 export const loyaltyPrograms = pgTable("loyalty_programs", {

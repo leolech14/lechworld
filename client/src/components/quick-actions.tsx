@@ -5,6 +5,8 @@ import type { ActivityLog } from "@shared/schema";
 import { useState } from "react";
 import { WhatsAppShare } from "./whatsapp-share";
 import NewMemberModal from "./new-member-modal";
+import NewProgramModal from "./new-program-modal";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuickActionsProps {
   activities?: ActivityLog[];
@@ -14,6 +16,29 @@ interface QuickActionsProps {
 export default function QuickActions({ activities, isLoading }: QuickActionsProps) {
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [showNewMemberModal, setShowNewMemberModal] = useState(false);
+  const [showNewProgramModal, setShowNewProgramModal] = useState(false);
+  const { toast } = useToast();
+  
+  const handleExportData = () => {
+    toast({
+      title: "Exportação iniciada",
+      description: "Esta funcionalidade será implementada em breve. Os dados serão exportados em formato JSON.",
+    });
+  };
+  
+  const handleImportData = () => {
+    toast({
+      title: "Importação de dados",
+      description: "Esta funcionalidade permitirá importar dados de backup. Em desenvolvimento.",
+    });
+  };
+  
+  const handleEncryptData = () => {
+    toast({
+      title: "Criptografia",
+      description: "Sistema de criptografia end-to-end será implementado para proteger seus dados.",
+    });
+  };
   const formatActivityTime = (date: string | Date) => {
     const now = new Date();
     const activityTime = new Date(date);
@@ -52,37 +77,48 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold text-gray-800">Ações Rápidas</h3>
             <div className="p-2 bg-sky/10 rounded-full">
-              <Activity className="w-6 h-6 text-sky" />
+              <Activity className="w-6 h-6 text-[#8CC8FF]" />
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button 
-            className="w-full h-16 bg-gradient-to-r from-blue-500/20 to-sky/30 hover:from-blue-500/30 hover:to-sky/40 transition-all duration-300 justify-start text-base font-semibold hover:scale-105 border border-blue-200/50 shadow-md"
+            className="w-full h-16 bg-[#D6ECFF] hover:bg-[#B3D9FF] text-gray-700 transition-all duration-300 justify-start text-base font-semibold hover:scale-105 border border-[#8CC8FF] shadow-md"
             onClick={() => setShowNewMemberModal(true)}
           >
-            <div className="flex items-center justify-center w-10 h-10 bg-blue-500/20 rounded-full mr-4">
-              <UserPlus className="w-6 h-6 text-blue-600" />
+            <div className="flex items-center justify-center w-10 h-10 bg-[#B3D9FF] rounded-full mr-4">
+              <UserPlus className="w-6 h-6 text-[#5A9FDB]" />
             </div>
             Adicionar Membro
           </Button>
           <Button 
-            className="w-full h-16 bg-gradient-to-r from-green-500/20 to-green-600/30 hover:from-green-500/30 hover:to-green-600/40 transition-all duration-300 justify-start text-base font-semibold hover:scale-105 border border-green-200/50 shadow-md"
+            className="w-full h-16 bg-[#D6FFEC] hover:bg-[#B3FFD9] text-gray-700 transition-all duration-300 justify-start text-base font-semibold hover:scale-105 border border-[#8CFFC8] shadow-md"
             onClick={() => setShowWhatsAppModal(true)}
           >
-            <div className="flex items-center justify-center w-10 h-10 bg-green-500/20 rounded-full mr-4">
-              <MessageCircle className="w-6 h-6 text-green-600" />
+            <div className="flex items-center justify-center w-10 h-10 bg-[#B3FFD9] rounded-full mr-4">
+              <MessageCircle className="w-6 h-6 text-[#5AC89F]" />
             </div>
-            Enviar WhatsApp
+            Envie pelo WhatsApp
           </Button>
-          <Button className="w-full h-16 bg-gradient-to-r from-purple-500/20 to-indigo-500/30 hover:from-purple-500/30 hover:to-indigo-500/40 transition-all duration-300 justify-start text-base font-semibold hover:scale-105 border border-purple-200/50 shadow-md">
-            <div className="flex items-center justify-center w-10 h-10 bg-purple-500/20 rounded-full mr-4">
-              <CreditCard className="w-6 h-6 text-purple-600" />
+          <Button 
+            className="w-full h-16 bg-[#ECD6FF] hover:bg-[#D9B3FF] text-gray-700 transition-all duration-300 justify-start text-base font-semibold hover:scale-105 border border-[#C88CFF] shadow-md"
+            onClick={() => setShowNewProgramModal(true)}
+          >
+            <div className="flex items-center justify-center w-10 h-10 bg-[#D9B3FF] rounded-full mr-4">
+              <CreditCard className="w-6 h-6 text-[#A875DB]" />
             </div>
             Novo Programa
           </Button>
-          <Button className="w-full bg-sky/20 hover:bg-sky/30 transition-colors justify-start">
-            <RefreshCw className="w-5 h-5 mr-3" />
+          <Button 
+            className="w-full bg-[#FFF2D6] hover:bg-[#FFE6B3] text-gray-700 transition-colors justify-start border border-[#FFD98C]"
+            onClick={() => {
+              toast({
+                title: "Funcionalidade em desenvolvimento",
+                description: "Atualização em massa de pontos será implementada em breve.",
+              });
+            }}
+          >
+            <RefreshCw className="w-5 h-5 mr-3 text-[#E5B84B]" />
             Atualizar Pontos
           </Button>
         </CardContent>
@@ -93,7 +129,7 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Últimas Atividades</h3>
-            <Activity className="w-6 h-6 text-sky" />
+            <Activity className="w-6 h-6 text-[#8CC8FF]" />
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -136,15 +172,24 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button className="w-full bg-sky/20 hover:bg-sky/30 transition-colors justify-start">
+          <Button 
+            className="w-full bg-sky/20 hover:bg-sky/30 transition-colors justify-start"
+            onClick={handleExportData}
+          >
             <Download className="w-5 h-5 mr-3" />
             Exportar Dados
           </Button>
-          <Button className="w-full bg-sky/20 hover:bg-sky/30 transition-colors justify-start">
+          <Button 
+            className="w-full bg-sky/20 hover:bg-sky/30 transition-colors justify-start"
+            onClick={handleImportData}
+          >
             <Upload className="w-5 h-5 mr-3" />
             Importar Dados
           </Button>
-          <Button className="w-full bg-sky/20 hover:bg-sky/30 transition-colors justify-start">
+          <Button 
+            className="w-full bg-sky/20 hover:bg-sky/30 transition-colors justify-start"
+            onClick={handleEncryptData}
+          >
             <Lock className="w-5 h-5 mr-3" />
             Criptografar
           </Button>
@@ -162,6 +207,11 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
     <NewMemberModal 
       open={showNewMemberModal} 
       onClose={() => setShowNewMemberModal(false)} 
+    />
+    
+    <NewProgramModal
+      open={showNewProgramModal}
+      onClose={() => setShowNewProgramModal(false)}
     />
     </>
   );

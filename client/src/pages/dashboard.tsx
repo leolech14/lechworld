@@ -14,15 +14,18 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Search, Filter, MessageCircle, Smartphone, Monitor, ArrowUpDown, ArrowUp, ArrowDown, User, Building2, Trophy } from "lucide-react";
+import { Search, Filter, MessageCircle, Smartphone, Monitor, ArrowUpDown, ArrowUp, ArrowDown, User, Building2, Trophy, Settings } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import SettingsModal from "@/components/settings-modal";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
   const { toast } = useToast();
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [showNewMemberModal, setShowNewMemberModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'company' | 'points'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -76,7 +79,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <Navigation />
+      <Navigation onSettingsClick={() => setShowSettingsModal(true)} />
       
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Header Section */}
@@ -87,6 +90,9 @@ export default function Dashboard() {
               <p className="text-blue-600">Gerencie seus programas de pontos e família</p>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Theme Toggle */}
+              <ThemeToggle />
+              
               {/* Mobile View Toggle */}
               <div className="flex items-center space-x-3 p-3 bg-white/50 rounded-lg border border-blue-200">
                 <Monitor className="w-5 h-5 text-blue-600" />
@@ -196,6 +202,13 @@ export default function Dashboard() {
       <NewMemberModal 
         open={showNewMemberModal} 
         onClose={() => setShowNewMemberModal(false)} 
+      />
+      
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        userId={user?.id || 1}
       />
     </div>
   );

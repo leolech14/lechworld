@@ -1,0 +1,430 @@
+/* Dark Minimal Theme - High Contrast Black & White */
+.dark-minimal {
+  /* Base colors */
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  
+  /* Component colors */
+  --card: 0 0% 5%;
+  --card-foreground: 0 0% 100%;
+  
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 0%;
+  
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 0 0% 100%;
+  
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 85%;
+  
+  --accent: 0 0% 20%;
+  --accent-foreground: 0 0% 100%;
+  
+  --destructive: 0 0% 100%;
+  --destructive-foreground: 0 0% 0%;
+  
+  --border: 0 0% 30%;
+  --input: 0 0% 20%;
+  --ring: 0 0% 100%;
+}
+
+/* Apply dark theme to body and main containers */
+.dark-minimal,
+.dark-minimal body,
+.dark-minimal #root,
+.dark-minimal main,
+.dark-minimal .min-h-screen {
+  background: #000000 !important;
+  background-image: linear-gradient(to bottom, #000000 0%, #0a0a0a 50%, #000000 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Cards and containers */
+.dark-minimal .glass-card,
+.dark-minimal .mobile-card,
+.dark-minimal [class*="card"] {
+  background-color: #0a0a0a;
+  border: 1px solid #333333;
+  color: #ffffff;
+}
+
+/* Stats cards */
+.dark-minimal .stats-card {
+  background: #0a0a0a;
+  border: 1px solid #333333;
+}
+
+.dark-minimal .stats-card * {
+  color: #ffffff;
+}
+
+/* Buttons */
+.dark-minimal button {
+  background-color: #000000 !important;
+  border: 1px solid #ffffff !important;
+  color: #ffffff !important;
+}
+
+.dark-minimal button:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+}
+
+/* Override all button styles */
+.dark-minimal button[class*="bg-"],
+.dark-minimal .bg-royal,
+.dark-minimal .bg-sky,
+.dark-minimal [class*="bg-blue"] {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #ffffff !important;
+}
+
+.dark-minimal button[class*="bg-"]:hover,
+.dark-minimal .bg-royal:hover,
+.dark-minimal .bg-sky:hover,
+.dark-minimal [class*="bg-blue"]:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Tables */
+.dark-minimal table {
+  background-color: #0a0a0a;
+  color: #ffffff;
+}
+
+.dark-minimal thead {
+  background-color: #1a1a1a;
+}
+
+.dark-minimal th,
+.dark-minimal td {
+  border-color: #333333;
+  color: #ffffff;
+}
+
+.dark-minimal tr:hover {
+  background-color: #1a1a1a;
+}
+
+/* Badges */
+.dark-minimal .badge,
+.dark-minimal [class*="badge"],
+.dark-minimal .points-badge,
+.dark-minimal .status-active,
+.dark-minimal .status-inactive {
+  background-color: #000000 !important;
+  border: 1px solid #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Navigation */
+.dark-minimal .navbar,
+.dark-minimal nav {
+  background-color: #0a0a0a;
+  border-bottom: 1px solid #333333;
+}
+
+.dark-minimal .navbar * {
+  color: #ffffff;
+}
+
+/* Inputs */
+.dark-minimal input,
+.dark-minimal textarea,
+.dark-minimal select {
+  background-color: #1a1a1a;
+  border: 1px solid #333333;
+  color: #ffffff;
+}
+
+.dark-minimal input::placeholder {
+  color: #666666;
+}
+
+/* Member frames - black background with white border */
+.dark-minimal [style*="backgroundColor"],
+.dark-minimal [style*="background-color"] {
+  background-color: #000000 !important;
+  filter: none !important;
+}
+
+/* Member name frames specifically */
+.dark-minimal .px-3.py-1.rounded-lg {
+  background-color: #000000 !important;
+  border: 1px solid #ffffff !important;
+}
+
+/* Theme toggle button - only element with color */
+.dark-minimal .theme-toggle-sun {
+  color: #FFD700 !important;
+  filter: none !important;
+}
+
+/* Text colors */
+.dark-minimal h1,
+.dark-minimal h2,
+.dark-minimal h3,
+.dark-minimal h4,
+.dark-minimal h5,
+.dark-minimal h6,
+.dark-minimal p,
+.dark-minimal span,
+.dark-minimal div {
+  color: #ffffff;
+}
+
+/* Icons */
+.dark-minimal svg {
+  color: #ffffff;
+}
+
+/* Specific fixes for stats */
+.dark-minimal .text-3xl,
+.dark-minimal .text-2xl,
+.dark-minimal .text-xl,
+.dark-minimal .text-lg {
+  color: #ffffff;
+}
+
+/* Fix for colored text */
+.dark-minimal .text-blue-600,
+.dark-minimal .text-blue-700,
+.dark-minimal .text-blue-800,
+.dark-minimal .text-sky-600,
+.dark-minimal [class*="text-blue"],
+.dark-minimal [class*="text-gray"],
+.dark-minimal [class*="text-sky"] {
+  color: #ffffff !important;
+}
+
+/* Subtitle text should be visible but slightly dimmer */
+.dark-minimal p.text-blue-600 {
+  color: #cccccc !important;
+}
+
+/* Other gray text should still be visible */
+.dark-minimal .text-gray-500,
+.dark-minimal .text-gray-600 {
+  color: #999999 !important;
+}
+
+/* Modals and dialogs */
+.dark-minimal [role="dialog"] {
+  background-color: #0a0a0a;
+  border: 1px solid #333333;
+}
+
+.dark-minimal [role="dialog"] * {
+  color: #ffffff;
+}
+
+/* Settings modal sidebar */
+.dark-minimal .settings-modal-sidebar,
+.dark-minimal .bg-gray-50,
+.dark-minimal .bg-gray-100 {
+  background-color: #0a0a0a !important;
+  border-color: #333333 !important;
+}
+
+.dark-minimal .hover\:bg-gray-200:hover {
+  background-color: #1a1a1a !important;
+}
+
+/* Settings modal specific overrides */
+.dark-minimal [role="dialog"] .bg-gray-50,
+.dark-minimal [role="dialog"] .bg-gray-100 {
+  background-color: #0a0a0a !important;
+}
+
+.dark-minimal [role="dialog"] .border-r {
+  border-color: #333333 !important;
+}
+
+.dark-minimal [role="dialog"] .hover\:bg-gray-50:hover {
+  background-color: #1a1a1a !important;
+}
+
+/* Selected category in settings */
+.dark-minimal .bg-blue-500 {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Logo boxes in programs table - grayscale only */
+.dark-minimal td [style*="background-color"] {
+  filter: grayscale(100%) !important;
+}
+
+/* But keep member frames black */
+.dark-minimal .px-3.py-1.rounded-lg[style*="background-color"] {
+  background-color: #000000 !important;
+  filter: none !important;
+}
+
+/* Hide logo and orange card in navigation */
+.dark-minimal .navbar img,
+.dark-minimal nav img,
+.dark-minimal .logo,
+.dark-minimal [alt*="logo" i],
+.dark-minimal [alt*="Logo" i],
+.dark-minimal .bg-orange-500,
+.dark-minimal [class*="bg-orange"] {
+  display: none !important;
+}
+
+/* Hide company/program logos */
+.dark-minimal td [style*="background-color"],
+.dark-minimal .w-8.h-8.rounded {
+  visibility: hidden !important;
+}
+
+/* Ensure visibility of all other elements */
+.dark-minimal * {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Switch/Toggle components */
+.dark-minimal [role="switch"],
+.dark-minimal .switch,
+.dark-minimal input[type="checkbox"] {
+  background-color: #333333 !important;
+  border: 1px solid #ffffff !important;
+}
+
+.dark-minimal [role="switch"][data-state="checked"],
+.dark-minimal .switch[data-state="checked"],
+.dark-minimal input[type="checkbox"]:checked {
+  background-color: #ffffff !important;
+}
+
+/* Mobile App toggle card */
+.dark-minimal .bg-white\/50,
+.dark-minimal [class*="bg-white"] {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: #ffffff !important;
+}
+
+/* Icon buttons visibility */
+.dark-minimal button[variant="ghost"] svg {
+  color: #ffffff !important;
+}
+
+.dark-minimal button[variant="ghost"]:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Stats card percentages */
+.dark-minimal .text-sm.text-green-600,
+.dark-minimal [class*="text-green"] {
+  color: #ffffff !important;
+}
+
+/* Remove colored gradients but preserve main background */
+.dark-minimal [class*="bg-gradient"]:not(body):not(#root),
+.dark-minimal [class*="from-"]:not(body):not(#root),
+.dark-minimal [class*="to-"]:not(body):not(#root),
+.dark-minimal [class*="via-"]:not(body):not(#root) {
+  background-image: none !important;
+  background: transparent !important;
+}
+
+/* Action buttons in table */
+.dark-minimal td button svg {
+  opacity: 1 !important;
+  color: #ffffff !important;
+}
+
+.dark-minimal button:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* User icon in top right */
+.dark-minimal .bg-blue-100,
+.dark-minimal .bg-blue-200,
+.dark-minimal [class*="bg-blue"] {
+  background-color: #000000 !important;
+  border: 1px solid #ffffff !important;
+}
+
+/* Blue text elements */
+.dark-minimal .text-blue-100,
+.dark-minimal .text-blue-200,
+.dark-minimal .text-blue-300,
+.dark-minimal .text-blue-400,
+.dark-minimal .text-blue-500 {
+  color: #ffffff !important;
+}
+
+/* Sort buttons - remove blue gradient */
+.dark-minimal .blue-gradient,
+.dark-minimal [class*="bg-sky"],
+.dark-minimal [class*="bg-royal"] {
+  background: #000000 !important;
+  background-image: none !important;
+  border: 1px solid #ffffff !important;
+}
+
+/* Points badge - black background */
+.dark-minimal .points-badge {
+  background: #000000 !important;
+  background-image: none !important;
+  border: 1px solid #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Quick action icons and colored text */
+.dark-minimal .glass-card svg,
+.dark-minimal .quick-action svg,
+.dark-minimal [class*="text-sky"],
+.dark-minimal [class*="text-royal"],
+.dark-minimal [class*="text-purple"],
+.dark-minimal [class*="text-green"],
+.dark-minimal [class*="text-orange"],
+.dark-minimal .text-purple-600,
+.dark-minimal .text-green-600,
+.dark-minimal .text-orange-600 {
+  color: #ffffff !important;
+}
+
+/* Quick action cards */
+.dark-minimal .glass-card {
+  background-color: #0a0a0a !important;
+  border: 1px solid #333333 !important;
+}
+
+/* Remove all blue backgrounds from buttons */
+.dark-minimal button[class*="bg-sky"],
+.dark-minimal button[class*="bg-blue"],
+.dark-minimal button[class*="bg-royal"],
+.dark-minimal .bg-sky,
+.dark-minimal .bg-royal {
+  background-color: #000000 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border: 1px solid #ffffff !important;
+}
+
+/* Points display colors in dark mode */
+.dark-minimal .text-blue-200 {
+  color: #2B6CB0 !important; /* Azul escuro quase invisível */
+  opacity: 0.4;
+}
+
+.dark-minimal .text-yellow-200 {
+  color: #F6E05E !important; /* Amarelo clarinho */
+  opacity: 0.5;
+}
+
+.dark-minimal .text-pink-200 {
+  color: #FBB6CE !important; /* Vermelho clarinho */
+  opacity: 0.6;
+}
+
+.dark-minimal .text-red-500 {
+  color: #F56565 !important; /* Vermelho forte */
+  opacity: 1;
+}
