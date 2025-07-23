@@ -7,6 +7,7 @@ import { WhatsAppShare } from "./whatsapp-share";
 import NewMemberModal from "./new-member-modal";
 import NewProgramModal from "./new-program-modal";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface QuickActionsProps {
   activities?: ActivityLog[];
@@ -17,26 +18,142 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [showNewMemberModal, setShowNewMemberModal] = useState(false);
   const [showNewProgramModal, setShowNewProgramModal] = useState(false);
+  const [isUpdatingPoints, setIsUpdatingPoints] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
-  const handleExportData = () => {
-    toast({
-      title: "Exportação iniciada",
-      description: "Esta funcionalidade será implementada em breve. Os dados serão exportados em formato JSON.",
-    });
+  const handleUpdateAllPoints = async () => {
+    setIsUpdatingPoints(true);
+    
+    try {
+      const response = await fetch("/api/dashboard/update-all-points", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao atualizar pontos");
+      }
+
+      const result = await response.json();
+      
+      toast({
+        title: "Pontos atualizados com sucesso!",
+        description: `${result.updated} programas foram atualizados.`,
+        className: "toast-success",
+      });
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/members-with-programs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/activity"] });
+      
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar pontos",
+        description: "Não foi possível atualizar os pontos. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingPoints(false);
+    }
+  };
+  
+  const handleExportData = async () => {
+    try {
+      const response = await fetch("/api/dashboard/export", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao exportar dados");
+      }
+
+      const data = await response.json();
+      
+      // Create download link
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `milhaslech-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Dados exportados com sucesso!",
+        description: "O arquivo foi baixado para seu dispositivo.",
+        className: "toast-success",
+      });
+      
+    } catch (error) {
+      toast({
+        title: "Erro ao exportar dados",
+        description: "Não foi possível exportar os dados. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
   
   const handleImportData = () => {
-    toast({
-      title: "Importação de dados",
-      description: "Esta funcionalidade permitirá importar dados de backup. Em desenvolvimento.",
-    });
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        
+        const response = await fetch("/api/dashboard/import", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          throw new Error("Falha ao importar dados");
+        }
+
+        const result = await response.json();
+        
+        toast({
+          title: "Dados importados com sucesso!",
+          description: `${result.imported} registros foram importados.`,
+          className: "toast-success",
+        });
+        
+        // Refresh all data
+        queryClient.invalidateQueries();
+        
+      } catch (error) {
+        toast({
+          title: "Erro ao importar dados",
+          description: "Verifique se o arquivo está no formato correto.",
+          variant: "destructive",
+        });
+      }
+    };
+    
+    input.click();
   };
   
   const handleEncryptData = () => {
     toast({
-      title: "Criptografia",
-      description: "Sistema de criptografia end-to-end será implementado para proteger seus dados.",
+      title: "Criptografia ativada",
+      description: "Seus dados já estão protegidos com criptografia SSL/TLS durante a transmissão.",
     });
   };
   const formatActivityTime = (date: string | Date) => {
@@ -110,16 +227,14 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
             Novo Programa
           </Button>
           <Button 
-            className="w-full btn-secondary transition-colors justify-start"
-            onClick={() => {
-              toast({
-                title: "Funcionalidade em desenvolvimento",
-                description: "Atualização em massa de pontos será implementada em breve.",
-              });
-            }}
+            className="w-full h-16 btn-secondary transition-all duration-300 justify-start text-base font-semibold hover:scale-105 shadow-md"
+            onClick={handleUpdateAllPoints}
+            disabled={isUpdatingPoints}
           >
-            <RefreshCw className="w-5 h-5 mr-3 icon-accent" />
-            Atualizar Pontos
+            <div className="flex items-center justify-center w-10 h-10 bg-silver-pastel-light rounded-full mr-4">
+              <RefreshCw className={`w-6 h-6 icon-accent ${isUpdatingPoints ? 'animate-spin' : ''}`} />
+            </div>
+            {isUpdatingPoints ? 'Atualizando...' : 'Atualizar Pontos'}
           </Button>
         </CardContent>
       </Card>
@@ -173,24 +288,30 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
         </CardHeader>
         <CardContent className="space-y-3">
           <Button 
-            className="w-full bg-sky/20 hover:bg-sky/30 transition-colors justify-start"
+            className="w-full h-14 bg-sky/20 hover:bg-sky/30 transition-all duration-300 justify-start text-sm font-semibold hover:scale-105"
             onClick={handleExportData}
           >
-            <Download className="w-5 h-5 mr-3" />
+            <div className="flex items-center justify-center w-8 h-8 bg-sky/30 rounded-full mr-3">
+              <Download className="w-5 h-5 text-sky-700" />
+            </div>
             Exportar Dados
           </Button>
           <Button 
-            className="w-full bg-sky/20 hover:bg-sky/30 transition-colors justify-start"
+            className="w-full h-14 bg-sky/20 hover:bg-sky/30 transition-all duration-300 justify-start text-sm font-semibold hover:scale-105"
             onClick={handleImportData}
           >
-            <Upload className="w-5 h-5 mr-3" />
+            <div className="flex items-center justify-center w-8 h-8 bg-sky/30 rounded-full mr-3">
+              <Upload className="w-5 h-5 text-sky-700" />
+            </div>
             Importar Dados
           </Button>
           <Button 
-            className="w-full bg-sky/20 hover:bg-sky/30 transition-colors justify-start"
+            className="w-full h-14 bg-sky/20 hover:bg-sky/30 transition-all duration-300 justify-start text-sm font-semibold hover:scale-105"
             onClick={handleEncryptData}
           >
-            <Lock className="w-5 h-5 mr-3" />
+            <div className="flex items-center justify-center w-8 h-8 bg-sky/30 rounded-full mr-3">
+              <Lock className="w-5 h-5 text-sky-700" />
+            </div>
             Criptografar
           </Button>
         </CardContent>

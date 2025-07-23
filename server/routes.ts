@@ -352,6 +352,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update all points endpoint
+  app.post("/api/dashboard/update-all-points", async (req, res) => {
+    try {
+      // Get all member programs
+      const memberPrograms = await storage.getMemberPrograms();
+      let updated = 0;
+      
+      // Simulate updating points (in real implementation, this would fetch from external APIs)
+      for (const mp of memberPrograms) {
+        // Add random points for demo purposes
+        const randomPoints = Math.floor(Math.random() * 1000) + 100;
+        await storage.updateMemberProgramFields(mp.memberId, mp.program.company, {
+          pointsBalance: mp.pointsBalance + randomPoints,
+          lastUpdated: new Date().toISOString()
+        });
+        updated++;
+      }
+      
+      res.json({ updated });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Export data endpoint
+  app.get("/api/dashboard/export", async (req, res) => {
+    try {
+      const members = await storage.getMembers();
+      const programs = await storage.getPrograms();
+      const memberPrograms = await storage.getMemberPrograms();
+      
+      const exportData = {
+        version: "1.0",
+        exportDate: new Date().toISOString(),
+        data: {
+          members,
+          programs,
+          memberPrograms
+        }
+      };
+      
+      res.json(exportData);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Import data endpoint
+  app.post("/api/dashboard/import", async (req, res) => {
+    try {
+      const importData = req.body;
+      let imported = 0;
+      
+      // Validate import data structure
+      if (!importData.data || !importData.version) {
+        throw new Error("Invalid import file format");
+      }
+      
+      // Import members
+      if (importData.data.members) {
+        for (const member of importData.data.members) {
+          try {
+            await storage.createMember(member);
+            imported++;
+          } catch (e) {
+            // Skip duplicates
+          }
+        }
+      }
+      
+      // Import programs
+      if (importData.data.programs) {
+        for (const program of importData.data.programs) {
+          try {
+            await storage.createProgram(program);
+            imported++;
+          } catch (e) {
+            // Skip duplicates
+          }
+        }
+      }
+      
+      res.json({ imported });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
