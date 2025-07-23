@@ -15,7 +15,6 @@ interface QuickActionsProps {
 }
 
 export default function QuickActions({ activities, isLoading }: QuickActionsProps) {
-  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [showNewMemberModal, setShowNewMemberModal] = useState(false);
   const [showNewProgramModal, setShowNewProgramModal] = useState(false);
   const [isUpdatingPoints, setIsUpdatingPoints] = useState(false);
@@ -208,15 +207,18 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
             </div>
             Adicionar Membro
           </Button>
-          <Button 
-            className="w-full h-16 btn-accent transition-all duration-300 justify-start text-base font-semibold hover:scale-105 shadow-md"
-            onClick={() => setShowWhatsAppModal(true)}
-          >
-            <div className="flex items-center justify-center w-10 h-10 bg-cyber-green-pastel-light rounded-full mr-4">
-              <MessageCircle className="w-6 h-6 icon-secondary" />
-            </div>
-            Envie pelo WhatsApp
-          </Button>
+          <WhatsAppShare 
+            trigger={
+              <Button 
+                className="w-full h-16 btn-accent transition-all duration-300 justify-start text-base font-semibold hover:scale-105 shadow-md"
+              >
+                <div className="flex items-center justify-center w-10 h-10 bg-cyber-green-pastel-light rounded-full mr-4">
+                  <MessageCircle className="w-6 h-6 icon-secondary" />
+                </div>
+                Envie pelo WhatsApp
+              </Button>
+            }
+          />
           <Button 
             className="w-full h-16 btn-secondary transition-all duration-300 justify-start text-base font-semibold hover:scale-105 shadow-md"
             onClick={() => setShowNewProgramModal(true)}
@@ -319,19 +321,13 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
     </div>
     
     {/* Modals */}
-    {showWhatsAppModal && (
-      <WhatsAppShare 
-        trigger={<div style={{ display: 'none' }} />}
-        isMobile={false}
-      />
-    )}
     <NewMemberModal 
       open={showNewMemberModal} 
       onClose={() => setShowNewMemberModal(false)} 
     />
     
     <NewProgramModal
-      open={showNewProgramModal}
+      isOpen={showNewProgramModal}
       onClose={() => setShowNewProgramModal(false)}
     />
     </>
