@@ -117,10 +117,6 @@ export default function MemberDetailsModal({
               <div className="space-y-3">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-medium">Programas Cadastrados</h4>
-                  <Button size="sm" variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Programa
-                  </Button>
                 </div>
 
                 <ScrollArea className="h-[300px] pr-4">
@@ -177,9 +173,7 @@ export default function MemberDetailsModal({
                     <div className="text-center py-8 text-muted-foreground">
                       <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
                       <p>Nenhum programa cadastrado</p>
-                      <Button variant="link" size="sm" className="mt-2">
-                        Adicionar primeiro programa
-                      </Button>
+                      <p className="text-sm mt-2">Use o botão "Adicionar Programa" na tela principal</p>
                     </div>
                   )}
                 </ScrollArea>
