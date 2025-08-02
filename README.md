@@ -1,11 +1,12 @@
-# MilhasLech - Family Loyalty Program Tracker
+# 🌍 lechworld - Family Loyalty Program Manager
 
-A comprehensive family collaboration platform for managing loyalty programs, miles, and points with secure credential storage and beautiful glassmorphism UI.
+A comprehensive web application for managing airline miles, hotel points, and credit card rewards for the whole family. Track, optimize, and never lose your loyalty points again!
 
-![MilhasLech Dashboard](https://img.shields.io/badge/Status-Production%20Ready-green)
+![lechworld Dashboard](https://img.shields.io/badge/Status-Production%20Ready-green)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
 ![Node.js](https://img.shields.io/badge/Node.js-43853D?logo=node.js&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?logo=postgresql&logoColor=white)
 
 ## 🌟 Features
 
@@ -41,8 +42,8 @@ A comprehensive family collaboration platform for managing loyalty programs, mil
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/milhaslech.git
-cd milhaslech
+git clone https://github.com/leolech14/lechworld.git
+cd lechworld
 ```
 
 2. **Install dependencies**
@@ -71,11 +72,12 @@ npm run dev
 ```
 
 6. **Access the application**
-Open [http://localhost:5000](http://localhost:5000) in your browser
+- Frontend: [http://localhost:4445](http://localhost:4445)
+- Backend API: [http://localhost:4444](http://localhost:4444)
 
 ### Default Login
-- **Email**: lech
-- **Password**: world
+- **Username**: lech
+- **Password**: lechworld
 
 ## 🏗️ Architecture
 
@@ -203,8 +205,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support and questions:
 - Create an issue on GitHub
-- Contact: [your-email@example.com]
+- Contact: support@lech.world
 
 ---
 
 **Built with ❤️ for families who love to travel**
+
+**Live Demo**: [https://lech.world](https://lech.world)
