@@ -234,7 +234,7 @@ export default function MemberDetailsModal({
                   <div className="flex items-center justify-center py-4">
                     <MemberFrame 
                       member={member} 
-                      variant="large"
+                      variant="default"
                       clickable={false}
                     />
                   </div>
@@ -251,7 +251,7 @@ export default function MemberDetailsModal({
                         <div 
                           className="w-8 h-8 rounded border-2"
                           style={{ 
-                            backgroundColor: member.frameColor || getMemberColor(member).background,
+                            backgroundColor: member.frameColor || getMemberColor(member).bg,
                             borderColor: member.frameBorderColor || getMemberColor(member).border
                           }}
                         />

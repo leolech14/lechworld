@@ -383,7 +383,7 @@ export default function MembersTable({
     />
     
     <NewProgramModal
-      open={showNewProgramModal}
+      isOpen={showNewProgramModal}
       onClose={() => setShowNewProgramModal(false)}
     />
     

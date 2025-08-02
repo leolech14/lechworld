@@ -241,7 +241,7 @@ export default function ProgramDetailsModal({
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            memberNumber: memberProgram?.memberNumber || '',
+            memberNumber: memberProgram?.accountNumber || memberProgram?.memberNumber || '',
             currentMiles: memberProgram?.pointsBalance || 0,
             statusLevel: memberProgram?.statusLevel || 'basic',
             customFields: data // Send the entire data array as-is
@@ -275,7 +275,7 @@ export default function ProgramDetailsModal({
       console.error('Error saving account data:', error);
       toast({
         title: "Erro ao salvar",
-        description: error.message || "Não foi possível salvar os dados. Tente novamente.",
+        description: (error as any).message || "Não foi possível salvar os dados. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -312,7 +312,7 @@ export default function ProgramDetailsModal({
                 )}
               </AvatarFallback>
             </Avatar>
-            Conta {program.company || program.name || program.programName} {memberName ? `- ${memberName}` : ''}
+            Conta {program.company || program.name} {memberName ? `- ${memberName}` : ''}
           </DialogTitle>
         </DialogHeader>
 
@@ -413,7 +413,7 @@ export default function ProgramDetailsModal({
                     <Button
                       variant="outline"
                       className="w-full justify-start mt-2"
-                      onClick={() => window.open(program.website, '_blank')}
+                      onClick={() => window.open(program.website || '', '_blank')}
                     >
                       <Globe className="h-4 w-4 mr-2" />
                       {program.website}
@@ -448,7 +448,7 @@ export default function ProgramDetailsModal({
           <TabsContent value="edit">
             <EditProgramModal
               program={program}
-              isOpen={true}
+              open={true}
               onClose={() => {}}
               embedded={true}
             />

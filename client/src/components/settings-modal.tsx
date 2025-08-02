@@ -601,9 +601,8 @@ export default function SettingsModal({ isOpen, onClose, userId }: SettingsModal
 
       {/* Modals */}
       <NewMemberModal
-        isOpen={showNewMemberModal}
+        open={showNewMemberModal}
         onClose={() => setShowNewMemberModal(false)}
-        userId={userId}
       />
       
       <NewProgramModal
@@ -629,6 +628,7 @@ export default function SettingsModal({ isOpen, onClose, userId }: SettingsModal
       {editingProgram && (
         <EditProgramModal
           program={editingProgram}
+          open={true}
           onClose={() => setEditingProgram(null)}
         />
       )}

@@ -89,7 +89,7 @@ export default function ProgramForm({ onSuccess, onCancel }: ProgramFormProps) {
             <SelectValue placeholder="Selecione um membro" />
           </SelectTrigger>
           <SelectContent>
-            {members?.map((member: any) => (
+            {(members as any)?.members?.map((member: any) => (
               <SelectItem key={member.id} value={member.id.toString()}>
                 {member.name}
               </SelectItem>
@@ -111,7 +111,7 @@ export default function ProgramForm({ onSuccess, onCancel }: ProgramFormProps) {
             <SelectValue placeholder="Selecione um programa" />
           </SelectTrigger>
           <SelectContent>
-            {programs?.map((program: any) => (
+            {(programs as any)?.programs?.map((program: any) => (
               <SelectItem key={program.id} value={program.id.toString()}>
                 {program.name} - {program.company}
               </SelectItem>

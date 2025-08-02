@@ -146,9 +146,9 @@ export default function EditMemberModal({ member, open, onClose, appearanceOnly 
     cpf: member.cpf || "",
     phone: member.phone || "",
     birthdate: member.birthdate || "",
-    frameColor: member.frameColor || member.frame_color || "#FED7E2",
-    frameBorderColor: member.frameBorderColor || member.frame_border_color || "#F687B3",
-    profileEmoji: member.profileEmoji || member.profile_emoji || "👤",
+    frameColor: member.frameColor || "#FED7E2",
+    frameBorderColor: member.frameBorderColor || "#F687B3",
+    profileEmoji: member.profileEmoji || "👤",
   });
   
   const { toast } = useToast();

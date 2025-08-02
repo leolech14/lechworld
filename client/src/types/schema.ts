@@ -35,6 +35,7 @@ export interface FamilyMember {
 export interface LoyaltyProgram {
   id: number;
   name: string;
+  programName?: string;  // Alias for name
   company: string;
   code?: string | null;
   programType: string;
@@ -61,6 +62,7 @@ export interface MemberProgram {
   memberId: number;
   programId: number;
   accountNumber?: string | null;
+  memberNumber?: string | null;  // Alias for accountNumber
   login?: string | null;
   sitePassword?: string | null;
   milesPassword?: string | null;
@@ -125,4 +127,50 @@ export interface DashboardStats {
   activePrograms: number;
   totalPoints: number;
   estimatedValue: string;
+  totalPrograms?: number;
+  totalMiles?: number;
+}
+
+// Form schemas (for Zod validation compatibility)
+export interface InsertFamilyMember {
+  name: string;
+  email?: string | null;
+  role: string;
+  cpf?: string | null;
+  phone?: string | null;
+  birthdate?: string | null;
+  frameColor?: string;
+  frameBorderColor?: string;
+  profileEmoji?: string;
+}
+
+export interface InsertMemberProgram {
+  memberId: number;
+  programId: number;
+  accountNumber?: string | null;
+  login?: string | null;
+  sitePassword?: string | null;
+  milesPassword?: string | null;
+  cpf?: string | null;
+  pointsBalance?: number;
+  eliteTier?: string | null;
+  notes?: string | null;
+  statusLevel?: string;
+}
+
+// Mock schema objects for form validation
+export const insertFamilyMemberSchema = {
+  parse: (data: any) => data as InsertFamilyMember
+};
+
+export const insertMemberProgramSchema = {
+  parse: (data: any) => data as InsertMemberProgram
+};
+
+// Member colors interface
+export interface MemberColors {
+  frameColor: string;
+  frameBorderColor: string;
+  profileEmoji: string;
+  background?: string;
 }
