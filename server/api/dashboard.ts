@@ -67,6 +67,14 @@ router.get('/stats', async (req, res) => {
       return total + (airline.totalMiles * valuePerMile);
     }, 0);
 
+    // Limit recent activity results for the dashboard
+    const activityLimit = parseInt(req.query.recentLimit as string) || 10;
+    const recentActivity = await db.select()
+      .from(activityLog)
+      .where(eq(activityLog.userId, userId))
+      .orderBy(desc(activityLog.createdAt))
+      .limit(activityLimit);
+
     res.json({
       totalMembers: memberCount,
       totalPrograms: programStats[0]?.programCount || 0,
@@ -80,7 +88,7 @@ router.get('/stats', async (req, res) => {
         miles: item.totalMiles,
         value: item.totalMiles * (valueMap[item.program] || 0.03) // Use actual values
       })),
-      recentActivity: [] // Will be populated later
+      recentActivity
     });
   } catch (error) {
     console.error('Get dashboard stats error:', error);

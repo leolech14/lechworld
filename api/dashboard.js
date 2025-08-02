@@ -35,65 +35,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    const userId = user.id; // Real user ID from JWT
+    const userId = user.id; // Get userId from authenticated user
+    const activityLimit = parseInt(req.query?.activity_limit) || 10;
 
-    // Get all data in parallel scoped to the authenticated user
-    const [
-      { data: familyMembers, error: membersError },
-      { data: programs, error: programsError },
-      { data: memberProgramsRaw, error: memberProgramsError }
-    ] = await Promise.all([
-      supabase.from('family_members').select('*').eq('user_id', userId),
-      supabase.from('loyalty_programs').select('*'),
-      supabase
-        .from('member_programs')
-        .select('*, family_members!inner(user_id)')
-        .eq('family_members.user_id', userId)
-    ]);
+    // Use a single RPC call that aggregates dashboard data in the database.
+    // The RPC is responsible for joining tables, calculating totals and
+    // returning recent activity already limited/paginated.
+    const { data, error } = await supabase.rpc('get_dashboard_data', {
+      user_id: userId, // Pass the authenticated user's ID
+      activity_limit: activityLimit
+    });
 
-    const memberPrograms = memberProgramsRaw?.map(({ family_members, ...mp }) => mp) || [];
-
-    if (membersError || programsError || memberProgramsError) {
-      console.error('Dashboard errors:', { membersError, programsError, memberProgramsError });
+    if (error) {
+      console.error('Dashboard data error:', error);
       return res.status(500).json({ error: 'Failed to fetch dashboard data' });
     }
 
-    // Calculate statistics
-    const stats = {
-      totalMembers: familyMembers?.length || 0,
-      totalPrograms: programs?.length || 0,
-      totalMiles: 0,
-      expiringMiles: 0,
-      recentActivity: []
-    };
-
-    // Calculate total miles across all member programs
-    if (memberPrograms && familyMembers) {
-      const memberIds = familyMembers.map(m => m.id);
-      const relevantMemberPrograms = memberPrograms.filter(mp => 
-        memberIds.includes(mp.member_id)
-      );
-      
-      stats.totalMiles = relevantMemberPrograms.reduce((total, mp) => 
-        total + (mp.points_balance || 0), 0
-      );
-      
-      // Check for expiring miles (within 6 months)
-      const sixMonthsFromNow = new Date();
-      sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
-      
-      stats.expiringMiles = relevantMemberPrograms
-        .filter(mp => mp.expiry_date && new Date(mp.expiry_date) <= sixMonthsFromNow)
-        .reduce((total, mp) => total + (mp.points_balance || 0), 0);
-    }
-
-    res.json({
-      stats,
-      familyMembers: familyMembers || [],
-      programs: programs || [],
-      memberPrograms
-    });
-    
+    // The RPC returns the object in the same shape expected by the frontend:
+    // { stats, familyMembers, programs, memberPrograms }
+    res.json(data || {});
   } catch (error) {
     console.error('Dashboard API error:', error);
     res.status(500).json({ error: 'Internal server error' });
