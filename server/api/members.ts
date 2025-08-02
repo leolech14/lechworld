@@ -1,9 +1,27 @@
 import { Router } from 'express';
 import { eq, and } from 'drizzle-orm';
+import { z } from 'zod';
 import { db } from '../index.js';
 import { familyMembers, memberPrograms, loyaltyPrograms } from '../../shared/schema.js';
 import { requireAuth } from '../middleware/auth-vercel.js';
 import { syncToSupabase } from '../supabase-client.js';
+
+const createMemberSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  profilePhoto: z.string().url().optional(),
+  color: z.string().optional(),
+  role: z.string().optional(),
+});
+
+const updateMemberSchema = createMemberSchema.extend({
+  cpf: z.string().optional(),
+  phone: z.string().optional(),
+  birthdate: z.string().optional(),
+  frameColor: z.string().optional(),
+  frameBorderColor: z.string().optional(),
+  profileEmoji: z.string().optional(),
+}).partial();
 
 const router = Router();
 
@@ -29,11 +47,11 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const userId = req.session.userId!;
-    const { name, email, profilePhoto, color, role } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ error: 'Name is required' });
+    const parsed = createMemberSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid member payload', details: parsed.error.errors });
     }
+    const { name, email, profilePhoto, color, role } = parsed.data;
 
     const [newMember] = await db.insert(familyMembers).values({
       userId,
@@ -56,10 +74,14 @@ router.put('/:id', async (req, res) => {
   try {
     const userId = req.session.userId!;
     const memberId = parseInt(req.params.id);
-    const { 
-      name, 
-      email, 
-      profilePhoto, 
+    const parsed = updateMemberSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid member payload', details: parsed.error.errors });
+    }
+    const {
+      name,
+      email,
+      profilePhoto,
       color,
       role,
       cpf,
@@ -68,7 +90,7 @@ router.put('/:id', async (req, res) => {
       frameColor,
       frameBorderColor,
       profileEmoji
-    } = req.body;
+    } = parsed.data;
 
     console.log('UPDATE REQUEST:', {
       memberId,
