@@ -1,8 +1,32 @@
 import { Router } from 'express';
 import { eq, and } from 'drizzle-orm';
+import { z } from 'zod';
 import { db } from '../index.js';
 import { airlines, memberPrograms, familyMembers } from '../../shared/schemas/database.js';
 import { requireAuth } from '../middleware/auth.js';
+
+const addProgramSchema = z.object({
+  airlineId: z.number(),
+  memberNumber: z.string().optional(),
+  statusLevel: z.string().optional(),
+  currentMiles: z.number().optional(),
+  pin: z.string().optional(),
+  documentNumber: z.string().optional(),
+  documentType: z.string().optional(),
+  accountPassword: z.string().optional(),
+});
+
+const updateProgramSchema = z.object({
+  memberNumber: z.string().optional(),
+  statusLevel: z.string().optional(),
+  currentMiles: z.number().optional(),
+  pin: z.string().optional(),
+  documentNumber: z.string().optional(),
+  documentType: z.string().optional(),
+  accountPassword: z.string().optional(),
+  googleWalletEnabled: z.boolean().optional(),
+  customFields: z.array(z.any()).optional(),
+}).partial();
 
 const router = Router();
 
@@ -25,16 +49,20 @@ router.post('/member/:memberId', async (req, res) => {
   try {
     const userId = req.session.userId!;
     const memberId = parseInt(req.params.memberId);
-    const { 
-      airlineId, 
-      memberNumber, 
-      statusLevel, 
+    const parsed = addProgramSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid program payload', details: parsed.error.errors });
+    }
+    const {
+      airlineId,
+      memberNumber,
+      statusLevel,
       currentMiles,
       pin,
       documentNumber,
       documentType,
       accountPassword
-    } = req.body;
+    } = parsed.data;
 
     // Verify member ownership
     const [member] = await db.select().from(familyMembers)
@@ -89,15 +117,19 @@ router.put('/:id', async (req, res) => {
   console.log('Program ID:', req.params.id);
   console.log('Session:', req.session);
   console.log('Body:', req.body);
-  
+
   try {
     const userId = req.session.userId!;
     const memberProgramId = parseInt(req.params.id);
     console.log('Parsed ID:', memberProgramId, 'Type:', typeof memberProgramId);
     console.log('Session userId:', userId);
-    const { 
-      memberNumber, 
-      statusLevel, 
+    const parsed = updateProgramSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid program payload', details: parsed.error.errors });
+    }
+    const {
+      memberNumber,
+      statusLevel,
       currentMiles,
       pin,
       documentNumber,
@@ -105,7 +137,7 @@ router.put('/:id', async (req, res) => {
       accountPassword,
       googleWalletEnabled,
       customFields
-    } = req.body;
+    } = parsed.data;
 
     // Verify ownership through member
     console.log('Checking ownership - memberProgramId:', memberProgramId, 'userId:', userId);
