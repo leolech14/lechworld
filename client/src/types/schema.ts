@@ -124,11 +124,25 @@ export interface MemberWithPrograms extends FamilyMember {
 
 export interface DashboardStats {
   totalMembers: number;
-  activePrograms: number;
-  totalPoints: number;
+  activePrograms?: number;
+  totalPoints?: number;
   estimatedValue: number | string;
   totalPrograms?: number;
   totalMiles?: number;
+  expiringMiles?: number;
+  expirationValue?: number;
+  topPrograms?: Array<{
+    airline: string;
+    programName: string;
+    miles: number;
+    value: number;
+  }>;
+  recentActivity?: Array<{
+    id: number;
+    action: string;
+    description: string;
+    createdAt: string;
+  }>;
 }
 
 // Form schemas (for Zod validation compatibility)

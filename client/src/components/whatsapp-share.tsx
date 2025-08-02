@@ -53,7 +53,7 @@ export function WhatsAppShare({ trigger, isMobile = false }: WhatsAppShareProps)
     text += `═════════════════════════════\n\n`;
     
     const totalPoints = members.reduce((sum, member) => 
-      sum + (member.programs?.reduce((memberSum, mp) => memberSum + mp.pointsBalance, 0) || 0), 0
+      sum + (member.programs?.reduce((memberSum, mp) => memberSum + (mp.pointsBalance ?? 0), 0) || 0), 0
     );
     
     text += `*RESUMO GERAL*\n`;
