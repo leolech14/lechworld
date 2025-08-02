@@ -5,9 +5,12 @@ export function getUserFromRequest(req) {
     // Get token from cookie or Authorization header
     const cookieHeader = req.headers.cookie || '';
     const cookies = Object.fromEntries(
-      cookieHeader.split('; ').map(c => c.split('='))
+      cookieHeader
+        .split('; ')
+        .filter(Boolean)
+        .map(c => c.split('='))
     );
-    
+
     const token = cookies.token || req.headers.authorization?.replace('Bearer ', '');
     
     if (!token) {
@@ -19,7 +22,8 @@ export function getUserFromRequest(req) {
     return {
       id: decoded.userId,
       email: decoded.email,
-      username: decoded.username
+      username: decoded.username,
+      token
     };
   } catch (error) {
     console.error('Auth error:', error);

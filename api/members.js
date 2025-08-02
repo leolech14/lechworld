@@ -1,16 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { getUserFromRequest } from './_lib/auth.js';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
+import { getSupabaseClient } from './_lib/supabase.js';
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -30,12 +19,11 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  const supabase = getSupabaseClient(user.token);
+
   try {
     if (req.method === 'GET') {
-      // Use the actual user ID from the JWT token
-      const userId = user.id;
-      
-      // Get all family members - shared access for all users
+      // Get all family members for the authenticated user
       const { data: members, error } = await supabase
         .from('family_members')
         .select('*')
@@ -60,7 +48,7 @@ export default async function handler(req, res) {
       const { data: newMember, error } = await supabase
         .from('family_members')
         .insert({
-          user_id: 1, // Always use user_id=1 for shared family system
+          user_id: userId,
           name,
           email,
           profile_photo: profilePhoto,

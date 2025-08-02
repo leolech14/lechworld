@@ -1,6 +1,7 @@
-import { supabase } from './_lib/supabase.js';
+import { getSupabaseClient } from './_lib/supabase.js';
 
 export default async function handler(req, res) {
+  const supabase = getSupabaseClient();
   try {
     // Test connection by counting users
     const { count, error } = await supabase

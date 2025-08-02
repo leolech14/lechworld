@@ -1,17 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
+import { getSupabaseClient } from '../_lib/supabase.js';
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -35,13 +24,14 @@ export default async function handler(req, res) {
     
     console.log('Login attempt for:', loginIdentifier);
 
+    const supabase = getSupabaseClient();
     // Find user in Supabase
     // The users table uses the email field to store usernames
     let query = supabase.from('users').select('*');
-    
+
     // Since usernames are stored in the email field, check there
     query = query.eq('email', loginIdentifier.toLowerCase());
-    
+
     const { data: users, error } = await query.limit(1);
     
     if (error) {
@@ -57,25 +47,38 @@ export default async function handler(req, res) {
 
     console.log('Found user:', { id: user.id, email: user.email, hasPassword: !!user.password });
 
+    let token;
     // Check password
     if (!user.password || user.password === '') {
       // First-time login - set the password
       console.log('First time login, setting password');
+      token = jwt.sign(
+        {
+          userId: user.id,
+          email: user.email,
+          username: user.email
+        },
+        process.env.JWT_SECRET || 'lechworld-jwt-secret',
+        { expiresIn: '7d' }
+      );
+
+      const authedSupabase = getSupabaseClient(token);
       const hashedPassword = await bcrypt.hash(password, 10);
-      
-      const { error: updateError } = await supabase
+
+      const { error: updateError } = await authedSupabase
         .from('users')
-        .update({ 
+        .update({
           password: hashedPassword
         })
         .eq('id', user.id);
-        
+
       if (updateError) {
         console.error('Password update error:', updateError);
         return res.status(500).json({ error: 'Failed to set password' });
       }
-      
+
       console.log('Password set successfully');
+      // token already created above
     } else {
       // Verify existing password
       const isValidPassword = await bcrypt.compare(password, user.password);
@@ -84,18 +87,17 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
       console.log('Password verified');
-    }
 
-    // Create JWT token with user info
-    const token = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email,
-        username: user.email // Use email as username since Supabase doesn't have username
-      },
-      process.env.JWT_SECRET || 'lechworld-jwt-secret',
-      { expiresIn: '7d' }
-    );
+      token = jwt.sign(
+        {
+          userId: user.id,
+          email: user.email,
+          username: user.email
+        },
+        process.env.JWT_SECRET || 'lechworld-jwt-secret',
+        { expiresIn: '7d' }
+      );
+    }
 
     // Set cookie with proper settings for production
     const isProduction = process.env.NODE_ENV === 'production';

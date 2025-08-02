@@ -1,16 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { getUserFromRequest } from './_lib/auth.js';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
+import { getSupabaseClient } from './_lib/supabase.js';
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -34,16 +23,18 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  const supabase = getSupabaseClient(user.token);
+
   try {
     const userId = user.id; // Real user ID from JWT
 
-    // Get all data in parallel - ALL users see ALL family data
+    // Get all data in parallel relying on RLS
     const [
       { data: familyMembers, error: membersError },
       { data: programs, error: programsError },
       { data: memberPrograms, error: memberProgramsError }
     ] = await Promise.all([
-      supabase.from('family_members').select('*'), // No user_id filter - show all family members
+      supabase.from('family_members').select('*'),
       supabase.from('loyalty_programs').select('*'),
       supabase.from('member_programs').select('*')
     ]);

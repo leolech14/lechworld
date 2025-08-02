@@ -63,3 +63,48 @@ ALTER TABLE family_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE loyalty_programs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE member_programs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+CREATE POLICY "Allow public read on users for login"
+  ON users FOR SELECT
+  USING (true);
+
+CREATE POLICY "Users can update own data"
+  ON users FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Users can manage their family members"
+  ON family_members FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Public read for loyalty programs"
+  ON loyalty_programs FOR SELECT
+  USING (true);
+
+CREATE POLICY "Authenticated users can add programs"
+  ON loyalty_programs FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Users manage their member programs"
+  ON member_programs FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM family_members fm
+      WHERE fm.id = member_programs.member_id
+        AND fm.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM family_members fm
+      WHERE fm.id = member_programs.member_id
+        AND fm.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users manage their activity logs"
+  ON activity_logs FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
