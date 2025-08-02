@@ -39,6 +39,7 @@ export default async function handler(req, res) {
       const { data: members, error } = await supabase
         .from('family_members')
         .select('*')
+        .eq('user_id', userId)
         .order('created_at', { ascending: true });
       
       if (error) {
@@ -60,7 +61,7 @@ export default async function handler(req, res) {
       const { data: newMember, error } = await supabase
         .from('family_members')
         .insert({
-          user_id: 1, // Always use user_id=1 for shared family system
+          user_id: userId,
           name,
           email,
           profile_photo: profilePhoto,

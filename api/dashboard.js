@@ -37,16 +37,21 @@ export default async function handler(req, res) {
   try {
     const userId = user.id; // Real user ID from JWT
 
-    // Get all data in parallel - ALL users see ALL family data
+    // Get all data in parallel scoped to the authenticated user
     const [
       { data: familyMembers, error: membersError },
       { data: programs, error: programsError },
-      { data: memberPrograms, error: memberProgramsError }
+      { data: memberProgramsRaw, error: memberProgramsError }
     ] = await Promise.all([
-      supabase.from('family_members').select('*'), // No user_id filter - show all family members
+      supabase.from('family_members').select('*').eq('user_id', userId),
       supabase.from('loyalty_programs').select('*'),
-      supabase.from('member_programs').select('*')
+      supabase
+        .from('member_programs')
+        .select('*, family_members!inner(user_id)')
+        .eq('family_members.user_id', userId)
     ]);
+
+    const memberPrograms = memberProgramsRaw?.map(({ family_members, ...mp }) => mp) || [];
 
     if (membersError || programsError || memberProgramsError) {
       console.error('Dashboard errors:', { membersError, programsError, memberProgramsError });
@@ -86,7 +91,7 @@ export default async function handler(req, res) {
       stats,
       familyMembers: familyMembers || [],
       programs: programs || [],
-      memberPrograms: memberPrograms || []
+      memberPrograms
     });
     
   } catch (error) {
