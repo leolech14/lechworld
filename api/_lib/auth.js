@@ -7,20 +7,16 @@ export function getUserFromRequest(req) {
     const cookies = Object.fromEntries(
       cookieHeader.split('; ').map(c => c.split('='))
     );
-    
-    const token = cookies.token || req.headers.authorization?.replace('Bearer ', '');
+
+    const token = cookies.token || req.headers.authorization;
     
     if (!token) {
       return null;
     }
     
     // Verify and decode JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'lechworld-jwt-secret');
-    return {
-      id: decoded.userId,
-      email: decoded.email,
-      username: decoded.username
-    };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded;
   } catch (error) {
     console.error('Auth error:', error);
     return null;

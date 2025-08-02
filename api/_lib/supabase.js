@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import jwt from 'jsonwebtoken';
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
@@ -17,20 +18,10 @@ export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 // Helper function to get user from token
 export async function getUserFromToken(token) {
   if (!token) return null;
-  
+
   try {
-    // For now, decode the mock token
-    if (token.startsWith('mock-jwt-token-')) {
-      // Return mock user for testing
-      return {
-        id: 1,
-        email: 'lech@lechworld.com',
-        username: 'lech'
-      };
-    }
-    
-    // TODO: Implement real JWT verification
-    return null;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded;
   } catch (error) {
     console.error('Token verification error:', error);
     return null;
