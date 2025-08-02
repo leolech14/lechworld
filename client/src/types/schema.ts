@@ -126,7 +126,7 @@ export interface DashboardStats {
   totalMembers: number;
   activePrograms: number;
   totalPoints: number;
-  estimatedValue: string;
+  estimatedValue: number | string;
   totalPrograms?: number;
   totalMiles?: number;
 }

@@ -35,7 +35,7 @@ export function WhatsAppShare({ trigger, isMobile = false }: WhatsAppShareProps)
       member.programs.forEach(mp => {
         text += `\n${mp.program.name}\n`;
         text += `Conta: ${mp.accountNumber || 'N/A'}\n`;
-        text += `Saldo: ${mp.pointsBalance.toLocaleString()} pontos\n`;
+        text += `Saldo: ${(mp.pointsBalance ?? 0).toLocaleString()} pontos\n`;
         text += `Valor: ${mp.estimatedValue || 'N/A'}\n`;
         text += `Status: ${mp.statusLevel}\n`;
         if (mp.expirationDate) {
@@ -86,7 +86,7 @@ export function WhatsAppShare({ trigger, isMobile = false }: WhatsAppShareProps)
       if (memberProgram) {
         text += `${index + 1}. *${member.name}*\n`;
         text += `Conta: ${memberProgram.accountNumber || 'N/A'}\n`;
-        text += `Saldo: ${memberProgram.pointsBalance.toLocaleString()} pontos\n`;
+        text += `Saldo: ${(memberProgram.pointsBalance ?? 0).toLocaleString()} pontos\n`;
         text += `Valor: ${memberProgram.estimatedValue || 'N/A'}\n`;
         text += `Status: ${memberProgram.statusLevel}\n`;
         if (memberProgram.expirationDate) {

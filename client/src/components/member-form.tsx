@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+// import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { insertFamilyMemberSchema, type InsertFamilyMember } from "@/types/schema";
 import { Button } from "@/components/ui/button";
@@ -27,10 +27,10 @@ export default function MemberForm({ onSuccess, onCancel }: MemberFormProps) {
     watch,
     formState: { errors },
   } = useForm<InsertFamilyMember>({
-    resolver: zodResolver(insertFamilyMemberSchema),
+    // resolver: zodResolver(insertFamilyMemberSchema),
     defaultValues: {
-      userId: user?.id,
-      isActive: true,
+      // userId: user?.id,
+      // isActive: true,
       role: "extended",
     },
   });

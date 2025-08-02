@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+// import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { insertMemberProgramSchema, type InsertMemberProgram } from "@/types/schema";
 import { Button } from "@/components/ui/button";
@@ -36,9 +36,9 @@ export default function ProgramForm({ onSuccess, onCancel }: ProgramFormProps) {
     watch,
     formState: { errors },
   } = useForm<InsertMemberProgram>({
-    resolver: zodResolver(insertMemberProgramSchema),
+    // resolver: zodResolver(insertMemberProgramSchema),
     defaultValues: {
-      isActive: true,
+      // isActive: true,
       pointsBalance: 0,
     },
   });
@@ -154,11 +154,11 @@ export default function ProgramForm({ onSuccess, onCancel }: ProgramFormProps) {
           id="estimatedValue"
           placeholder="R$ 0,00"
           className="bg-navy/50 border-glass-border search-glow"
-          {...register("estimatedValue")}
+          // {...register("estimatedValue")}
         />
-        {errors.estimatedValue && (
+        {/* {errors.estimatedValue && (
           <p className="text-sm text-red-400">{errors.estimatedValue.message}</p>
-        )}
+        )} */}
       </div>
 
       <div className="flex space-x-4">
