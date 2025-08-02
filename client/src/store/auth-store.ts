@@ -6,7 +6,7 @@
  */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { User } from "@shared/schema";
+import type { User } from "@/types/schema";
 
 interface AuthState {
   user: User | null;

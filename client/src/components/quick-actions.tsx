@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserPlus, CreditCard, RefreshCw, Download, Upload, Lock, Activity, Shield, MessageCircle, Plane } from "lucide-react";
-import type { ActivityLog } from "@shared/schema";
+import type { ActivityLog } from "@/types/schema";
 import { useState } from "react";
 import { WhatsAppShare } from "./whatsapp-share";
 import NewMemberModal from "./new-member-modal";

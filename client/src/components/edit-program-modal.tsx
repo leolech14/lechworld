@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getProgramIcon } from "@/lib/program-icons";
-import type { LoyaltyProgram } from "@shared/schema";
+import type { LoyaltyProgram } from "@/types/schema";
 
 interface EditProgramModalProps {
   program: LoyaltyProgram;

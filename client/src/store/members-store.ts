@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { FamilyMember, MemberWithPrograms } from "@shared/schema";
+import type { FamilyMember, MemberWithPrograms } from "@/types/schema";
 
 interface MembersState {
   members: FamilyMember[];

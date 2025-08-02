@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ExternalLink, DollarSign, Key, Globe, Plus, X, Save, Loader2, CheckCircle2 } from "lucide-react";
-import { LoyaltyProgram, MemberProgram, FamilyMember } from "@shared/schema";
+import { LoyaltyProgram, MemberProgram, FamilyMember } from "@/types/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import EditProgramModal from "./edit-program-modal";

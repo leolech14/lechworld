@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Share2, MessageCircle, Users, CreditCard, Globe, Smartphone } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
-import type { MemberWithPrograms } from "@shared/schema";
+import type { MemberWithPrograms } from "@/types/schema";
 
 interface WhatsAppShareProps {
   trigger?: React.ReactNode;

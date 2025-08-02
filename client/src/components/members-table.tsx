@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Eye, Trash2, UserPlus, Plus } from "lucide-react";
-import type { MemberWithPrograms, LoyaltyProgram } from "@shared/schema";
+import type { MemberWithPrograms, LoyaltyProgram } from "@/types/schema";
 import EditMemberModal from "./edit-member-modal";
 import EditProgramModal from "./edit-program-modal";
 import NewMemberModal from "./new-member-modal";

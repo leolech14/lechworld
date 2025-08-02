@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { MemberWithPrograms, DashboardStats } from "@shared/schema";
+import type { MemberWithPrograms, DashboardStats } from "@/types/schema";
 import { WhatsAppShare } from "./whatsapp-share";
 import NewMemberModal from "./new-member-modal";
 import { getMemberColor, getMemberEmoji } from "@/lib/member-colors";

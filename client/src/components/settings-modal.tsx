@@ -15,7 +15,7 @@ import ProgramIconModal from "./program-icon-modal";
 import { getMemberColor, getMemberEmoji } from "@/lib/member-colors";
 import { getProgramIcon } from "@/lib/program-icons";
 import MemberFrame from "./member-frame";
-import type { FamilyMember, LoyaltyProgram } from "@shared/schema";
+import type { FamilyMember, LoyaltyProgram } from "@/types/schema";
 
 interface SettingsModalProps {
   isOpen: boolean;

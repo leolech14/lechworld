@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, CreditCard, Star, TrendingUp } from "lucide-react";
-import type { DashboardStats } from "@shared/schema";
+import type { DashboardStats } from "@/types/schema";
 import PointsDisplay from "./points-display";
 
 interface StatsCardsProps {

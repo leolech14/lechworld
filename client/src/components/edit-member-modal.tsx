@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import type { FamilyMember } from "@shared/schema";
+import type { FamilyMember } from "@/types/schema";
 import MemberFrame from "./member-frame";
 
 interface EditMemberModalProps {

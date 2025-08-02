@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Trophy, User, Palette, CreditCard, Building2 } from "lucide-react";
-import { MemberWithPrograms, LoyaltyProgram } from "@shared/schema";
+import { MemberWithPrograms, LoyaltyProgram } from "@/types/schema";
 import { useQuery } from "@tanstack/react-query";
 import { getProgramIcon } from "@/lib/program-icons";
 import { getMemberColor, getMemberEmoji } from "@/lib/member-colors";
