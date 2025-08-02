@@ -3,6 +3,7 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '../index.js';
 import { airlines, memberPrograms, familyMembers } from '../../shared/schemas/database.js';
 import { requireAuth } from '../middleware/auth.js';
+import { encrypt } from '../services/encryption.js';
 
 const router = Router();
 
@@ -54,6 +55,10 @@ router.post('/member/:memberId', async (req, res) => {
       return res.status(400).json({ error: 'Program already exists for this member' });
     }
 
+    // Encrypt sensitive fields
+    const pinEnc = pin ? await encrypt(pin) : null;
+    const accountEnc = accountPassword ? await encrypt(accountPassword) : null;
+
     // Create member program
     const [newProgram] = await db.insert(memberPrograms).values({
       memberId,
@@ -61,19 +66,31 @@ router.post('/member/:memberId', async (req, res) => {
       memberNumber,
       statusLevel,
       currentMiles: currentMiles || 0,
-      pin,
+      pinCiphertext: pinEnc?.ciphertext,
+      pinNonce: pinEnc?.nonce,
       documentNumber,
       documentType,
-      accountPassword,
+      accountPasswordCiphertext: accountEnc?.ciphertext,
+      accountPasswordNonce: accountEnc?.nonce,
       syncMethod: 'manual',
     }).returning();
 
     // Get airline details
     const [airline] = await db.select().from(airlines).where(eq(airlines.id, airlineId)).limit(1);
 
-    res.status(201).json({ 
-      memberProgram: newProgram,
-      airline 
+    const responseProgram = {
+      ...newProgram,
+      pin: pin || null,
+      accountPassword: accountPassword || null,
+    };
+    delete responseProgram.pinCiphertext;
+    delete responseProgram.pinNonce;
+    delete responseProgram.accountPasswordCiphertext;
+    delete responseProgram.accountPasswordNonce;
+
+    res.status(201).json({
+      memberProgram: responseProgram,
+      airline
     });
   } catch (error) {
     console.error('Add program error:', error);
@@ -95,9 +112,9 @@ router.put('/:id', async (req, res) => {
     const memberProgramId = parseInt(req.params.id);
     console.log('Parsed ID:', memberProgramId, 'Type:', typeof memberProgramId);
     console.log('Session userId:', userId);
-    const { 
-      memberNumber, 
-      statusLevel, 
+    const {
+      memberNumber,
+      statusLevel,
       currentMiles,
       pin,
       documentNumber,
@@ -144,23 +161,55 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Program not found' });
     }
 
+    const updateData: any = {
+      memberNumber,
+      statusLevel,
+      currentMiles,
+      documentNumber,
+      documentType,
+      googleWalletEnabled,
+      customFields: customFields || [],
+      updatedAt: new Date(),
+    };
+
+    if (pin !== undefined) {
+      if (pin === null) {
+        updateData.pinCiphertext = null;
+        updateData.pinNonce = null;
+      } else {
+        const enc = await encrypt(pin);
+        updateData.pinCiphertext = enc.ciphertext;
+        updateData.pinNonce = enc.nonce;
+      }
+    }
+
+    if (accountPassword !== undefined) {
+      if (accountPassword === null) {
+        updateData.accountPasswordCiphertext = null;
+        updateData.accountPasswordNonce = null;
+      } else {
+        const enc = await encrypt(accountPassword);
+        updateData.accountPasswordCiphertext = enc.ciphertext;
+        updateData.accountPasswordNonce = enc.nonce;
+      }
+    }
+
     const [updatedProgram] = await db.update(memberPrograms)
-      .set({
-        memberNumber,
-        statusLevel,
-        currentMiles,
-        pin,
-        documentNumber,
-        documentType,
-        accountPassword,
-        googleWalletEnabled,
-        customFields: customFields || [],
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(memberPrograms.id, memberProgramId))
       .returning();
 
-    res.json({ memberProgram: updatedProgram });
+    const responseProgram = {
+      ...updatedProgram,
+      pin: pin ?? null,
+      accountPassword: accountPassword ?? null,
+    };
+    delete responseProgram.pinCiphertext;
+    delete responseProgram.pinNonce;
+    delete responseProgram.accountPasswordCiphertext;
+    delete responseProgram.accountPasswordNonce;
+
+    res.json({ memberProgram: responseProgram });
   } catch (error) {
     console.error('Update program error:', error);
     console.error('Request body:', req.body);

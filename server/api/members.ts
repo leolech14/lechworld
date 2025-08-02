@@ -4,6 +4,7 @@ import { db } from '../index.js';
 import { familyMembers, memberPrograms, loyaltyPrograms } from '../../shared/schema.js';
 import { requireAuth } from '../middleware/auth-vercel.js';
 import { syncToSupabase } from '../supabase-client.js';
+import { decrypt } from '../services/encryption.js';
 
 const router = Router();
 
@@ -194,13 +195,28 @@ router.get('/:id/programs', async (req, res) => {
     }
 
     // Get all programs for this member
-    const programs = await db.select({
+    const programsRaw = await db.select({
       memberProgram: memberPrograms,
       program: loyaltyPrograms,
     })
     .from(memberPrograms)
     .innerJoin(loyaltyPrograms, eq(memberPrograms.programId, loyaltyPrograms.id))
     .where(eq(memberPrograms.memberId, memberId));
+
+    const programs = await Promise.all(programsRaw.map(async (p) => {
+      const decrypted = {
+        ...p.memberProgram,
+        pin: p.memberProgram.pinCiphertext && p.memberProgram.pinNonce ?
+          await decrypt(p.memberProgram.pinCiphertext, p.memberProgram.pinNonce) : null,
+        accountPassword: p.memberProgram.accountPasswordCiphertext && p.memberProgram.accountPasswordNonce ?
+          await decrypt(p.memberProgram.accountPasswordCiphertext, p.memberProgram.accountPasswordNonce) : null,
+      };
+      delete decrypted.pinCiphertext;
+      delete decrypted.pinNonce;
+      delete decrypted.accountPasswordCiphertext;
+      delete decrypted.accountPasswordNonce;
+      return { memberProgram: decrypted, program: p.program };
+    }));
 
     res.json({ member, programs });
   } catch (error) {

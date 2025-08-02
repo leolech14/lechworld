@@ -76,13 +76,15 @@ async function runMigrations() {
         "status_level" text,
         "current_miles" integer DEFAULT 0 NOT NULL,
         "lifetime_miles" integer DEFAULT 0,
-        "pin" text,
+        "pin_ciphertext" text,
+        "pin_nonce" text,
         "document_number" text,
         "document_type" text,
         "google_wallet_enabled" boolean DEFAULT false,
         "last_sync_date" timestamp,
         "sync_method" text,
-        "account_password" text,
+        "account_password_ciphertext" text,
+        "account_password_nonce" text,
         "created_at" timestamp DEFAULT now() NOT NULL,
         "updated_at" timestamp DEFAULT now() NOT NULL
       );

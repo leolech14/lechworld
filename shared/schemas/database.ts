@@ -68,13 +68,15 @@ export const memberPrograms = pgTable('member_programs', {
   statusLevel: text('status_level'), // 'Basic', 'Silver', 'Gold', 'Platinum', etc.
   currentMiles: integer('current_miles').default(0).notNull(),
   lifetimeMiles: integer('lifetime_miles').default(0),
-  pin: text('pin'), // encrypted
+  pinCiphertext: text('pin_ciphertext'),
+  pinNonce: text('pin_nonce'),
   documentNumber: text('document_number'), // CPF/RUT/DNI
   documentType: text('document_type'), // Type of document
   googleWalletEnabled: boolean('google_wallet_enabled').default(false),
   lastSyncDate: timestamp('last_sync_date'),
   syncMethod: text('sync_method'), // 'manual', 'email', 'api', 'wallet'
-  accountPassword: text('account_password'), // encrypted
+  accountPasswordCiphertext: text('account_password_ciphertext'),
+  accountPasswordNonce: text('account_password_nonce'),
   customFields: json('custom_fields').$type<Array<{id: string, label: string, value: string}>>().default([]),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

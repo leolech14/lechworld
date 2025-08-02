@@ -2,6 +2,7 @@ import { Pool } from 'pg';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import dotenv from 'dotenv';
+import { encrypt } from '../server/services/encryption.js';
 
 dotenv.config();
 
@@ -136,11 +137,12 @@ async function importRealData() {
         console.log(`📝 Updated: ${MEMBER_NAMES[account.name]} - ${account.airline}`);
       } else {
         // Insert new
+        const pinEnc = await encrypt(accountData.milesPassword);
         await pool.query(
-          `INSERT INTO member_programs 
+          `INSERT INTO member_programs
            (member_id, airline_id, member_number, site_password, miles_password,
-            current_miles, status_level, pin, document_number, last_sync_date)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+            current_miles, status_level, pin_ciphertext, pin_nonce, document_number, last_sync_date)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
           [
             memberId,
             programId,
@@ -149,7 +151,8 @@ async function importRealData() {
             accountData.milesPassword,
             accountData.pointsBalance,
             accountData.eliteTier,
-            accountData.milesPassword, // Use miles password as PIN
+            pinEnc.ciphertext,
+            pinEnc.nonce,
             account.account, // Use account as document number
             accountData.lastUpdated
           ]
