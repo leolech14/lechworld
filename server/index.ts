@@ -34,8 +34,16 @@ if (!PORT) {
 }
 
 // Database connection
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/lechworld';
+const isSupabase = connectionString.includes('supabase.co');
+
 const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/lechworld',
+  connectionString,
+  ...(isSupabase ? {
+    ssl: {
+      rejectUnauthorized: false
+    }
+  } : {})
 });
 
 export const db = drizzle(pool);
@@ -170,3 +178,6 @@ process.on('SIGINT', async () => {
 
 // Start the server
 startServer();
+
+// Export for use in Vercel functions
+export { db };

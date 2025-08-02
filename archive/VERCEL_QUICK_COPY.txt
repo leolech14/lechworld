@@ -1,0 +1,31 @@
+COPY AND PASTE THESE ONE BY ONE INTO VERCEL:
+
+DATABASE_URL
+postgresql://postgres:Iji74iLE0SqiSSKD@db.ixzwjmbvmrefsivcmirz.supabase.co:5432/postgres?sslmode=require
+
+SUPABASE_URL
+https://ixzwjmbvmrefsivcmirz.supabase.co
+
+SUPABASE_ANON_KEY
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4endqbWJ2bXJlZnNpdmNtaXJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NzYyODksImV4cCI6MjA2ODU1MjI4OX0.iXHSX5MPP-3h8KJvEg5Rx0ccsaXyvE_RM7Qfgnzglps
+
+SUPABASE_SERVICE_KEY
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4endqbWJ2bXJlZnNpdmNtaXJ6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mjk3NjI4OSwiZXhwIjoyMDY4NTUyMjg5fQ.xz_TEASFWMReLnVM76_U0JQ4DWXys6JUHBHlHXRJCyM
+
+SESSION_SECRET
+lechworld-production-secret-2025-secure
+
+JWT_SECRET
+lechworld-production-jwt-secret-2025
+
+NODE_ENV
+production
+
+VITE_SUPABASE_URL
+https://ixzwjmbvmrefsivcmirz.supabase.co
+
+VITE_SUPABASE_ANON_KEY
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4endqbWJ2bXJlZnNpdmNtaXJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NzYyODksImV4cCI6MjA2ODU1MjI4OX0.iXHSX5MPP-3h8KJvEg5Rx0ccsaXyvE_RM7Qfgnzglps
+
+VITE_API_URL
+(leave empty for now)

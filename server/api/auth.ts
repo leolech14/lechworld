@@ -90,12 +90,19 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    // Create session
-    req.session.userId = user.id;
+    // Create JWT token for Vercel
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET || 'lechworld-jwt-secret',
+      { expiresIn: '7d' }
+    );
 
-    // Return user (without password)
+    // Set cookie
+    res.setHeader('Set-Cookie', `token=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}; SameSite=Lax`);
+
+    // Return user (without password) and token
     const { password: _, ...userWithoutPassword } = user;
-    res.json({ user: userWithoutPassword });
+    res.json({ user: userWithoutPassword, token });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Failed to login' });

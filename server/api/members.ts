@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { eq, and } from 'drizzle-orm';
 import { db } from '../index.js';
 import { familyMembers, memberPrograms, loyaltyPrograms } from '../../shared/schema.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth-vercel.js';
+import { syncToSupabase } from '../supabase-client.js';
 
 const router = Router();
 
@@ -122,6 +123,22 @@ router.put('/:id', async (req, res) => {
       frameBorderColor: updatedMember.frameBorderColor,
       profileEmoji: updatedMember.profileEmoji
     });
+
+    // Sync to Supabase only in development (when using local DB)
+    // In production, we connect directly to Supabase so no sync needed
+    if (process.env.NODE_ENV === 'development' && !process.env.DATABASE_URL?.includes('supabase.co')) {
+      await syncToSupabase('family_members', 'update', {
+        id: updatedMember.id,
+        frame_color: updatedMember.frameColor,
+        frame_border_color: updatedMember.frameBorderColor,
+        profile_emoji: updatedMember.profileEmoji,
+        name: updatedMember.name,
+        email: updatedMember.email,
+        phone: updatedMember.phone,
+        cpf: updatedMember.cpf,
+        birthdate: updatedMember.birthdate
+      });
+    }
 
     res.json({ member: updatedMember });
   } catch (error) {
