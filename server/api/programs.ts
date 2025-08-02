@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { eq, and } from 'drizzle-orm';
 import { db } from '../index.js';
 import { airlines, memberPrograms, familyMembers } from '../../shared/schemas/database.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth-vercel.js';
 
 const router = Router();
 
@@ -23,7 +23,7 @@ router.get('/airlines', async (req, res) => {
 // Add a program to a member
 router.post('/member/:memberId', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId;
     const memberId = parseInt(req.params.memberId);
     const {
       airlineId,
@@ -91,7 +91,7 @@ router.put('/:id', async (req, res) => {
   console.log('Body:', req.body);
   
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId;
     const memberProgramId = parseInt(req.params.id);
     console.log('Parsed ID:', memberProgramId, 'Type:', typeof memberProgramId);
     console.log('Session familyId:', familyId);
@@ -172,7 +172,7 @@ router.put('/:id', async (req, res) => {
 // Delete a member's program
 router.delete('/:id', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId;
     const memberProgramId = parseInt(req.params.id);
 
     // Verify ownership through member

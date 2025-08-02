@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { eq, sql, desc } from 'drizzle-orm';
 import { db } from '../index.js';
 import { familyMembers, memberPrograms, airlines, mileTransactions, activityLog } from '../../shared/schemas/database.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth-vercel.js';
 import { ExpirationService } from '../services/expirationService.js';
 
 const router = Router();
@@ -13,7 +13,8 @@ router.use(requireAuth);
 // Get dashboard statistics
 router.get('/stats', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const userId = (req as any).session.userId;
+    const familyId = (req as any).session.familyId;
 
     // Get family members count
     const [{ count: memberCount }] = await db.select({
@@ -102,7 +103,7 @@ router.get('/stats', async (req, res) => {
 // Get recent activity
 router.get('/activity', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const userId = (req as any).session.userId;
     const limit = parseInt(req.query.limit as string) || 10;
 
     const activities = await db.select()
@@ -121,7 +122,7 @@ router.get('/activity', async (req, res) => {
 // Get family overview with programs
 router.get('/family-overview', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId;
 
     // Get family members with their programs
     const familyData = await db.select({
@@ -182,7 +183,7 @@ router.get('/family-overview', async (req, res) => {
 // Get recent transactions across all programs
 router.get('/recent-transactions', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId;
     const limit = parseInt(req.query.limit as string) || 20;
 
     const transactions = await db.select({

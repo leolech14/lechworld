@@ -177,6 +177,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const updateData = req.body;
+      
+      console.log(`[PUT /api/members/${id}] Update data:`, updateData);
+      
       const member = await storage.updateFamilyMember(id, updateData);
       
       // Log activity
@@ -189,7 +192,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(member);
     } catch (error: any) {
-      res.status(400).json({ message: error.message });
+      console.error(`[PUT /api/members/${req.params.id}] Error:`, error);
+      res.status(500).json({ message: error.message });
     }
   });
 

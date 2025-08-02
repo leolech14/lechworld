@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { eq, and, desc, gte, lte, sql } from 'drizzle-orm';
 import { db } from '../index.js';
 import { mileTransactions, memberPrograms, familyMembers, airlines } from '../../shared/schemas/database.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth-vercel.js';
 import { addMonths, format } from 'date-fns';
 
 const router = Router();
@@ -13,7 +13,7 @@ router.use(requireAuth);
 // Get transactions for a member program
 router.get('/member-program/:programId', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId;
     const programId = parseInt(req.params.programId);
 
     // Verify ownership
@@ -49,7 +49,7 @@ router.get('/member-program/:programId', async (req, res) => {
 // Add a transaction
 router.post('/', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId;
     const { 
       memberProgramId, 
       miles, 
@@ -115,7 +115,7 @@ router.post('/', async (req, res) => {
 // Get expiring miles across all programs
 router.get('/expiring', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId;
     const days = parseInt(req.query.days as string) || 90;
     
     const cutoffDate = addMonths(new Date(), days / 30);

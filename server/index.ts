@@ -78,17 +78,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'lechworld-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-  },
-}));
+// Session configuration - DISABLED in favor of JWT authentication
+// app.use(session({
+//   secret: process.env.SESSION_SECRET || 'lechworld-secret-key',
+//   resave: false,
+//   saveUninitialized: false,
+//   cookie: {
+//     secure: process.env.NODE_ENV === 'production',
+//     httpOnly: true,
+//     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+//   },
+// }));
 
 // CORS configuration for development
 if (process.env.NODE_ENV === 'development') {
@@ -182,6 +182,3 @@ process.on('SIGINT', async () => {
 
 // Start the server
 startServer();
-
-// Export for use in Vercel functions
-export { db };

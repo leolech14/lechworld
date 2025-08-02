@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { eq } from 'drizzle-orm';
 import { db } from '../index.js';
 import { notificationPreferences } from '../../shared/schemas/database.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth-vercel.js';
 import { NotificationService } from '../services/notificationService.js';
 import { ExpirationService } from '../services/expirationService.js';
 
@@ -14,7 +14,7 @@ router.use(requireAuth);
 // Get notification preferences
 router.get('/preferences', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const userId = (req as any).session.userId;
     
     const [prefs] = await db.select()
       .from(notificationPreferences)
@@ -41,7 +41,7 @@ router.get('/preferences', async (req, res) => {
 // Update notification preferences
 router.put('/preferences', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const userId = (req as any).session.userId;
     const {
       emailEnabled,
       emailFrequency,
@@ -97,8 +97,8 @@ router.put('/preferences', async (req, res) => {
 // Test notification for current user
 router.post('/test', async (req, res) => {
   try {
-    const userId = req.session.userId!;
-    const familyId = req.session.familyId!;
+    const userId = (req as any).session.userId;
+    const familyId = (req as any).session.familyId;
     const notificationService = new NotificationService();
 
     await notificationService.sendTestNotification(userId, familyId);
@@ -113,8 +113,8 @@ router.post('/test', async (req, res) => {
 // Get expiring miles preview
 router.get('/expiring-preview', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
-    const userId = req.session.userId!;
+    const familyId = (req as any).session.familyId;
+    const userId = (req as any).session.userId;
     const days = parseInt(req.query.days as string) || 90;
 
     const expirationService = new ExpirationService();
@@ -158,7 +158,7 @@ router.post('/check-all', async (req, res) => {
       return res.status(403).json({ error: 'Admin access required' });
     }
     
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId;
     const notificationService = new NotificationService();
     await notificationService.checkAndNotifyExpirations(familyId);
     

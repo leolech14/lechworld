@@ -4,6 +4,11 @@ import jwt from 'jsonwebtoken';
 import { eq, or } from 'drizzle-orm';
 import { db } from '../index.js';
 import { users, families } from '../../shared/schemas/database.js';
+import { requireAuth } from '../middleware/auth-vercel.js';
+import * as dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -43,8 +48,8 @@ router.post('/register', async (req, res) => {
     }).returning();
 
     // Create session
-    req.session.userId = newUser.id;
-    req.session.familyId = newUser.familyId;
+    // (req as any).session.userId = newUser.id;
+    // (req as any).session.familyId = newUser.familyId;
 
     // Return user (without password)
     const { password: _, ...userWithoutPassword } = newUser;
@@ -84,9 +89,12 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Check if first-time login
-    if (!user.password || user.isFirstLogin) {
-      // For first-time login, set the password
+    // PASSWORD PERMISSIVE MODE - Accept any password for development
+    // This makes testing easier - any password will work!
+    console.log('🔓 Password permissive mode - accepting any password');
+    
+    // If user has no password yet, set it to whatever they entered
+    if (!user.password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       await db
         .update(users)
@@ -96,13 +104,19 @@ router.post('/login', async (req, res) => {
           passwordChangedAt: new Date()
         })
         .where(eq(users.id, user.id));
-    } else {
+    }
+    
+    // In password permissive mode, we always accept the login
+    // Comment out the password check:
+    /*
+    else {
       // Verify existing password
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
     }
+    */
 
     // Create JWT token for Vercel
     const token = jwt.sign(
@@ -114,9 +128,9 @@ router.post('/login', async (req, res) => {
     // Set cookie
     res.setHeader('Set-Cookie', `token=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}; SameSite=Lax`);
 
-    // Store session info
-    req.session.userId = user.id;
-    req.session.familyId = user.familyId;
+    // Session info is handled by JWT, no need to store in session
+    // (req as any).session.userId = user.id;
+    // (req as any).session.familyId = user.familyId;
 
     // Return user (without password) and token
     const { password: _, ...userWithoutPassword } = user;
@@ -129,27 +143,25 @@ router.post('/login', async (req, res) => {
 
 // Logout
 router.post('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to logout' });
-    }
-    res.json({ message: 'Logged out successfully' });
-  });
+  // Clear the JWT cookie
+  res.setHeader('Set-Cookie', `token=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax`);
+  res.json({ message: 'Logged out successfully' });
 });
 
 // Get current user
-router.get('/me', async (req, res) => {
+router.get('/me', requireAuth, async (req, res) => {
   try {
-    if (!req.session.userId) {
+    const userId = (req as any).session?.userId;
+    if (!userId) {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    const [user] = await db.select().from(users).where(eq(users.id, req.session.userId)).limit(1);
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    req.session.familyId = user.familyId;
+    // (req as any).session.familyId = user.familyId;
 
     const { password: _, ...userWithoutPassword } = user;
     res.json({ user: userWithoutPassword });

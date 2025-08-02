@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { eq, and } from 'drizzle-orm';
 import { db } from '../index.js';
-import { familyMembers, memberPrograms, loyaltyPrograms } from '../../shared/schema.js';
+import { familyMembers, memberPrograms, airlines } from '../../shared/schemas/database.js';
 import { requireAuth } from '../middleware/auth-vercel.js';
-import { syncToSupabase } from '../supabase-client.js';
+// import { syncToSupabase } from '../supabase-client.js'; // Removed - using Neon directly
 
 const router = Router();
 
@@ -13,7 +13,7 @@ router.use(requireAuth);
 // Get all family members for a family
 router.get('/', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId;
 
     const members = await db.select().from(familyMembers)
       .where(eq(familyMembers.familyId, familyId));
@@ -28,8 +28,8 @@ router.get('/', async (req, res) => {
 // Create a new family member
 router.post('/', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
-    const userId = req.session.userId!;
+    const familyId = (req as any).session.familyId!;
+    const userId = (req as any).session.userId!;
     const { name, email, profilePhoto, color, role } = req.body;
 
     if (!name) {
@@ -56,7 +56,7 @@ router.post('/', async (req, res) => {
 // Update a family member
 router.put('/:id', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId!;
     const memberId = parseInt(req.params.id);
     const { 
       name, 
@@ -126,28 +126,14 @@ router.put('/:id', async (req, res) => {
       profileEmoji: updatedMember.profileEmoji
     });
 
-    // Sync to Supabase only in development (when using local DB)
-    // In production, we connect directly to Supabase so no sync needed
-    if (process.env.NODE_ENV === 'development' && !process.env.DATABASE_URL?.includes('supabase.co')) {
-      await syncToSupabase('family_members', 'update', {
-        id: updatedMember.id,
-        frame_color: updatedMember.frameColor,
-        frame_border_color: updatedMember.frameBorderColor,
-        profile_emoji: updatedMember.profileEmoji,
-        name: updatedMember.name,
-        email: updatedMember.email,
-        phone: updatedMember.phone,
-        cpf: updatedMember.cpf,
-        birthdate: updatedMember.birthdate
-      });
-    }
+    // Supabase sync removed - using Neon directly
 
     res.json({ member: updatedMember });
   } catch (error) {
     console.error('Update member error:', error);
     console.error('Request body:', req.body);
     console.error('Member ID:', req.params.id);
-    console.error('User ID:', req.session.userId);
+    console.error('User ID:', (req as any).session.userId);
     res.status(500).json({ error: 'Failed to update member', details: error.message });
   }
 });
@@ -155,7 +141,7 @@ router.put('/:id', async (req, res) => {
 // Delete a family member
 router.delete('/:id', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId!;
     const memberId = parseInt(req.params.id);
 
     // Verify ownership
@@ -183,7 +169,7 @@ router.delete('/:id', async (req, res) => {
 // Get member with all programs
 router.get('/:id/programs', async (req, res) => {
   try {
-    const familyId = req.session.familyId!;
+    const familyId = (req as any).session.familyId!;
     const memberId = parseInt(req.params.id);
 
     // Verify ownership
@@ -198,10 +184,10 @@ router.get('/:id/programs', async (req, res) => {
     // Get all programs for this member
     const programs = await db.select({
       memberProgram: memberPrograms,
-      program: loyaltyPrograms,
+      program: airlines,
     })
     .from(memberPrograms)
-    .innerJoin(loyaltyPrograms, eq(memberPrograms.programId, loyaltyPrograms.id))
+    .innerJoin(airlines, eq(memberPrograms.airlineId, airlines.id))
     .where(eq(memberPrograms.memberId, memberId));
 
     res.json({ member, programs });
