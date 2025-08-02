@@ -1,0 +1,128 @@
+// Client-side type definitions (without Drizzle dependencies)
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  password?: string;
+  name: string;
+  role: string;
+  familyMemberId?: number | null;
+  isFirstLogin?: boolean;
+  lastLogin?: Date | null;
+  passwordChangedAt?: Date | null;
+  failedLoginAttempts?: number;
+  lockedUntil?: Date | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface FamilyMember {
+  id: number;
+  name: string;
+  email?: string | null;
+  role: string;
+  userId?: number | null;
+  isActive?: boolean;
+  cpf?: string | null;
+  phone?: string | null;
+  birthdate?: string | null;
+  frameColor?: string;
+  frameBorderColor?: string;
+  profileEmoji?: string;
+}
+
+export interface LoyaltyProgram {
+  id: number;
+  name: string;
+  company: string;
+  code?: string | null;
+  programType: string;
+  logoColor?: string;
+  transferPartners?: any;
+  pointValue?: string;
+  category?: string;
+  website?: string | null;
+  phoneNumber?: string | null;
+  transferEnabled?: boolean;
+  minTransferAmount?: number | null;
+  transferFeeType?: string | null;
+  transferFeeAmount?: number | null;
+  expirationMonths?: number | null;
+  extendableOnActivity?: boolean;
+  isActive?: boolean;
+  iconUrl?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface MemberProgram {
+  id: number;
+  memberId: number;
+  programId: number;
+  accountNumber?: string | null;
+  login?: string | null;
+  sitePassword?: string | null;
+  milesPassword?: string | null;
+  cpf?: string | null;
+  pointsBalance?: number;
+  eliteTier?: string | null;
+  notes?: string | null;
+  customFields?: any;
+  estimatedValue?: string | null;
+  expirationDate?: Date | null;
+  statusLevel?: string;
+  yearlyEarnings?: number;
+  yearlySpending?: number;
+  lastUpdated?: Date;
+  lastUpdatedBy?: number | null;
+  isActive?: boolean;
+}
+
+export interface ActivityLog {
+  id: number;
+  userId: number;
+  memberId?: number | null;
+  action: string;
+  category?: string;
+  description: string;
+  metadata?: any;
+  timestamp?: Date;
+}
+
+export interface MileTransaction {
+  id: number;
+  memberProgramId: number;
+  miles: number;
+  description: string;
+  transactionDate: Date;
+  expirationDate?: Date | null;
+  source: string;
+  referenceNumber?: string | null;
+  recordedBy?: number | null;
+  createdAt?: Date;
+}
+
+export interface NotificationPreferences {
+  id: number;
+  userId: number;
+  emailEnabled?: boolean;
+  emailFrequency?: string;
+  expirationAlertDays?: number;
+  whatsappEnabled?: boolean;
+  whatsappNumber?: string | null;
+  pushEnabled?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface MemberWithPrograms extends FamilyMember {
+  programs: (MemberProgram & { program: LoyaltyProgram })[];
+}
+
+export interface DashboardStats {
+  totalMembers: number;
+  activePrograms: number;
+  totalPoints: number;
+  estimatedValue: string;
+}
