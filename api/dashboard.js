@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { getUserFromRequest } from './_lib/auth.js';
+import { getAllowedOrigin } from '../utils/validate-origin.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -13,9 +14,11 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  const origin = getAllowedOrigin(req.headers.origin);
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
   

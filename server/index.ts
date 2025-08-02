@@ -14,6 +14,7 @@ import programsRoutes from './api/programs.js';
 import transactionsRoutes from './api/transactions.js';
 import dashboardRoutes from './api/dashboard.js';
 import notificationsRoutes from './api/notifications.js';
+import { getAllowedOrigin } from '../utils/validate-origin.js';
 
 // Load environment variables
 dotenv.config();
@@ -89,22 +90,19 @@ app.use(session({
 // CORS configuration for development
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
-    // Allow requests from any origin in development
-    const origin = req.headers.origin;
+    const origin = getAllowedOrigin(req.headers.origin);
     if (origin) {
       res.header('Access-Control-Allow-Origin', origin);
-    } else {
-      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Credentials', 'true');
     }
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    
+
     // Handle preflight requests
     if (req.method === 'OPTIONS') {
       return res.sendStatus(200);
     }
-    
+
     next();
   });
 }
