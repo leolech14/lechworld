@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Development files
+*.log
+.env.local
+.env.development
+.env.test
+.env*.local
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Scripts
+scripts/
+migrations/
+
+# Development server files
+server/
+shared/
+
+# Build outputs
+dist/
+.turbo/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Local test files
+test-*.html
+test-*.js
+*.test.html

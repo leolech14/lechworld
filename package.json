@@ -6,8 +6,11 @@
   "main": "dist/server/index.js",
   "scripts": {
     "dev": "tsx watch server/index.ts --port 3000",
-    "build": "tsc && vite build",
+    "build": "npm run build:client",
+    "build:client": "cd client && npm install && npm run build",
+    "build:server": "tsc",
     "start": "node dist/server/index.js --port 3000",
+    "vercel-build": "npm run build:client",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:update-values": "tsx scripts/update-point-values.ts",
