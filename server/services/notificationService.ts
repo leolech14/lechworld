@@ -54,10 +54,10 @@ export class NotificationService {
   /**
    * Check and send expiration notifications
    */
-  async checkAndNotifyExpirations(daysAhead: number = 90): Promise<void> {
+  async checkAndNotifyExpirations(familyId: number, daysAhead: number = 90): Promise<void> {
     try {
       // Get all expiring miles
-      const expiringMiles = await this.expirationService.checkExpiringMiles(daysAhead);
+      const expiringMiles = await this.expirationService.checkExpiringMiles(familyId, daysAhead);
       
       if (expiringMiles.length === 0) {
         console.log('✅ No expiring miles found');
@@ -73,7 +73,7 @@ export class NotificationService {
       const notificationPrefs = await this.expirationService.getNotificationTargets(expiringMiles);
 
       // Send notifications for each user
-      for (const [userId, userPrograms] of groupedByUser) {
+      groupedByUser.forEach(async (userPrograms, userId) => {
         const userExpiring = expiringMiles.filter(item => item.userId === userId);
         const userEmail = userExpiring[0].userEmail;
         const userName = userExpiring[0].userName;
@@ -108,7 +108,7 @@ export class NotificationService {
           totalPrograms: userPrograms.size,
           channels: ['email', prefs.whatsappEnabled ? 'whatsapp' : null].filter(Boolean),
         });
-      }
+      });
     } catch (error) {
       console.error('Error in notification service:', error);
       throw error;
@@ -176,15 +176,16 @@ export class NotificationService {
   /**
    * Send test notification
    */
-  async sendTestNotification(userId: number): Promise<void> {
-    const expiringMiles = await this.expirationService.getUserExpiringMiles(userId);
-    
+  async sendTestNotification(userId: number, familyId: number): Promise<void> {
+    const familyMiles = await this.expirationService.getFamilyExpiringMiles(familyId);
+    const expiringMiles = familyMiles.filter(m => m.userId === userId);
+
     if (expiringMiles.length === 0) {
       console.log('No expiring miles for this user');
       return;
     }
 
-    const grouped = this.expirationService.groupExpiringMilesByUser(expiringMiles);
+    const grouped = this.expirationService.groupExpiringMilesByUser(familyMiles);
     const userPrograms = grouped.get(userId)!;
     
     const subject = '🧪 TEST: Miles Expiration Alert';

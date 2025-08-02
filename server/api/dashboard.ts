@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { eq, and, sql, desc } from 'drizzle-orm';
+import { eq, sql, desc } from 'drizzle-orm';
 import { db } from '../index.js';
 import { familyMembers, memberPrograms, airlines, mileTransactions, activityLog } from '../../shared/schemas/database.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -13,24 +13,26 @@ router.use(requireAuth);
 // Get dashboard statistics
 router.get('/stats', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
 
     // Get family members count
-    const [{ count: memberCount }] = await db.select({ 
-      count: sql<number>`count(*)::int` 
+    const [{ count: memberCount }] = await db.select({
+      count: sql<number>`count(*)::int`
     })
-    .from(familyMembers);
+    .from(familyMembers)
+    .where(eq(familyMembers.familyId, familyId));
 
-    // Get total programs and miles for ALL members
+    // Get total programs and miles for family members
     const programStats = await db.select({
       programCount: sql<number>`count(distinct ${memberPrograms.id})::int`,
       totalMiles: sql<number>`coalesce(sum(${memberPrograms.currentMiles}), 0)::int`,
       totalPrograms: sql<number>`count(distinct ${memberPrograms.airlineId})::int`,
     })
     .from(memberPrograms)
-    .innerJoin(familyMembers, eq(memberPrograms.memberId, familyMembers.id));
+    .innerJoin(familyMembers, eq(memberPrograms.memberId, familyMembers.id))
+    .where(eq(familyMembers.familyId, familyId));
 
-    // Get miles by airline for ALL members
+    // Get miles by airline for family members
     const milesByAirline = await db.select({
       airline: airlines.name,
       program: airlines.programName,
@@ -40,12 +42,13 @@ router.get('/stats', async (req, res) => {
     .from(memberPrograms)
     .innerJoin(familyMembers, eq(memberPrograms.memberId, familyMembers.id))
     .innerJoin(airlines, eq(memberPrograms.airlineId, airlines.id))
+    .where(eq(familyMembers.familyId, familyId))
     .groupBy(airlines.id, airlines.name, airlines.programName)
     .orderBy(desc(sql`sum(${memberPrograms.currentMiles})`));
 
     // Get expiring miles summary
     const expirationService = new ExpirationService();
-    const expiringMiles = await expirationService.getUserExpiringMiles(userId, 90);
+    const expiringMiles = await expirationService.getFamilyExpiringMiles(familyId, 90);
     const totalExpiringMiles = expiringMiles.reduce((sum, item) => sum + item.miles, 0);
 
     // Get airline mile values from database
@@ -118,9 +121,9 @@ router.get('/activity', async (req, res) => {
 // Get family overview with programs
 router.get('/family-overview', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
 
-    // Get ALL family members with their programs (not filtered by user)
+    // Get family members with their programs
     const familyData = await db.select({
       member: familyMembers,
       program: memberPrograms,
@@ -129,6 +132,7 @@ router.get('/family-overview', async (req, res) => {
     .from(familyMembers)
     .leftJoin(memberPrograms, eq(familyMembers.id, memberPrograms.memberId))
     .leftJoin(airlines, eq(memberPrograms.airlineId, airlines.id))
+    .where(eq(familyMembers.familyId, familyId))
     .orderBy(familyMembers.createdAt, memberPrograms.createdAt);
 
     // Group by member
@@ -178,7 +182,7 @@ router.get('/family-overview', async (req, res) => {
 // Get recent transactions across all programs
 router.get('/recent-transactions', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
     const limit = parseInt(req.query.limit as string) || 20;
 
     const transactions = await db.select({
@@ -191,7 +195,7 @@ router.get('/recent-transactions', async (req, res) => {
     .innerJoin(memberPrograms, eq(mileTransactions.memberProgramId, memberPrograms.id))
     .innerJoin(familyMembers, eq(memberPrograms.memberId, familyMembers.id))
     .innerJoin(airlines, eq(memberPrograms.airlineId, airlines.id))
-    .where(eq(familyMembers.userId, userId))
+    .where(eq(familyMembers.familyId, familyId))
     .orderBy(desc(mileTransactions.transactionDate))
     .limit(limit);
 

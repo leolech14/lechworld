@@ -13,6 +13,12 @@ import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzl
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const families = pgTable("families", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(), // case-insensitive in DB
@@ -20,7 +26,7 @@ export const users = pgTable("users", {
   password: text("password"), // nullable for first-time login
   name: text("name").notNull(),
   role: text("role").notNull().default("member"), // member, staff
-  familyMemberId: integer("family_member_id").references(() => familyMembers.id),
+  familyId: integer("family_id").references(() => families.id),
   
   // Login tracking
   isFirstLogin: boolean("is_first_login").default(true),
@@ -39,6 +45,7 @@ export const familyMembers = pgTable("family_members", {
   email: text("email").notNull(),
   role: text("role").notNull(), // primary, extended, view_only
   userId: integer("user_id").references(() => users.id),
+  familyId: integer("family_id").references(() => families.id),
   isActive: boolean("is_active").default(true),
   // New profile fields
   cpf: text("cpf"),
@@ -178,6 +185,8 @@ export const insertNotificationPreferencesSchema = createInsertSchema(notificati
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type Family = typeof families.$inferSelect;
 
 export type FamilyMember = typeof familyMembers.$inferSelect;
 export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;

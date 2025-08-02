@@ -20,9 +20,11 @@ export class ExpirationService {
   /**
    * Check for expiring miles across all users and programs
    */
-  async checkExpiringMiles(daysAhead: number = 90): Promise<ExpiringMiles[]> {
+  async checkExpiringMiles(familyId: number, daysAhead: number = 90): Promise<ExpiringMiles[]> {
     const today = new Date();
     const cutoffDate = addDays(today, daysAhead);
+    const todayStr = today.toISOString();
+    const cutoffStr = cutoffDate.toISOString();
 
     // Query for all expiring miles
     const expiringData = await db.select({
@@ -42,8 +44,9 @@ export class ExpirationService {
     .innerJoin(airlines, eq(memberPrograms.airlineId, airlines.id))
     .where(and(
       gte(mileTransactions.miles, 0), // Only positive miles
-      gte(mileTransactions.expirationDate, today), // Not already expired
-      lte(mileTransactions.expirationDate, cutoffDate) // Expiring within cutoff
+      gte(mileTransactions.expirationDate, todayStr), // Not already expired
+      lte(mileTransactions.expirationDate, cutoffStr), // Expiring within cutoff
+      eq(users.familyId, familyId)
     ))
     .orderBy(mileTransactions.expirationDate);
 
@@ -56,8 +59,8 @@ export class ExpirationService {
       airline: row.airlineName,
       program: row.programName,
       miles: row.transaction.miles,
-      expirationDate: row.transaction.expirationDate!,
-      daysUntilExpiration: differenceInDays(row.transaction.expirationDate!, today),
+      expirationDate: new Date(row.transaction.expirationDate!),
+      daysUntilExpiration: differenceInDays(new Date(row.transaction.expirationDate!), today),
       memberProgramId: row.memberProgramId,
     }));
 
@@ -65,18 +68,17 @@ export class ExpirationService {
   }
 
   /**
-   * Get expiring miles for a specific user
+   * Get expiring miles for a specific family
    */
-  async getUserExpiringMiles(userId: number, daysAhead: number = 90): Promise<ExpiringMiles[]> {
-    const allExpiring = await this.checkExpiringMiles(daysAhead);
-    return allExpiring.filter(item => item.userId === userId);
+  async getFamilyExpiringMiles(familyId: number, daysAhead: number = 90): Promise<ExpiringMiles[]> {
+    return this.checkExpiringMiles(familyId, daysAhead);
   }
 
   /**
    * Get notification preferences for users with expiring miles
    */
   async getNotificationTargets(expiringMiles: ExpiringMiles[]): Promise<Map<number, any>> {
-    const userIds = [...new Set(expiringMiles.map(item => item.userId))];
+    const userIds = Array.from(new Set(expiringMiles.map(item => item.userId)));
     
     const preferences = await db.select()
       .from(notificationPreferences)

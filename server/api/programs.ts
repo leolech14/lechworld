@@ -23,12 +23,12 @@ router.get('/airlines', async (req, res) => {
 // Add a program to a member
 router.post('/member/:memberId', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
     const memberId = parseInt(req.params.memberId);
-    const { 
-      airlineId, 
-      memberNumber, 
-      statusLevel, 
+    const {
+      airlineId,
+      memberNumber,
+      statusLevel,
       currentMiles,
       pin,
       documentNumber,
@@ -38,7 +38,7 @@ router.post('/member/:memberId', async (req, res) => {
 
     // Verify member ownership
     const [member] = await db.select().from(familyMembers)
-      .where(and(eq(familyMembers.id, memberId), eq(familyMembers.userId, userId)))
+      .where(and(eq(familyMembers.id, memberId), eq(familyMembers.familyId, familyId)))
       .limit(1);
 
     if (!member) {
@@ -91,10 +91,10 @@ router.put('/:id', async (req, res) => {
   console.log('Body:', req.body);
   
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
     const memberProgramId = parseInt(req.params.id);
     console.log('Parsed ID:', memberProgramId, 'Type:', typeof memberProgramId);
-    console.log('Session userId:', userId);
+    console.log('Session familyId:', familyId);
     const { 
       memberNumber, 
       statusLevel, 
@@ -108,7 +108,7 @@ router.put('/:id', async (req, res) => {
     } = req.body;
 
     // Verify ownership through member
-    console.log('Checking ownership - memberProgramId:', memberProgramId, 'userId:', userId);
+    console.log('Checking ownership - memberProgramId:', memberProgramId, 'familyId:', familyId);
     
     // First check what's actually in the database
     const [checkProgram] = await db.select({
@@ -119,12 +119,12 @@ router.put('/:id', async (req, res) => {
     .innerJoin(familyMembers, eq(memberPrograms.memberId, familyMembers.id))
     .where(eq(memberPrograms.id, memberProgramId))
     .limit(1);
-    
+
     if (checkProgram) {
       console.log('Database check:', {
-        foundUserId: checkProgram.member.userId,
-        expectedUserId: userId,
-        matches: checkProgram.member.userId === userId
+        foundFamilyId: checkProgram.member.familyId,
+        expectedFamilyId: familyId,
+        matches: checkProgram.member.familyId === familyId
       });
     }
     
@@ -136,7 +136,7 @@ router.put('/:id', async (req, res) => {
     .innerJoin(familyMembers, eq(memberPrograms.memberId, familyMembers.id))
     .where(and(
       eq(memberPrograms.id, memberProgramId),
-      eq(familyMembers.userId, userId)
+      eq(familyMembers.familyId, familyId)
     ))
     .limit(1);
 
@@ -172,7 +172,7 @@ router.put('/:id', async (req, res) => {
 // Delete a member's program
 router.delete('/:id', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
     const memberProgramId = parseInt(req.params.id);
 
     // Verify ownership through member
@@ -184,7 +184,7 @@ router.delete('/:id', async (req, res) => {
     .innerJoin(familyMembers, eq(memberPrograms.memberId, familyMembers.id))
     .where(and(
       eq(memberPrograms.id, memberProgramId),
-      eq(familyMembers.userId, userId)
+      eq(familyMembers.familyId, familyId)
     ))
     .limit(1);
 

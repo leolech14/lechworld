@@ -333,7 +333,7 @@ export const storage = {
         memberProgramData.programId,
         memberProgramData.accountNumber,
         memberProgramData.login || '',
-        memberProgramData.password || '',
+        (memberProgramData as any).password || '',
         memberProgramData.cpf || '',
         memberProgramData.pointsBalance || 0,
         memberProgramData.isActive ?? true,
