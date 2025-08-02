@@ -22,8 +22,8 @@ declare global {
       NODE_ENV: 'development' | 'production' | 'test';
       PORT?: string;
       
-      // JWT (optional)
-      JWT_SECRET?: string;
+      // JWT
+      JWT_SECRET: string;
     }
   }
 }
