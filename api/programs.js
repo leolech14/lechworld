@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { getUserFromRequest } from './_lib/auth.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -23,13 +24,9 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Check for auth token
-  const cookieHeader = req.headers.cookie || '';
-  const cookies = Object.fromEntries(
-    cookieHeader.split('; ').map(c => c.split('='))
-  );
-  
-  if (!cookies.token) {
+  // Validate auth token
+  const user = getUserFromRequest(req);
+  if (!user) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
