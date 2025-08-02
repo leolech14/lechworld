@@ -1,4 +1,5 @@
 import { Switch, Route } from "wouter";
+import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,6 +9,7 @@ import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import AirlineGuide from "@/pages/airline-guide";
 import ProtectedRoute from "@/components/protected-route";
+import { useAuthStore } from "@/store/auth-store";
 
 function Router() {
   return (
@@ -30,6 +32,12 @@ function Router() {
 }
 
 function App() {
+  const initialize = useAuthStore((state) => state.initialize);
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -42,7 +50,7 @@ function App() {
             <div className="particle w-1 h-1 top-60 right-60" style={{ animationDelay: '3s' }}></div>
             <div className="particle w-2 h-2 bottom-20 right-20" style={{ animationDelay: '4s' }}></div>
           </div>
-          
+
           <Router />
           <Toaster />
         </div>

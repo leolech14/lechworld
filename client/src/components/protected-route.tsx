@@ -7,16 +7,16 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!user) {
+    if (!isLoading && !user) {
       setLocation("/login");
     }
-  }, [user, setLocation]);
+  }, [user, isLoading, setLocation]);
 
-  if (!user) {
+  if (isLoading || !user) {
     return null;
   }
 
