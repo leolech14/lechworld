@@ -33,6 +33,14 @@ const MEMBER_NAMES: Record<string, string> = {
   'LEONARDO': 'Leonardo',
 };
 
+// Map member names to user IDs in the users table
+const USER_IDS: Record<string, number> = {
+  Leonardo: 7,
+  Graciela: 8,
+  Osvandré: 9,
+  Marilise: 10,
+};
+
 async function importRealData() {
   try {
     console.log('🚀 Starting real data import...');
@@ -60,21 +68,30 @@ async function importRealData() {
     const memberIds: Record<string, number> = {};
     
     for (const [originalName, normalizedName] of Object.entries(MEMBER_NAMES)) {
+      const userId = USER_IDS[normalizedName];
+
       const { rows } = await pool.query(
-        'SELECT id FROM family_members WHERE LOWER(name) = LOWER($1)',
+        'SELECT id, user_id FROM family_members WHERE LOWER(name) = LOWER($1)',
         [normalizedName]
       );
-      
+
       if (rows.length > 0) {
         memberIds[originalName] = rows[0].id;
         console.log(`✅ Found member: ${normalizedName}`);
+        if (rows[0].user_id !== userId) {
+          await pool.query(
+            'UPDATE family_members SET user_id = $1 WHERE id = $2',
+            [userId, rows[0].id]
+          );
+          console.log(`🔄 Updated user_id for ${normalizedName}`);
+        }
       } else {
-        // Create the member
+        // Create the member with correct user_id
         const { rows: newMember } = await pool.query(
-          `INSERT INTO family_members (name, email, role, is_active) 
-           VALUES ($1, $2, $3, true) 
+          `INSERT INTO family_members (user_id, name, email, role, is_active)
+           VALUES ($1, $2, $3, $4, true)
            RETURNING id`,
-          [normalizedName, `${normalizedName.toLowerCase()}@lech.world`, 'member']
+          [userId, normalizedName, `${normalizedName.toLowerCase()}@lech.world`, 'member']
         );
         memberIds[originalName] = newMember[0].id;
         console.log(`✅ Created member: ${normalizedName}`);
