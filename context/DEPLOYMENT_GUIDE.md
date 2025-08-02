@@ -85,6 +85,12 @@ Vercel App ↔ Supabase Cloud
 - Session management is production-ready
 - API keys are environment-specific
 
+## 🔄 Secret Rotation
+
+- Rotate `JWT_SECRET` and `SESSION_SECRET` regularly to limit exposure.
+- Update these secrets in your deployment platform and redeploy the app.
+- After rotation, previously issued tokens will be invalid and users must log in again.
+
 ## ✨ Result
 
 Your app will:

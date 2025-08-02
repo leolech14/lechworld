@@ -5,6 +5,11 @@ import { eq, sql, or } from 'drizzle-orm';
 import { db } from '../index.js';
 import { users } from '../../shared/schemas/database.js';
 
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
+
 const router = Router();
 
 // Register new user
@@ -93,7 +98,7 @@ router.post('/login', async (req, res) => {
     // Create JWT token for Vercel
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'lechworld-jwt-secret',
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
 

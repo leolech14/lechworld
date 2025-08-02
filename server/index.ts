@@ -18,6 +18,10 @@ import notificationsRoutes from './api/notifications.js';
 // Load environment variables
 dotenv.config();
 
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

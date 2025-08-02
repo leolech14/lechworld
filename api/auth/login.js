@@ -2,6 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY,
@@ -88,12 +93,12 @@ export default async function handler(req, res) {
 
     // Create JWT token with user info
     const token = jwt.sign(
-      { 
-        userId: user.id, 
+      {
+        userId: user.id,
         email: user.email,
         username: user.email // Use email as username since Supabase doesn't have username
       },
-      process.env.JWT_SECRET || 'lechworld-jwt-secret',
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
 
