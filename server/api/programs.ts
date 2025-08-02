@@ -3,6 +3,7 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '../index.js';
 import { airlines, memberPrograms, familyMembers } from '../../shared/schemas/database.js';
 import { requireAuth } from '../middleware/auth.js';
+import logger from '../logger.js';
 
 const router = Router();
 
@@ -15,7 +16,7 @@ router.get('/airlines', async (req, res) => {
     const allAirlines = await db.select().from(airlines).orderBy(airlines.name);
     res.json({ airlines: allAirlines });
   } catch (error) {
-    console.error('Get airlines error:', error);
+    logger.error({ err: error }, 'Get airlines error');
     res.status(500).json({ error: 'Failed to get airlines' });
   }
 });
@@ -76,25 +77,25 @@ router.post('/member/:memberId', async (req, res) => {
       airline 
     });
   } catch (error) {
-    console.error('Add program error:', error);
+    logger.error({ err: error }, 'Add program error');
     res.status(500).json({ error: 'Failed to add program' });
   }
 });
 
 // Update a member's program
 router.put('/:id', async (req, res) => {
-  console.log('\n=== PROGRAMS PUT HANDLER ===');
-  console.log('Full URL:', req.originalUrl);
-  console.log('Params:', req.params);
-  console.log('Program ID:', req.params.id);
-  console.log('Session:', req.session);
-  console.log('Body:', req.body);
-  
+  logger.debug({
+    url: req.originalUrl,
+    params: req.params,
+    session: req.session,
+    body: req.body,
+  }, 'PROGRAMS PUT HANDLER');
+
   try {
     const userId = req.session.userId!;
     const memberProgramId = parseInt(req.params.id);
-    console.log('Parsed ID:', memberProgramId, 'Type:', typeof memberProgramId);
-    console.log('Session userId:', userId);
+    logger.debug({ memberProgramId, type: typeof memberProgramId }, 'Parsed ID');
+    logger.debug({ userId }, 'Session userId');
     const { 
       memberNumber, 
       statusLevel, 
@@ -108,7 +109,7 @@ router.put('/:id', async (req, res) => {
     } = req.body;
 
     // Verify ownership through member
-    console.log('Checking ownership - memberProgramId:', memberProgramId, 'userId:', userId);
+    logger.debug({ memberProgramId, userId }, 'Checking ownership');
     
     // First check what's actually in the database
     const [checkProgram] = await db.select({
@@ -121,11 +122,11 @@ router.put('/:id', async (req, res) => {
     .limit(1);
     
     if (checkProgram) {
-      console.log('Database check:', {
+      logger.debug({
         foundUserId: checkProgram.member.userId,
         expectedUserId: userId,
         matches: checkProgram.member.userId === userId
-      });
+      }, 'Database check');
     }
     
     const [program] = await db.select({
@@ -162,9 +163,9 @@ router.put('/:id', async (req, res) => {
 
     res.json({ memberProgram: updatedProgram });
   } catch (error) {
-    console.error('Update program error:', error);
-    console.error('Request body:', req.body);
-    console.error('Program ID:', req.params.id);
+    logger.error({ err: error }, 'Update program error');
+    logger.error({ body: req.body }, 'Request body');
+    logger.error({ programId: req.params.id }, 'Program ID');
     res.status(500).json({ error: 'Failed to update program', details: error.message });
   }
 });
@@ -196,7 +197,7 @@ router.delete('/:id', async (req, res) => {
 
     res.json({ message: 'Program deleted successfully' });
   } catch (error) {
-    console.error('Delete program error:', error);
+    logger.error({ err: error }, 'Delete program error');
     res.status(500).json({ error: 'Failed to delete program' });
   }
 });
@@ -251,7 +252,7 @@ router.post('/transfer-cost', async (req, res) => {
       processingTime: airline.transferDelayHours,
     });
   } catch (error) {
-    console.error('Calculate transfer cost error:', error);
+    logger.error({ err: error }, 'Calculate transfer cost error');
     res.status(500).json({ error: 'Failed to calculate transfer cost' });
   }
 });

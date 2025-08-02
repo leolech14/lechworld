@@ -1,6 +1,7 @@
 import { ExpirationService, ExpiringMiles } from './expirationService.js';
 import { db } from '../index.js';
 import { activityLog } from '../../shared/schemas/database.js';
+import logger from '../logger.js';
 
 export interface NotificationChannel {
   send(recipient: string, subject: string, content: string): Promise<boolean>;
@@ -9,12 +10,7 @@ export interface NotificationChannel {
 // Console notifier for development
 export class ConsoleNotifier implements NotificationChannel {
   async send(recipient: string, subject: string, content: string): Promise<boolean> {
-    console.log('='.repeat(60));
-    console.log(`📧 NOTIFICATION TO: ${recipient}`);
-    console.log(`📋 SUBJECT: ${subject}`);
-    console.log('-'.repeat(60));
-    console.log(content);
-    console.log('='.repeat(60));
+    logger.info({ recipient, subject, content }, 'notification');
     return true;
   }
 }
@@ -23,7 +19,7 @@ export class ConsoleNotifier implements NotificationChannel {
 export class EmailNotifier implements NotificationChannel {
   async send(recipient: string, subject: string, content: string): Promise<boolean> {
     // TODO: Implement with SendGrid, AWS SES, or similar
-    console.log(`[EMAIL] Would send to ${recipient}: ${subject}`);
+    logger.info({ recipient, subject }, '[EMAIL] Would send');
     return true;
   }
 }
@@ -32,7 +28,7 @@ export class EmailNotifier implements NotificationChannel {
 export class WhatsAppNotifier implements NotificationChannel {
   async send(recipient: string, subject: string, content: string): Promise<boolean> {
     // TODO: Implement with WhatsApp Business API
-    console.log(`[WHATSAPP] Would send to ${recipient}: ${subject}`);
+    logger.info({ recipient, subject }, '[WHATSAPP] Would send');
     return true;
   }
 }
@@ -60,11 +56,11 @@ export class NotificationService {
       const expiringMiles = await this.expirationService.checkExpiringMiles(daysAhead);
       
       if (expiringMiles.length === 0) {
-        console.log('✅ No expiring miles found');
+        logger.info('✅ No expiring miles found');
         return;
       }
 
-      console.log(`Found ${expiringMiles.length} expiring mile entries`);
+      logger.info({ count: expiringMiles.length }, 'Found expiring mile entries');
 
       // Group by user
       const groupedByUser = this.expirationService.groupExpiringMilesByUser(expiringMiles);
@@ -110,7 +106,7 @@ export class NotificationService {
         });
       }
     } catch (error) {
-      console.error('Error in notification service:', error);
+      logger.error({ err: error }, 'Error in notification service');
       throw error;
     }
   }
@@ -180,7 +176,7 @@ export class NotificationService {
     const expiringMiles = await this.expirationService.getUserExpiringMiles(userId);
     
     if (expiringMiles.length === 0) {
-      console.log('No expiring miles for this user');
+      logger.info('No expiring miles for this user');
       return;
     }
 

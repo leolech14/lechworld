@@ -4,6 +4,7 @@ import { db } from '../index.js';
 import { familyMembers, memberPrograms, airlines, mileTransactions, activityLog } from '../../shared/schemas/database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { ExpirationService } from '../services/expirationService.js';
+import logger from '../logger.js';
 
 const router = Router();
 
@@ -83,7 +84,7 @@ router.get('/stats', async (req, res) => {
       recentActivity: [] // Will be populated later
     });
   } catch (error) {
-    console.error('Get dashboard stats error:', error);
+    logger.error({ err: error }, 'Get dashboard stats error');
     res.status(500).json({ error: 'Failed to get dashboard stats' });
   }
 });
@@ -102,7 +103,7 @@ router.get('/activity', async (req, res) => {
 
     res.json({ activities });
   } catch (error) {
-    console.error('Get activity error:', error);
+    logger.error({ err: error }, 'Get activity error');
     res.status(500).json({ error: 'Failed to get activity' });
   }
 });
@@ -162,7 +163,7 @@ router.get('/family-overview', async (req, res) => {
     
     res.json(membersWithPrograms);
   } catch (error) {
-    console.error('Get family overview error:', error);
+    logger.error({ err: error }, 'Get family overview error');
     res.status(500).json({ error: 'Failed to get family overview' });
   }
 });
@@ -189,7 +190,7 @@ router.get('/recent-transactions', async (req, res) => {
 
     res.json({ transactions });
   } catch (error) {
-    console.error('Get recent transactions error:', error);
+    logger.error({ err: error }, 'Get recent transactions error');
     res.status(500).json({ error: 'Failed to get recent transactions' });
   }
 });

@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite-prod";
 import { storage } from "./storage";
+import logger from "./logger.js";
 
 const app = express();
 app.use(express.json());
@@ -43,7 +44,7 @@ app.use((req, res, next) => {
     await storage.init();
     log("Database initialized successfully");
   } catch (err) {
-    console.error("Failed to initialize database:", err);
+    logger.error({ err }, "Failed to initialize database");
     process.exit(1);
   }
 

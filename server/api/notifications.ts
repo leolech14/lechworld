@@ -5,6 +5,7 @@ import { notificationPreferences } from '../../shared/schemas/database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { NotificationService } from '../services/notificationService.js';
 import { ExpirationService } from '../services/expirationService.js';
+import logger from '../logger.js';
 
 const router = Router();
 
@@ -33,7 +34,7 @@ router.get('/preferences', async (req, res) => {
 
     res.json({ preferences });
   } catch (error) {
-    console.error('Get preferences error:', error);
+    logger.error({ err: error }, 'Get preferences error');
     res.status(500).json({ error: 'Failed to get preferences' });
   }
 });
@@ -89,7 +90,7 @@ router.put('/preferences', async (req, res) => {
 
     res.json({ preferences });
   } catch (error) {
-    console.error('Update preferences error:', error);
+    logger.error({ err: error }, 'Update preferences error');
     res.status(500).json({ error: 'Failed to update preferences' });
   }
 });
@@ -104,7 +105,7 @@ router.post('/test', async (req, res) => {
     
     res.json({ message: 'Test notification sent (check console)' });
   } catch (error) {
-    console.error('Test notification error:', error);
+    logger.error({ err: error }, 'Test notification error');
     res.status(500).json({ error: 'Failed to send test notification' });
   }
 });
@@ -142,7 +143,7 @@ router.get('/expiring-preview', async (req, res) => {
     
     res.json({ summary });
   } catch (error) {
-    console.error('Get expiring preview error:', error);
+    logger.error({ err: error }, 'Get expiring preview error');
     res.status(500).json({ error: 'Failed to get expiring miles preview' });
   }
 });
@@ -160,7 +161,7 @@ router.post('/check-all', async (req, res) => {
     
     res.json({ message: 'Expiration check completed' });
   } catch (error) {
-    console.error('Check all error:', error);
+    logger.error({ err: error }, 'Check all error');
     res.status(500).json({ error: 'Failed to check expirations' });
   }
 });

@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { eq, sql, or } from 'drizzle-orm';
 import { db } from '../index.js';
 import { users } from '../../shared/schemas/database.js';
+import logger from '../logger.js';
 
 const router = Router();
 
@@ -40,7 +41,7 @@ router.post('/register', async (req, res) => {
     const { password: _, ...userWithoutPassword } = newUser;
     res.status(201).json({ user: userWithoutPassword });
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error({ err: error }, 'Registration error');
     res.status(500).json({ error: 'Failed to register user' });
   }
 });
@@ -51,7 +52,7 @@ router.post('/login', async (req, res) => {
     const { email, username, password } = req.body;
     const loginIdentifier = email || username; // Accept either field
     
-    console.log('Login attempt for:', loginIdentifier);
+    logger.info({ loginIdentifier }, 'Login attempt');
 
     // Find user by email OR username
     const userResults = await db
@@ -104,7 +105,7 @@ router.post('/login', async (req, res) => {
     const { password: _, ...userWithoutPassword } = user;
     res.json({ user: userWithoutPassword, token });
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error({ err: error }, 'Login error');
     res.status(500).json({ error: 'Failed to login' });
   }
 });
@@ -134,7 +135,7 @@ router.get('/me', async (req, res) => {
     const { password: _, ...userWithoutPassword } = user;
     res.json({ user: userWithoutPassword });
   } catch (error) {
-    console.error('Get user error:', error);
+    logger.error({ err: error }, 'Get user error');
     res.status(500).json({ error: 'Failed to get user' });
   }
 });

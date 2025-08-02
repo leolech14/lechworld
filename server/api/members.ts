@@ -4,6 +4,7 @@ import { db } from '../index.js';
 import { familyMembers, memberPrograms, loyaltyPrograms } from '../../shared/schema.js';
 import { requireAuth } from '../middleware/auth-vercel.js';
 import { syncToSupabase } from '../supabase-client.js';
+import logger from '../logger.js';
 
 const router = Router();
 
@@ -20,7 +21,7 @@ router.get('/', async (req, res) => {
     
     res.json({ members });
   } catch (error) {
-    console.error('Get members error:', error);
+    logger.error({ err: error }, 'Get members error');
     res.status(500).json({ error: 'Failed to get members' });
   }
 });
@@ -46,7 +47,7 @@ router.post('/', async (req, res) => {
 
     res.status(201).json({ member: newMember });
   } catch (error) {
-    console.error('Create member error:', error);
+    logger.error({ err: error }, 'Create member error');
     res.status(500).json({ error: 'Failed to create member' });
   }
 });
@@ -70,14 +71,14 @@ router.put('/:id', async (req, res) => {
       profileEmoji
     } = req.body;
 
-    console.log('UPDATE REQUEST:', {
+    logger.debug({
       memberId,
       userId,
       body: req.body,
       frameColor,
       frameBorderColor,
       profileEmoji
-    });
+    }, 'UPDATE REQUEST');
 
     // Verify ownership
     const [member] = await db.select().from(familyMembers)
@@ -88,12 +89,12 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Member not found' });
     }
 
-    console.log('CURRENT MEMBER:', {
+    logger.debug({
       id: member.id,
       frameColor: member.frameColor,
       frameBorderColor: member.frameBorderColor,
       profileEmoji: member.profileEmoji
-    });
+    }, 'CURRENT MEMBER');
 
     const updateData = {
       name: name !== undefined ? name : member.name,
@@ -110,19 +111,19 @@ router.put('/:id', async (req, res) => {
       updatedAt: new Date(),
     };
 
-    console.log('UPDATE DATA:', updateData);
+    logger.debug({ updateData }, 'UPDATE DATA');
 
     const [updatedMember] = await db.update(familyMembers)
       .set(updateData)
       .where(eq(familyMembers.id, memberId))
       .returning();
 
-    console.log('UPDATED MEMBER:', {
+    logger.debug({
       id: updatedMember.id,
       frameColor: updatedMember.frameColor,
       frameBorderColor: updatedMember.frameBorderColor,
       profileEmoji: updatedMember.profileEmoji
-    });
+    }, 'UPDATED MEMBER');
 
     // Sync to Supabase only in development (when using local DB)
     // In production, we connect directly to Supabase so no sync needed
@@ -142,10 +143,10 @@ router.put('/:id', async (req, res) => {
 
     res.json({ member: updatedMember });
   } catch (error) {
-    console.error('Update member error:', error);
-    console.error('Request body:', req.body);
-    console.error('Member ID:', req.params.id);
-    console.error('User ID:', req.session.userId);
+    logger.error({ err: error }, 'Update member error');
+    logger.error({ body: req.body }, 'Request body');
+    logger.error({ memberId: req.params.id }, 'Member ID');
+    logger.error({ userId: req.session.userId }, 'User ID');
     res.status(500).json({ error: 'Failed to update member', details: error.message });
   }
 });
@@ -173,7 +174,7 @@ router.delete('/:id', async (req, res) => {
 
     res.json({ message: 'Member deleted successfully' });
   } catch (error) {
-    console.error('Delete member error:', error);
+    logger.error({ err: error }, 'Delete member error');
     res.status(500).json({ error: 'Failed to delete member' });
   }
 });
@@ -204,7 +205,7 @@ router.get('/:id/programs', async (req, res) => {
 
     res.json({ member, programs });
   } catch (error) {
-    console.error('Get member programs error:', error);
+    logger.error({ err: error }, 'Get member programs error');
     res.status(500).json({ error: 'Failed to get member programs' });
   }
 });

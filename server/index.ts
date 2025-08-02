@@ -5,6 +5,7 @@ import pg from 'pg';
 import * as dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import logger from './logger.js';
 // Using consolidated schema from shared/schema.ts
 
 // Import routes (to be created)
@@ -27,9 +28,9 @@ const app = express();
 // If PORT is not set, it means the server wasn't started correctly
 const PORT = process.env.PORT;
 if (!PORT) {
-  console.error('❌ PORT environment variable is not set!');
-  console.error('Please use the "dev" command to start the server with proper port configuration.');
-  console.error('Run: dev');
+  logger.error('❌ PORT environment variable is not set!');
+  logger.error('Please use the "dev" command to start the server with proper port configuration.');
+  logger.error('Run: dev');
   process.exit(1);
 }
 
@@ -54,23 +55,29 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request logging middleware
 app.use((req, res, next) => {
-  console.log(`\n[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  console.log('Headers:', req.headers);
-  if (req.body && Object.keys(req.body).length > 0) {
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-  }
-  
-  // Log the response status when it's sent
-  const originalSend = res.send;
-  res.send = function(data) {
-    console.log(`Response Status: ${res.statusCode}`);
+  logger.info({
+    req: {
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+      body: req.body,
+    },
+  }, 'request');
+
+  const originalSend = res.send.bind(res);
+  res.send = function (data) {
+    logger.info({ res: { statusCode: res.statusCode } }, 'response');
     if (res.statusCode === 404) {
-      console.log('404 DETECTED! URL:', req.url);
-      console.log('Available routes:', app._router.stack.filter(r => r.route).map(r => `${Object.keys(r.route.methods)} ${r.route.path}`));
+      logger.warn({
+        url: req.url,
+        routes: app._router.stack
+          .filter(r => r.route)
+          .map(r => `${Object.keys(r.route.methods)} ${r.route.path}`),
+      }, '404 detected');
     }
-    originalSend.call(this, data);
+    return originalSend(data);
   };
-  
+
   next();
 });
 
@@ -136,7 +143,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
+  logger.error(err.stack);
   res.status(err.status || 500).json({
     error: {
       message: err.message || 'Internal Server Error',
@@ -150,28 +157,28 @@ async function startServer() {
   try {
     // Test database connection
     await pool.query('SELECT NOW()');
-    console.log('✅ Database connected successfully');
+    logger.info('✅ Database connected successfully');
 
     // Start Express server
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`🚀 Server running on http://localhost:${PORT}`);
+      logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    logger.error({ err: error }, '❌ Failed to start server');
     process.exit(1);
   }
 }
 
 // Handle graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully...');
+  logger.info('SIGTERM received, shutting down gracefully...');
   await pool.end();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  console.log('SIGINT received, shutting down gracefully...');
+  logger.info('SIGINT received, shutting down gracefully...');
   await pool.end();
   process.exit(0);
 });

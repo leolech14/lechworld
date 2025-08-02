@@ -4,6 +4,7 @@ import { db } from '../index.js';
 import { mileTransactions, memberPrograms, familyMembers, airlines } from '../../shared/schemas/database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { addMonths, format } from 'date-fns';
+import logger from '../logger.js';
 
 const router = Router();
 
@@ -41,7 +42,7 @@ router.get('/member-program/:programId', async (req, res) => {
 
     res.json({ transactions });
   } catch (error) {
-    console.error('Get transactions error:', error);
+    logger.error({ err: error }, 'Get transactions error');
     res.status(500).json({ error: 'Failed to get transactions' });
   }
 });
@@ -107,7 +108,7 @@ router.post('/', async (req, res) => {
 
     res.status(201).json({ transaction: newTransaction });
   } catch (error) {
-    console.error('Add transaction error:', error);
+    logger.error({ err: error }, 'Add transaction error');
     res.status(500).json({ error: 'Failed to add transaction' });
   }
 });
@@ -161,7 +162,7 @@ router.get('/expiring', async (req, res) => {
       totalExpiringMiles: Object.values(grouped).reduce((sum: number, prog: any) => sum + prog.totalExpiringMiles, 0),
     });
   } catch (error) {
-    console.error('Get expiring miles error:', error);
+    logger.error({ err: error }, 'Get expiring miles error');
     res.status(500).json({ error: 'Failed to get expiring miles' });
   }
 });
