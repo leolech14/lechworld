@@ -1,3 +1,5 @@
+import { getUserFromRequest } from '../_lib/auth.js';
+
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -15,25 +17,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Check for token in cookies
-    const cookieHeader = req.headers.cookie || '';
-    const cookies = Object.fromEntries(
-      cookieHeader.split('; ').map(c => c.split('='))
-    );
-    
-    if (cookies.token && (cookies.token.startsWith('mock-jwt-token-') || cookies.token.startsWith('auth-token-'))) {
-      // Return mock user
-      res.json({ 
-        user: {
-          id: 1,
-          email: 'lech@lechworld.com',
-          username: 'lech',
-          name: 'Lech'
-        }
-      });
-    } else {
-      res.status(401).json({ error: 'Unauthorized' });
+    const user = getUserFromRequest(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
+    res.json({ user });
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Failed to get user' });
