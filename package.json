@@ -10,7 +10,7 @@
     "build:client": "cd client && npm install && npm run build",
     "build:server": "tsc",
     "start": "node dist/server/index.js --port 3000",
-    "vercel-build": "./scripts/prepare-vercel.sh && npm run build:client",
+    "vercel-build": "bash scripts/prepare-vercel.sh && npm run build:client",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:update-values": "tsx scripts/update-point-values.ts",
