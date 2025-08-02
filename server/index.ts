@@ -14,6 +14,7 @@ import programsRoutes from './api/programs.js';
 import transactionsRoutes from './api/transactions.js';
 import dashboardRoutes from './api/dashboard.js';
 import notificationsRoutes from './api/notifications.js';
+import { authRateLimiter, dataRateLimiter } from './middleware/rate-limit.js';
 
 // Load environment variables
 dotenv.config();
@@ -23,6 +24,7 @@ const __dirname = path.dirname(__filename);
 
 // Initialize Express app
 const app = express();
+app.set('trust proxy', 1);
 // PORT should be set by the Universal Localhost Development System
 // If PORT is not set, it means the server wasn't started correctly
 const PORT = process.env.PORT;
@@ -119,12 +121,12 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/members', membersRoutes);
-app.use('/api/programs', programsRoutes);
-app.use('/api/transactions', transactionsRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/notifications', notificationsRoutes);
+app.use('/api/auth', authRateLimiter, authRoutes);
+app.use('/api/members', dataRateLimiter, membersRoutes);
+app.use('/api/programs', dataRateLimiter, programsRoutes);
+app.use('/api/transactions', dataRateLimiter, transactionsRoutes);
+app.use('/api/dashboard', dataRateLimiter, dashboardRoutes);
+app.use('/api/notifications', dataRateLimiter, notificationsRoutes);
 
 // Static files (for production)
 if (process.env.NODE_ENV === 'production') {
