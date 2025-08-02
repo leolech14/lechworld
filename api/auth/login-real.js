@@ -21,16 +21,21 @@ export default async function handler(req, res) {
   try {
     const { username, email, password } = req.body;
     const loginIdentifier = username || email;
-    
+
+    if (!loginIdentifier || /[^\w@.-]/.test(loginIdentifier)) {
+      return res.status(400).json({ error: 'Invalid login identifier' });
+    }
+
     console.log('Login attempt for:', loginIdentifier);
 
     // Find user in Supabase
     let query = supabase.from('users').select('*');
-    
+
     if (email) {
       query = query.eq('email', loginIdentifier);
     } else {
-      query = query.or(`email.eq.${loginIdentifier},username.eq.${loginIdentifier}`);
+      const orFilter = ['email.eq.' + loginIdentifier, 'username.eq.' + loginIdentifier].join(',');
+      query = query.or(orFilter);
     }
     
     const { data: users, error } = await query.limit(1);
