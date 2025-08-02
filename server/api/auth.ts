@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { eq, or } from 'drizzle-orm';
 import { db } from '../index.js';
-import { users } from '../../shared/schemas/database.js';
+import { users, families } from '../../shared/schemas/database.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -31,15 +31,20 @@ router.post('/register', async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create family for this user
+    const [family] = await db.insert(families).values({ name: `${name}'s family` }).returning();
+
+    // Create user linked to family
     const [newUser] = await db.insert(users).values({
       email,
       password: hashedPassword,
       name,
+      familyId: family.id,
     }).returning();
 
     // Create session
     req.session.userId = newUser.id;
+    req.session.familyId = newUser.familyId;
 
     // Return user (without password)
     const { password: _, ...userWithoutPassword } = newUser;
@@ -101,13 +106,17 @@ router.post('/login', async (req, res) => {
 
     // Create JWT token for Vercel
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, familyId: user.familyId, email: user.email },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
 
     // Set cookie
     res.setHeader('Set-Cookie', `token=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}; SameSite=Lax`);
+
+    // Store session info
+    req.session.userId = user.id;
+    req.session.familyId = user.familyId;
 
     // Return user (without password) and token
     const { password: _, ...userWithoutPassword } = user;
@@ -139,6 +148,8 @@ router.get('/me', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+
+    req.session.familyId = user.familyId;
 
     const { password: _, ...userWithoutPassword } = user;
     res.json({ user: userWithoutPassword });

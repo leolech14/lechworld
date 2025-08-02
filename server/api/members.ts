@@ -10,13 +10,13 @@ const router = Router();
 // Apply authentication to all routes
 router.use(requireAuth);
 
-// Get all family members for a user
+// Get all family members for a family
 router.get('/', async (req, res) => {
   try {
-    const userId = req.session.userId!;
-    
+    const familyId = req.session.familyId!;
+
     const members = await db.select().from(familyMembers)
-      .where(eq(familyMembers.userId, userId));
+      .where(eq(familyMembers.familyId, familyId));
     
     res.json({ members });
   } catch (error) {
@@ -28,6 +28,7 @@ router.get('/', async (req, res) => {
 // Create a new family member
 router.post('/', async (req, res) => {
   try {
+    const familyId = req.session.familyId!;
     const userId = req.session.userId!;
     const { name, email, profilePhoto, color, role } = req.body;
 
@@ -37,6 +38,7 @@ router.post('/', async (req, res) => {
 
     const [newMember] = await db.insert(familyMembers).values({
       userId,
+      familyId,
       name,
       email,
       profilePhoto,
@@ -54,7 +56,7 @@ router.post('/', async (req, res) => {
 // Update a family member
 router.put('/:id', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
     const memberId = parseInt(req.params.id);
     const { 
       name, 
@@ -72,7 +74,7 @@ router.put('/:id', async (req, res) => {
 
     console.log('UPDATE REQUEST:', {
       memberId,
-      userId,
+      familyId,
       body: req.body,
       frameColor,
       frameBorderColor,
@@ -81,7 +83,7 @@ router.put('/:id', async (req, res) => {
 
     // Verify ownership
     const [member] = await db.select().from(familyMembers)
-      .where(and(eq(familyMembers.id, memberId), eq(familyMembers.userId, userId)))
+      .where(and(eq(familyMembers.id, memberId), eq(familyMembers.familyId, familyId)))
       .limit(1);
 
     if (!member) {
@@ -153,12 +155,12 @@ router.put('/:id', async (req, res) => {
 // Delete a family member
 router.delete('/:id', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
     const memberId = parseInt(req.params.id);
 
     // Verify ownership
     const [member] = await db.select().from(familyMembers)
-      .where(and(eq(familyMembers.id, memberId), eq(familyMembers.userId, userId)))
+      .where(and(eq(familyMembers.id, memberId), eq(familyMembers.familyId, familyId)))
       .limit(1);
 
     if (!member) {
@@ -181,12 +183,12 @@ router.delete('/:id', async (req, res) => {
 // Get member with all programs
 router.get('/:id/programs', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
     const memberId = parseInt(req.params.id);
 
     // Verify ownership
     const [member] = await db.select().from(familyMembers)
-      .where(and(eq(familyMembers.id, memberId), eq(familyMembers.userId, userId)))
+      .where(and(eq(familyMembers.id, memberId), eq(familyMembers.familyId, familyId)))
       .limit(1);
 
     if (!member) {

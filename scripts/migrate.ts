@@ -22,8 +22,17 @@ async function runMigrations() {
     
     // Create tables if they don't exist
     await client.query(`
+      CREATE TABLE IF NOT EXISTS "families" (
+        "id" serial PRIMARY KEY NOT NULL,
+        "name" text NOT NULL,
+        "created_at" timestamp DEFAULT now() NOT NULL
+      );
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS "users" (
         "id" serial PRIMARY KEY NOT NULL,
+        "family_id" integer,
         "email" text NOT NULL,
         "password" text NOT NULL,
         "name" text NOT NULL,
@@ -57,6 +66,7 @@ async function runMigrations() {
       CREATE TABLE IF NOT EXISTS "family_members" (
         "id" serial PRIMARY KEY NOT NULL,
         "user_id" integer NOT NULL,
+        "family_id" integer,
         "name" text NOT NULL,
         "email" text,
         "profile_photo" text,
@@ -132,7 +142,25 @@ async function runMigrations() {
     // Add foreign keys
     await client.query(`
       DO $$ BEGIN
-        ALTER TABLE "activity_log" ADD CONSTRAINT "activity_log_user_id_users_id_fk" 
+        ALTER TABLE "users" ADD CONSTRAINT "users_family_id_families_id_fk"
+        FOREIGN KEY ("family_id") REFERENCES "families"("id") ON DELETE no action ON UPDATE no action;
+      EXCEPTION
+        WHEN duplicate_object THEN null;
+      END $$;
+    `);
+
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "family_members" ADD CONSTRAINT "family_members_family_id_families_id_fk"
+        FOREIGN KEY ("family_id") REFERENCES "families"("id") ON DELETE no action ON UPDATE no action;
+      EXCEPTION
+        WHEN duplicate_object THEN null;
+      END $$;
+    `);
+
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "activity_log" ADD CONSTRAINT "activity_log_user_id_users_id_fk"
         FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action;
       EXCEPTION
         WHEN duplicate_object THEN null;

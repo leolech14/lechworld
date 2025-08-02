@@ -98,9 +98,10 @@ router.put('/preferences', async (req, res) => {
 router.post('/test', async (req, res) => {
   try {
     const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
     const notificationService = new NotificationService();
-    
-    await notificationService.sendTestNotification(userId);
+
+    await notificationService.sendTestNotification(userId, familyId);
     
     res.json({ message: 'Test notification sent (check console)' });
   } catch (error) {
@@ -112,11 +113,13 @@ router.post('/test', async (req, res) => {
 // Get expiring miles preview
 router.get('/expiring-preview', async (req, res) => {
   try {
+    const familyId = req.session.familyId!;
     const userId = req.session.userId!;
     const days = parseInt(req.query.days as string) || 90;
-    
+
     const expirationService = new ExpirationService();
-    const expiringMiles = await expirationService.getUserExpiringMiles(userId, days);
+    const familyMiles = await expirationService.getFamilyExpiringMiles(familyId, days);
+    const expiringMiles = familyMiles.filter(m => m.userId === userId);
     
     // Group by program
     const grouped = expirationService.groupExpiringMilesByUser(expiringMiles);
@@ -155,8 +158,9 @@ router.post('/check-all', async (req, res) => {
       return res.status(403).json({ error: 'Admin access required' });
     }
     
+    const familyId = req.session.familyId!;
     const notificationService = new NotificationService();
-    await notificationService.checkAndNotifyExpirations();
+    await notificationService.checkAndNotifyExpirations(familyId);
     
     res.json({ message: 'Expiration check completed' });
   } catch (error) {

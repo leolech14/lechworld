@@ -1,6 +1,13 @@
 import { pgTable, serial, text, integer, timestamp, date, boolean, json, uniqueIndex, index, decimal } from 'drizzle-orm/pg-core';
 import { InferModel } from 'drizzle-orm';
 
+// Families table
+export const families = pgTable('families', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Users table
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -9,7 +16,7 @@ export const users = pgTable('users', {
   password: text('password'), // nullable for first-time login
   name: text('name').notNull(),
   role: text('role').default('member'),
-  familyMemberId: integer('family_member_id'),
+  familyId: integer('family_id').references(() => families.id).notNull(),
   isFirstLogin: boolean('is_first_login').default(true),
   lastLogin: timestamp('last_login'),
   passwordChangedAt: timestamp('password_changed_at'),
@@ -42,6 +49,7 @@ export const airlines = pgTable('airlines', {
 export const familyMembers = pgTable('family_members', {
   id: serial('id').primaryKey(),
   userId: integer('user_id').references(() => users.id).notNull(),
+  familyId: integer('family_id').references(() => families.id).notNull(),
   name: text('name').notNull(),
   email: text('email'),
   profilePhoto: text('profile_photo'),
@@ -127,6 +135,7 @@ export const notificationPreferences = pgTable('notification_preferences', {
 
 // Type exports
 export type User = InferModel<typeof users>;
+export type Family = InferModel<typeof families>;
 export type Airline = InferModel<typeof airlines>;
 export type FamilyMember = InferModel<typeof familyMembers>;
 export type MemberProgram = InferModel<typeof memberPrograms>;

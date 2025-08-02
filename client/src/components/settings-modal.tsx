@@ -91,8 +91,7 @@ export default function SettingsModal({ isOpen, onClose, userId }: SettingsModal
   
   // Fetch family members
   const { data: members = [] } = useQuery<FamilyMember[]>({
-    queryKey: [`/api/members/${userId}`],
-    enabled: !!userId,
+    queryKey: ["/api/members"],
   });
   
   // Fetch loyalty programs
@@ -617,8 +616,8 @@ export default function SettingsModal({ isOpen, onClose, userId }: SettingsModal
           onClose={async () => {
             setEditingMember(null);
             // Force refresh of members data
-            await queryClient.invalidateQueries({ 
-              queryKey: [`/api/members/${userId}`],
+            await queryClient.invalidateQueries({
+              queryKey: ["/api/members"],
               refetchType: 'all'
             });
           }}

@@ -21,8 +21,7 @@ export default function ProgramForm({ onSuccess, onCancel }: ProgramFormProps) {
   const queryClient = useQueryClient();
 
   const { data: members } = useQuery({
-    queryKey: ["/api/members", user?.id],
-    enabled: !!user?.id,
+    queryKey: ["/api/members"],
   });
 
   const { data: programs } = useQuery({

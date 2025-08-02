@@ -13,7 +13,7 @@ router.use(requireAuth);
 // Get transactions for a member program
 router.get('/member-program/:programId', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
     const programId = parseInt(req.params.programId);
 
     // Verify ownership
@@ -25,7 +25,7 @@ router.get('/member-program/:programId', async (req, res) => {
     .innerJoin(familyMembers, eq(memberPrograms.memberId, familyMembers.id))
     .where(and(
       eq(memberPrograms.id, programId),
-      eq(familyMembers.userId, userId)
+      eq(familyMembers.familyId, familyId)
     ))
     .limit(1);
 
@@ -49,7 +49,7 @@ router.get('/member-program/:programId', async (req, res) => {
 // Add a transaction
 router.post('/', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
     const { 
       memberProgramId, 
       miles, 
@@ -70,7 +70,7 @@ router.post('/', async (req, res) => {
     .innerJoin(airlines, eq(memberPrograms.airlineId, airlines.id))
     .where(and(
       eq(memberPrograms.id, memberProgramId),
-      eq(familyMembers.userId, userId)
+      eq(familyMembers.familyId, familyId)
     ))
     .limit(1);
 
@@ -115,7 +115,7 @@ router.post('/', async (req, res) => {
 // Get expiring miles across all programs
 router.get('/expiring', async (req, res) => {
   try {
-    const userId = req.session.userId!;
+    const familyId = req.session.familyId!;
     const days = parseInt(req.query.days as string) || 90;
     
     const cutoffDate = addMonths(new Date(), days / 30);
@@ -132,7 +132,7 @@ router.get('/expiring', async (req, res) => {
     .innerJoin(familyMembers, eq(memberPrograms.memberId, familyMembers.id))
     .innerJoin(airlines, eq(memberPrograms.airlineId, airlines.id))
     .where(and(
-      eq(familyMembers.userId, userId),
+      eq(familyMembers.familyId, familyId),
       gte(mileTransactions.miles, 0), // Only positive (earned) miles
       lte(mileTransactions.expirationDate, cutoffDate),
       gte(mileTransactions.expirationDate, new Date()) // Not already expired

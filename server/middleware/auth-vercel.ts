@@ -21,8 +21,8 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
     // Add user info to request
     (req as any).userId = decoded.userId;
-    (req as any).session = { userId: decoded.userId };
-
+    (req as any).session = { userId: decoded.userId, familyId: decoded.familyId };
+    
     next();
   } catch (error) {
     return res.status(401).json({ error: 'Unauthorized' });

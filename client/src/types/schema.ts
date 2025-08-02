@@ -7,7 +7,7 @@ export interface User {
   password?: string;
   name: string;
   role: string;
-  familyMemberId?: number | null;
+  familyId: number;
   isFirstLogin?: boolean;
   lastLogin?: Date | null;
   passwordChangedAt?: Date | null;
@@ -23,6 +23,7 @@ export interface FamilyMember {
   email?: string | null;
   role: string;
   userId?: number | null;
+  familyId?: number | null;
   isActive?: boolean;
   cpf?: string | null;
   phone?: string | null;

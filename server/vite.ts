@@ -18,7 +18,7 @@ export async function setupVite(app: Express, server: Server) {
   // Dynamic imports for development only
   const { createServer: createViteServer, createLogger } = await import("vite");
   const viteConfig = await import("../vite.config");
-  const { nanoid } = await import("nanoid");
+  const { randomUUID } = await import("crypto");
   
   const viteLogger = createLogger();
   
@@ -58,7 +58,7 @@ export async function setupVite(app: Express, server: Server) {
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
       template = template.replace(
         `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`,
+        `src="/src/main.tsx?v=${randomUUID()}"`,
       );
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
