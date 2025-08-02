@@ -63,3 +63,23 @@ ALTER TABLE family_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE loyalty_programs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE member_programs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+-- RLS Policies
+-- Users table: allow anonymous access for login flow
+CREATE POLICY "Anon can read users" ON users
+  FOR SELECT TO anon USING (true);
+
+CREATE POLICY "Anon can update users" ON users
+  FOR UPDATE TO anon USING (true) WITH CHECK (true);
+
+-- Authenticated users can manage all shared data
+CREATE POLICY "Authenticated access to family_members" ON family_members
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Authenticated access to loyalty_programs" ON loyalty_programs
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Authenticated access to member_programs" ON member_programs
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Authenticated access to activity_logs" ON activity_logs
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
