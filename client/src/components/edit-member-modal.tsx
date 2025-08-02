@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { User, Palette, Phone, Calendar, CreditCard, Mail } from "lucide-react";
+import { User, Palette, Phone, Calendar, CreditCard, Mail, Loader2, CheckCircle2 } from "lucide-react";
+import { useAutoSave } from "@/hooks/use-auto-save";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -134,6 +135,8 @@ const emojiOptions = [
 
 export default function EditMemberModal({ member, open, onClose, appearanceOnly = false }: EditMemberModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState(appearanceOnly ? "appearance" : "profile");
   
   
@@ -151,44 +154,54 @@ export default function EditMemberModal({ member, open, onClose, appearanceOnly 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
+  // Auto-save function
+  const autoSave = useCallback(async (data: typeof formData) => {
+    setIsSaving(true);
     try {
       const response = await fetch(`/api/members/${member.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        credentials: 'include',
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         throw new Error("Failed to update member");
       }
 
-      toast({
-        title: "Perfil atualizado!",
-        description: `As informações de ${formData.name} foram atualizadas.`,
-      });
-
-      // Invalidate and refetch all queries that might contain member data
+      // Silently invalidate queries
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["/api/members"], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ["/api/dashboard/members-with-programs"], refetchType: 'all' })
+        queryClient.invalidateQueries({ queryKey: ['members'] }),
+        queryClient.invalidateQueries({ queryKey: ['family-overview'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
       ]);
       
-      onClose();
+      setLastSaved(new Date());
     } catch (error) {
       toast({
-        title: "Erro ao atualizar",
-        description: "Não foi possível atualizar o perfil.",
+        title: "Erro ao salvar",
+        description: "As alterações não foram salvas",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
+  }, [member.id, queryClient, toast]);
+
+  // Use auto-save hook
+  useAutoSave({
+    data: formData,
+    onSave: autoSave,
+    delay: 300, // Save after 300ms of inactivity
+    enabled: open, // Only auto-save when modal is open
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Since we're auto-saving, just close the modal
+    onClose();
   };
 
   const handleColorSelect = (color: { bg: string; border: string }) => {
@@ -418,12 +431,23 @@ export default function EditMemberModal({ member, open, onClose, appearanceOnly 
               </div>
             </TabsContent>
 
-            <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Salvando..." : "Salvar Alterações"}
+            <DialogFooter className="mt-6 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                {isSaving && (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Salvando...</span>
+                  </>
+                )}
+                {!isSaving && lastSaved && (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span>Salvo automaticamente</span>
+                  </>
+                )}
+              </div>
+              <Button type="button" onClick={onClose}>
+                Fechar
               </Button>
             </DialogFooter>
           </form>

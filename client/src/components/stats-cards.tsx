@@ -37,21 +37,23 @@ export default function StatsCards({ stats, isLoading }: StatsCardsProps) {
     },
     {
       title: "Programas Ativos",
-      value: stats?.activePrograms || 0,
+      value: stats?.totalPrograms || 0,
       change: "+8%",
       icon: CreditCard,
       color: "text-[#A875DB]",
     },
     {
       title: "Pontos Totais",
-      value: stats?.totalPoints?.toLocaleString('pt-BR') || "0",
+      value: stats?.totalMiles?.toLocaleString('pt-BR') || "0",
       change: "+24%",
       icon: Star,
       color: "text-[#E5B84B]",
     },
     {
       title: "Valor Estimado",
-      value: stats?.estimatedValue || "R$ 0,00",
+      value: stats?.estimatedValue 
+        ? `R$ ${stats.estimatedValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+        : "R$ 0,00",
       change: "+18%",
       icon: TrendingUp,
       color: "text-[#E5A14B]",
@@ -63,7 +65,7 @@ export default function StatsCards({ stats, isLoading }: StatsCardsProps) {
       {cards.map((card, index) => {
         const Icon = card.icon;
         const isPointsCard = card.title === "Pontos Totais";
-        const pointsValue = stats?.totalPoints || 0;
+        const pointsValue = stats?.totalMiles || 0;
         
         return (
           <div key={index} className="stats-card-enhanced glass-card">

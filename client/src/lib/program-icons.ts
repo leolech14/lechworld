@@ -11,6 +11,7 @@ export interface ProgramIcon {
 const defaultIcons: Record<string, string> = {
   'LATAM': '/logos/latam-pass-logo.png',
   'LATAM Airlines': '/logos/latam-pass-logo.png',
+  'LATAM Pass': '/logos/latam-pass-logo.png',
   'Azul': '/logos/azul-tudoazul-logo.png',
   'TudoAzul': '/logos/azul-tudoazul-logo.png',
   'GOL': '/logos/gol-smiles-logo.png',
@@ -23,6 +24,10 @@ const defaultIcons: Record<string, string> = {
   'ALL - Accor Live Limitless': '/logos/accor-all-logo.png',
   'American Airlines': '/logos/AAdvantage-Logo.webp',
   'AAdvantage': '/logos/AAdvantage-Logo.webp',
+  'Turkish Airlines': '/logos/tap-milesgo-logo.png',  // Using TAP logo as placeholder
+  'Miles&Smiles': '/logos/tap-milesgo-logo.png',  // Using TAP logo as placeholder
+  'Copa Airlines': '/logos/avianca-lifemiles-logo.png',  // Using Avianca logo as placeholder
+  'ConnectMiles': '/logos/avianca-lifemiles-logo.png',  // Using Avianca logo as placeholder
 };
 
 export function getProgramIcon(program: any): { type: 'png' | 'color', value: string } {
@@ -32,8 +37,12 @@ export function getProgramIcon(program: any): { type: 'png' | 'color', value: st
     return { type: 'png', value: customIcon };
   }
   
-  // Check default icons by company name
-  const iconPath = defaultIcons[program.company] || defaultIcons[program.name];
+  // Check default icons by company name, program name, or programName
+  const iconPath = defaultIcons[program.company] || 
+                   defaultIcons[program.name] || 
+                   defaultIcons[program.programName] ||
+                   defaultIcons[program.airline?.name] ||
+                   defaultIcons[program.airline?.programName];
   if (iconPath) {
     return { type: 'png', value: iconPath };
   }

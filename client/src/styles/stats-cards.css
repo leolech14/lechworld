@@ -52,10 +52,10 @@
 .stats-label {
   font-size: 1rem;
   font-weight: 600;
-  color: #4A5568;
+  color: #1a202c; /* Darker color for better contrast */
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  opacity: 0.8;
+  opacity: 0.9; /* Less opacity reduction */
 }
 
 .stats-icon-wrapper {

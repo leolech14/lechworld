@@ -1,0 +1,12 @@
+{
+  "port": 4444,
+  "frontendPort": 4445,
+  "managedBy": "Universal Localhost Manager",
+  "projectType": "vite",
+  "createdAt": "2025-08-01T23:45:00.000Z",
+  "locked": true,
+  "ports": {
+    "backend": 4444,
+    "frontend": 4445
+  }
+}

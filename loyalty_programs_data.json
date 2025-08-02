@@ -1,0 +1,155 @@
+[
+  {
+    "airline": "LATAM Pass",
+    "name": "OSVANDRÉ",
+    "status": "PLATINUM",
+    "account": "20493592091",
+    "site_password": "L1e2c3h4",
+    "miles_password": "L1e2c3h4",
+    "miles": 44578,
+    "updated": "07/07/2025"
+  },
+  {
+    "airline": "LATAM Pass",
+    "name": "MARILISE",
+    "status": "GOLD",
+    "account": "47616237053",
+    "site_password": "M1@2r3i4",
+    "miles_password": "M1@2r3i4",
+    "miles": 59699,
+    "updated": "17/07/2025"
+  },
+  {
+    "airline": "LATAM Pass",
+    "name": "GRACIELA",
+    "status": "MULTIPLUS",
+    "account": "02424404011",
+    "site_password": "?",
+    "miles_password": "Graciela2019",
+    "miles": 10565,
+    "notes": "nenhuma das senhas deu certo"
+  },
+  {
+    "airline": "LATAM Pass",
+    "name": "LEONARDO",
+    "status": "MULTIPLUS",
+    "account": "02424403040",
+    "site_password": "Leo140195",
+    "miles_password": "Leo140195",
+    "miles": 10814,
+    "updated": "07/07/2025"
+  },
+  {
+    "airline": "GOL/Smiles",
+    "name": "OSVANDRE",
+    "status": "DIAMANTE",
+    "account": "001827136",
+    "miles_password": "2049",
+    "site_password": "M1a2r3i4#",
+    "miles": 252713,
+    "updated": "07/07/2025"
+  },
+  {
+    "airline": "GOL/Smiles",
+    "name": "MARILISE",
+    "status": "PRATA",
+    "account": "001106910",
+    "miles_password": "4736",
+    "site_password": "?",
+    "miles": 30109
+  },
+  {
+    "airline": "GOL/Smiles",
+    "name": "GRACIELA",
+    "status": "",
+    "account": "226446080",
+    "miles_password": "2419",
+    "site_password": "?",
+    "miles": 26953
+  },
+  {
+    "airline": "GOL/Smiles",
+    "name": "LEONARDO",
+    "status": "",
+    "account": "226446264",
+    "miles_password": "3040",
+    "site_password": "?",
+    "miles": 5888
+  },
+  {
+    "airline": "Turkish Airlines",
+    "name": "OSVANDRE",
+    "account": "164786073",
+    "miles_password": "122436",
+    "site_password": "122436",
+    "updated": "07/07/2025"
+  },
+  {
+    "airline": "Turkish Airlines",
+    "name": "MARILISE",
+    "account": "382486138",
+    "miles_password": "122436",
+    "site_password": "122436",
+    "updated": "07/07/2025"
+  },
+  {
+    "airline": "American Airlines",
+    "name": "OSVANDRE",
+    "account": "48U8B80",
+    "site_password": "122436"
+  },
+  {
+    "airline": "American Airlines",
+    "name": "MARILISE",
+    "account": "49U6B98",
+    "site_password": "122436"
+  },
+  {
+    "airline": "American Airlines",
+    "name": "LEONARDO",
+    "account": "069MX2",
+    "site_password": "122436"
+  },
+  {
+    "airline": "Copa Airlines",
+    "name": "OSVANDRE",
+    "account": "294500664",
+    "miles_password": "2436",
+    "site_password": "Ol122436#",
+    "updated": "07/07/2025"
+  },
+  {
+    "airline": "Azul",
+    "name": "OSVANDRÉ",
+    "status": "DIAMANTE",
+    "account": "5110011922",
+    "password": "ol122436",
+    "miles": 11114,
+    "updated": "07/07/2025"
+  },
+  {
+    "airline": "Azul",
+    "name": "MARILISE",
+    "status": "SAFIRA",
+    "account": "4450011793",
+    "password": "apiot30",
+    "miles": 24437,
+    "updated": "07/07/2025"
+  },
+  {
+    "airline": "Azul",
+    "name": "GRACIELA",
+    "account": "4270015190",
+    "password": "marilise45",
+    "miles": 4478,
+    "updated": "07/07/2025"
+  },
+  {
+    "airline": "Azul",
+    "name": "LEONARDO",
+    "account": "2960015746",
+    "password": "osvandre55",
+    "miles": 285,
+    "updated": "07/07/2025"
+  }
+]

@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Localhost Manager - How It Works</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --bg-card-hover: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-4: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.03;
+            background-image: 
+                radial-gradient(circle at 20% 50%, var(--accent-blue) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--accent-purple) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, var(--accent-green) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        /* Header */
+        header {
+            padding: 3rem 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            background: var(--gradient-3);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); }
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #a0a0a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Main content */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        /* Command demo */
+        .command-demo {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 4rem;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terminal {
+            background: #000;
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .terminal-title {
+            flex: 1;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .command-line {
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .prompt {
+            color: var(--accent-green);
+            margin-right: 0.5rem;
+        }
+
+        .command {
+            color: var(--text-primary);
+        }
+
+        .output {
+            color: var(--text-secondary);
+            margin-left: 0;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .output.success { color: var(--accent-green); }
+        .output.info { color: var(--accent-blue); }
+        .output.warning { color: var(--accent-orange); }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .typing {
+            display: inline-block;
+            overflow: hidden;
+            border-right: 2px solid var(--accent-green);
+            white-space: nowrap;
+            animation: typing 1s steps(3, end), blink 0.5s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 3ch; }
+        }
+
+        @keyframes blink {
+            50% { border-color: transparent; }
+        }
+
+        /* Flow diagram */
+        .flow-section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .flow-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .flow-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .flow-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-1);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .flow-card:hover {
+            transform: translateY(-4px);
+            background: var(--bg-card-hover);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .flow-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .flow-card.blue::before { background: var(--gradient-3); }
+        .flow-card.purple::before { background: var(--gradient-1); }
+        .flow-card.green::before { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
+        .flow-card.orange::before { background: var(--gradient-4); }
+
+        .flow-number {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .flow-card.blue .flow-number { background: var(--gradient-3); }
+        .flow-card.purple .flow-number { background: var(--gradient-1); }
+        .flow-card.green .flow-number { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
+        .flow-card.orange .flow-number { background: var(--gradient-4); }
+
+        .flow-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .flow-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Features grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-blue);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Port management */
+        .port-manager {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .port-list {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .port-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .port-item:hover {
+            border-color: var(--accent-blue);
+            transform: translateX(4px);
+        }
+
+        .port-number {
+            font-weight: 700;
+            color: var(--accent-blue);
+            font-size: 1.1rem;
+        }
+
+        .port-project {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .port-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        .status-dot.inactive {
+            background: var(--text-secondary);
+            animation: none;
+        }
+
+        /* Commands reference */
+        .commands-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .command-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .command-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--accent-blue);
+        }
+
+        .command-example {
+            background: #000;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .command-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Interactive demo */
+        .interactive-demo {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 4rem;
+            text-align: center;
+        }
+
+        .demo-button {
+            background: var(--gradient-3);
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 1rem;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .demo-output {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            min-height: 100px;
+            display: none;
+            text-align: left;
+            font-family: monospace;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .container { padding: 2rem 1rem; }
+            .flow-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <header>
+        <div class="logo">🚀</div>
+        <h1>Universal Localhost Manager</h1>
+        <p class="subtitle">Never struggle with localhost setup again. One command to rule them all.</p>
+    </header>
+
+    <div class="container">
+        <!-- Command Demo -->
+        <div class="command-demo">
+            <h2 class="section-title" style="margin-bottom: 1.5rem;">See It In Action</h2>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
+                    </div>
+                    <div class="terminal-title">Terminal - PROJECT_lechworld</div>
+                </div>
+                <div id="terminal-content">
+                    <div class="command-line">
+                        <span class="prompt">$</span>
+                        <span class="command typing">dev</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <section class="flow-section">
+            <h2 class="section-title">How It Works</h2>
+            <div class="flow-container">
+                <div class="flow-card blue">
+                    <div class="flow-number">1</div>
+                    <h3 class="flow-title">Project Detection</h3>
+                    <p class="flow-description">Automatically detects Node.js, Python, Ruby, Go, or Rust projects by analyzing your files</p>
+                </div>
+                <div class="flow-card purple">
+                    <div class="flow-number">2</div>
+                    <h3 class="flow-title">Port Assignment</h3>
+                    <p class="flow-description">Assigns a unique port to each project and remembers it for future sessions</p>
+                </div>
+                <div class="flow-card green">
+                    <div class="flow-number">3</div>
+                    <h3 class="flow-title">Process Cleanup</h3>
+                    <p class="flow-description">Kills any zombie processes and frees up the required port automatically</p>
+                </div>
+                <div class="flow-card orange">
+                    <div class="flow-number">4</div>
+                    <h3 class="flow-title">Database Magic</h3>
+                    <p class="flow-description">Detects and starts PostgreSQL, MySQL, MongoDB, or Redis based on your config</p>
+                </div>
+                <div class="flow-card blue">
+                    <div class="flow-number">5</div>
+                    <h3 class="flow-title">Dependencies</h3>
+                    <p class="flow-description">Installs missing packages with npm, pip, bundle, or cargo as needed</p>
+                </div>
+                <div class="flow-card purple">
+                    <div class="flow-number">6</div>
+                    <h3 class="flow-title">Launch Server</h3>
+                    <p class="flow-description">Starts your development server with the correct command and environment</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Features -->
+        <section class="flow-section">
+            <h2 class="section-title">Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">Smart Detection</h3>
+                    <p class="feature-desc">Recognizes project type from package.json, requirements.txt, Gemfile, etc.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3 class="feature-title">Port Memory</h3>
+                    <p class="feature-desc">Each project gets its own port, remembered between sessions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🗄️</div>
+                    <h3 class="feature-title">Database Auto-Start</h3>
+                    <p class="feature-desc">Starts PostgreSQL, MySQL, MongoDB, Redis automatically</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧹</div>
+                    <h3 class="feature-title">Process Cleanup</h3>
+                    <p class="feature-desc">Kills zombie processes and frees ports automatically</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h3 class="feature-title">Dependency Install</h3>
+                    <p class="feature-desc">Runs npm install, pip install, bundle install as needed</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3 class="feature-title">Migration Runner</h3>
+                    <p class="feature-desc">Executes database migrations automatically</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <h3 class="feature-title">ENV Setup</h3>
+                    <p class="feature-desc">Creates .env from .env.example, updates PORT</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚦</div>
+                    <h3 class="feature-title">Parallel Safe</h3>
+                    <p class="feature-desc">Multiple Claude sessions work without conflicts</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Port Management -->
+        <section class="port-manager">
+            <h2 class="section-title">Port Management</h2>
+            <div class="port-list">
+                <div class="port-item">
+                    <div>
+                        <div class="port-number">Port 3000</div>
+                        <div class="port-project">/Users/lech/my-express-app</div>
+                    </div>
+                    <div class="port-status">
+                        <span class="status-dot"></span>
+                        <span>Active</span>
+                    </div>
+                </div>
+                <div class="port-item">
+                    <div>
+                        <div class="port-number">Port 5173</div>
+                        <div class="port-project">/Users/lech/PROJECT_lechworld</div>
+                    </div>
+                    <div class="port-status">
+                        <span class="status-dot inactive"></span>
+                        <span>Reserved</span>
+                    </div>
+                </div>
+                <div class="port-item">
+                    <div>
+                        <div class="port-number">Port 8000</div>
+                        <div class="port-project">/Users/lech/django-project</div>
+                    </div>
+                    <div class="port-status">
+                        <span class="status-dot inactive"></span>
+                        <span>Reserved</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Commands Reference -->
+        <section class="flow-section">
+            <h2 class="section-title">Command Reference</h2>
+            <div class="commands-grid">
+                <div class="command-card">
+                    <h3>Basic Usage</h3>
+                    <div class="command-example">$ dev</div>
+                    <p class="command-desc">Start any project automatically</p>
+                    
+                    <div class="command-example">$ dev npm run custom-start</div>
+                    <p class="command-desc">Override with custom command</p>
+                </div>
+                
+                <div class="command-card">
+                    <h3>Port Management</h3>
+                    <div class="command-example">$ port-manager list</div>
+                    <p class="command-desc">Show all port allocations</p>
+                    
+                    <div class="command-example">$ port-manager free 3000</div>
+                    <p class="command-desc">Free a specific port</p>
+                    
+                    <div class="command-example">$ port-manager kill-all</div>
+                    <p class="command-desc">Kill all development servers</p>
+                </div>
+                
+                <div class="command-card">
+                    <h3>Troubleshooting</h3>
+                    <div class="command-example">$ PORT=8080 dev</div>
+                    <p class="command-desc">Force a specific port</p>
+                    
+                    <div class="command-example">$ SKIP_DB=1 dev</div>
+                    <p class="command-desc">Skip database startup</p>
+                    
+                    <div class="command-example">$ DEBUG=1 dev</div>
+                    <p class="command-desc">Run in debug mode</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Demo -->
+        <section class="interactive-demo">
+            <h2 class="section-title">Try It Out</h2>
+            <p style="margin-bottom: 2rem; color: var(--text-secondary);">Click the buttons to see what happens behind the scenes</p>
+            
+            <button class="demo-button" onclick="showProjectDetection()">Detect Project Type</button>
+            <button class="demo-button" onclick="showPortAssignment()">Assign Port</button>
+            <button class="demo-button" onclick="showDatabaseStart()">Start Database</button>
+            
+            <div id="demo-output" class="demo-output"></div>
+        </section>
+    </div>
+
+    <footer>
+        <p>Created for Claude Code users who just want things to work ✨</p>
+        <p style="margin-top: 1rem; font-size: 0.9rem;">Part of the .claude configuration system</p>
+    </footer>
+
+    <script>
+        // Terminal animation
+        setTimeout(() => {
+            const terminal = document.getElementById('terminal-content');
+            const outputs = [
+                { text: '🚀 Universal Localhost Manager', class: 'info', delay: 500 },
+                { text: '📁 Project: PROJECT_lechworld', class: 'info', delay: 200 },
+                { text: '📍 Path: /Users/lech/PROJECT_lechworld', class: 'info', delay: 200 },
+                { text: '', delay: 100 },
+                { text: '🔍 Detected project type: vite', class: 'success', delay: 300 },
+                { text: '📌 Using port: 5173', class: 'success', delay: 200 },
+                { text: '🧹 Cleaning up old processes...', class: 'warning', delay: 400 },
+                { text: '', delay: 100 },
+                { text: '🗄️  Checking databases...', class: 'info', delay: 300 },
+                { text: '🐘 Starting PostgreSQL...', class: 'warning', delay: 500 },
+                { text: '✅ PostgreSQL is running', class: 'success', delay: 300 },
+                { text: '', delay: 100 },
+                { text: '🛠️  Running project setup...', class: 'info', delay: 200 },
+                { text: '🔄 Running database migrations...', class: 'warning', delay: 400 },
+                { text: '', delay: 100 },
+                { text: '✨ Starting development server...', class: 'success', delay: 300 },
+                { text: '📍 URL: http://localhost:5173', class: 'success', delay: 100 },
+                { text: '🎯 Port: 5173', class: 'success', delay: 100 },
+                { text: '🏃 Command: npm run dev', class: 'success', delay: 100 },
+            ];
+
+            let totalDelay = 1000;
+            outputs.forEach(output => {
+                setTimeout(() => {
+                    const line = document.createElement('div');
+                    line.className = `command-line output ${output.class || ''}`;
+                    line.style.animationDelay = '0s';
+                    line.textContent = output.text;
+                    terminal.appendChild(line);
+                    
+                    // Scroll to bottom
+                    terminal.scrollTop = terminal.scrollHeight;
+                }, totalDelay);
+                totalDelay += output.delay;
+            });
+        }, 1500);
+
+        // Interactive demo functions
+        function showProjectDetection() {
+            const output = document.getElementById('demo-output');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div style="color: var(--accent-blue)">🔍 Scanning project files...</div>
+                <div style="margin-top: 0.5rem;">Found: package.json</div>
+                <div>  ├─ "vite": "^5.0.0" ✓</div>
+                <div>  ├─ "react": "^18.2.0" ✓</div>
+                <div>  └─ "express": "^4.18.0" ✓</div>
+                <div style="margin-top: 0.5rem; color: var(--accent-green)">✅ Detected: Vite + React + Express project</div>
+            `;
+        }
+
+        function showPortAssignment() {
+            const output = document.getElementById('demo-output');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div style="color: var(--accent-purple)">📊 Checking port assignments...</div>
+                <div style="margin-top: 0.5rem;">Reserved ports:</div>
+                <div>  ├─ 3000: /Users/lech/my-express-app</div>
+                <div>  ├─ 8000: /Users/lech/django-project</div>
+                <div>  └─ 8080: /Users/lech/java-app</div>
+                <div style="margin-top: 0.5rem;">Checking port 5173... Available!</div>
+                <div style="color: var(--accent-green)">✅ Assigned port 5173 to current project</div>
+            `;
+        }
+
+        function showDatabaseStart() {
+            const output = document.getElementById('demo-output');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div style="color: var(--accent-orange)">🗄️  Analyzing database requirements...</div>
+                <div style="margin-top: 0.5rem;">Found in .env:</div>
+                <div>  DATABASE_URL=postgresql://localhost:5432/lechworld</div>
+                <div style="margin-top: 0.5rem; color: var(--accent-blue)">🐘 Starting PostgreSQL...</div>
+                <div>  brew services start postgresql@16</div>
+                <div style="margin-top: 0.5rem;">Waiting for connection...</div>
+                <div style="color: var(--accent-green)">✅ PostgreSQL is ready on port 5432</div>
+            `;
+        }
+
+        // Add hover effects to flow cards
+        document.querySelectorAll('.flow-card').forEach(card => {
+            card.addEventListener('click', () => {
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    card.style.transform = '';
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -5,6 +5,7 @@
  * @connects-to PostgreSQL database (via DATABASE_URL)
  */
 import { Pool } from 'pg';
+import bcrypt from 'bcryptjs';
 import type { 
   User, FamilyMember, LoyaltyProgram, MemberProgram, ActivityLog,
   InsertUser, InsertFamilyMember, InsertLoyaltyProgram, InsertMemberProgram
@@ -96,11 +97,31 @@ export const storage = {
     );
     return rows[0] || null;
   },
+  
+  async getUserByUsername(username: string): Promise<User | null> {
+    const { rows } = await pool.query(
+      'SELECT * FROM users WHERE LOWER(username) = LOWER($1)',
+      [username]
+    );
+    return rows[0] || null;
+  },
 
   async createUser(userData: InsertUser): Promise<User> {
+    // Hash password before storing
+    const hashedPassword = userData.password ? await bcrypt.hash(userData.password, 10) : null;
+    
     const { rows } = await pool.query(
       'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *',
-      [userData.name, userData.email, userData.password]
+      [userData.name, userData.email, hashedPassword]
+    );
+    return rows[0];
+  },
+  
+  async updateUserPassword(userId: number, newPassword: string): Promise<User> {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const { rows } = await pool.query(
+      'UPDATE users SET password = $1 WHERE id = $2 RETURNING *',
+      [hashedPassword, userId]
     );
     return rows[0];
   },
@@ -430,7 +451,8 @@ export const storage = {
                 'name', lp.name,
                 'company', lp.company,
                 'logoColor', lp.logo_color,
-                'website', lp.website
+                'website', lp.website,
+                'pointValue', lp.point_value
               )
             )
           ) FILTER (WHERE mp.id IS NOT NULL), 
@@ -447,7 +469,7 @@ export const storage = {
     const { rows } = await pool.query(query, [userId]);
     
     
-    // Transform snake_case to camelCase for all members
+    // Transform snake_case to camelCase and calculate estimated values
     return rows.map(member => ({
       ...member,
       userId: member.user_id,
@@ -460,6 +482,16 @@ export const storage = {
       frame_color: member.frame_color,
       frame_border_color: member.frame_border_color,
       profile_emoji: member.profile_emoji,
+      // Calculate estimated value for each program
+      programs: member.programs.map((prog: any) => ({
+        ...prog,
+        estimatedValue: prog.pointsBalance > 0 
+          ? new Intl.NumberFormat('pt-BR', {
+              style: 'currency',
+              currency: 'BRL'
+            }).format(calculateEstimatedValue(prog.pointsBalance, prog.program.company))
+          : 'R$ 0,00'
+      }))
     }));
   },
 
@@ -524,8 +556,15 @@ export const storage = {
   // Activity logs
   async logActivity(activity: Partial<ActivityLog>): Promise<void> {
     await pool.query(
-      'INSERT INTO activity_logs (user_id, action, description, metadata) VALUES ($1, $2, $3, $4)',
-      [activity.userId, activity.action, activity.description, JSON.stringify(activity.metadata || {})]
+      'INSERT INTO activity_log (user_id, member_id, action, category, description, metadata) VALUES ($1, $2, $3, $4, $5, $6)',
+      [
+        activity.userId, 
+        activity.memberId || null,
+        activity.action, 
+        activity.category || 'general',
+        activity.description, 
+        JSON.stringify(activity.metadata || {})
+      ]
     );
   },
 

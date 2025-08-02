@@ -227,12 +227,21 @@ export default function MembersTable({
                   <td className="px-6 py-4">
                     <div 
                       className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => setProgramDetails({
-                        program: item.program,
-                        memberProgram: item.memberProgram,
-                        memberId: item.member.id,
-                        memberName: item.member.name
-                      })}
+                      onClick={() => {
+                        console.log('Setting program details:', {
+                          item,
+                          program: item.program,
+                          memberProgram: item.memberProgram,
+                          memberId: item.member.id,
+                          memberName: item.member.name
+                        });
+                        setProgramDetails({
+                          program: item.program,
+                          memberProgram: item.memberProgram,
+                          memberId: item.member.id,
+                          memberName: item.member.name
+                        });
+                      }}
                       title={`Clique para ver detalhes de ${item.program.company}`}
                     >
                       {(() => {
@@ -258,12 +267,21 @@ export default function MembersTable({
                   <td className="px-6 py-4">
                     <div 
                       className="text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => setProgramDetails({
-                        program: item.program,
-                        memberProgram: item.memberProgram,
-                        memberId: item.member.id,
-                        memberName: item.member.name
-                      })}
+                      onClick={() => {
+                        console.log('Setting program details:', {
+                          item,
+                          program: item.program,
+                          memberProgram: item.memberProgram,
+                          memberId: item.member.id,
+                          memberName: item.member.name
+                        });
+                        setProgramDetails({
+                          program: item.program,
+                          memberProgram: item.memberProgram,
+                          memberId: item.member.id,
+                          memberName: item.member.name
+                        });
+                      }}
                       title={`Clique para ver detalhes da conta de ${item.member.name} em ${item.program.company}`}
                     >
                       <PointsDisplay points={item.memberProgram.pointsBalance || 0} />

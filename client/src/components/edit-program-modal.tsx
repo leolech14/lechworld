@@ -79,6 +79,7 @@ export default function EditProgramModal({ program, open, onClose, embedded = fa
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify(updateData),
       });
 

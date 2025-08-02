@@ -42,6 +42,11 @@ const MILES_VALUES_IN_CENTS: Record<string, number> = {
 const DEFAULT_VALUE_IN_CENTS = 3000;
 
 export function getMilesValuePerThousand(programName: string): number {
+  // Handle null/undefined programName
+  if (!programName) {
+    return DEFAULT_VALUE_IN_CENTS / 100;
+  }
+  
   // Tenta encontrar o programa pelo nome exato
   const valueInCents = MILES_VALUES_IN_CENTS[programName] || 
                        MILES_VALUES_IN_CENTS[programName.toLowerCase()] ||

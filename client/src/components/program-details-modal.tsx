@@ -4,7 +4,7 @@
  * @connects-to store/auth-store.ts
  * @api-endpoints PUT /api/member-programs/:id
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -12,12 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ExternalLink, DollarSign, Key, Globe, Plus, X, Save } from "lucide-react";
+import { ExternalLink, DollarSign, Key, Globe, Plus, X, Save, Loader2, CheckCircle2 } from "lucide-react";
 import { LoyaltyProgram, MemberProgram, FamilyMember } from "@shared/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import EditProgramModal from "./edit-program-modal";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useAutoSave } from "@/hooks/use-auto-save";
 
 interface ProgramDetailsModalProps {
   isOpen: boolean;
@@ -41,6 +42,7 @@ export default function ProgramDetailsModal({
   const queryClient = useQueryClient();
   const [editingProgram, setEditingProgram] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   
   // Debug log
   console.log('ProgramDetailsModal props:', { program, memberProgram, memberId, memberName });
@@ -52,20 +54,15 @@ export default function ProgramDetailsModal({
   const getInitialAccountData = () => {
     console.log('Getting initial account data:', {
       memberProgram,
-      customFields: memberProgram?.customFields,
-      accountData: memberProgram?.customFields?.accountData
+      customFields: memberProgram?.customFields
     });
     
-    if (memberProgram?.customFields?.accountData) {
-      return memberProgram.customFields.accountData;
+    // If we have customFields, use them
+    if (memberProgram?.customFields && Array.isArray(memberProgram.customFields) && memberProgram.customFields.length > 0) {
+      return memberProgram.customFields;
     }
-    // Migrate from old fields if they exist
-    if (memberProgram?.login || memberProgram?.password) {
-      return [
-        { id: '1', label: 'Login / Email', value: memberProgram.login || '' },
-        { id: '2', label: 'Senha', value: memberProgram.password || '' }
-      ];
-    }
+    
+    // Default fields for new programs
     return [
       { id: '1', label: 'Login / Email', value: '' },
       { id: '2', label: 'Senha', value: '' }
@@ -157,53 +154,122 @@ export default function ProgramDetailsModal({
     setAccountData(prev => prev.filter(field => field.id !== id));
   };
   
-  // Manual save function
-  const handleManualSave = async () => {
-    console.log('Manual save - mpId:', mpId, 'memberProgram:', memberProgram);
-    
-    if (!mpId) {
-      toast({
-        title: "Erro",
-        description: "ID do programa não encontrado",
-        variant: "destructive",
-      });
-      return;
-    }
-    
+  // Auto-save function
+  const autoSave = useCallback(async (data: any) => {
     setIsSaving(true);
+    
     try {
-      const payload = {
-        customFields: { accountData },
-        accountNumber: memberProgram?.accountNumber,
-        pointsBalance: memberProgram?.pointsBalance || 0,
-      };
+      // Check if we need to create or update
+      const isNewProgram = !mpId && !memberProgram?.id;
       
-      console.log('Saving with payload:', payload);
-      
-      const response = await fetch(`/api/member-programs/${mpId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      console.log('Save response:', response.status, response.statusText);
-
-      if (response.ok) {
-        queryClient.invalidateQueries({ queryKey: ["/api/dashboard/members-with-programs"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/member-programs"] });
-        
-        const data = await response.json();
-        queryClient.setQueryData(["/api/member-programs", mpId], data);
-        
-        toast({
-          title: "Salvo com sucesso!",
-          description: "Dados da conta foram salvos",
-          duration: 3000,
+      if (isNewProgram && program) {
+        console.log('Creating new member-program relationship:', {
+          program,
+          programId: program.id,
+          memberId,
+          memberName,
+          data
         });
+        
+        if (!memberId) {
+          throw new Error('Member ID não encontrado');
+        }
+        
+        console.log('🔍 Creating program with custom fields:', {
+          programId: program.id,
+          customFields: data
+        });
+        
+        // Create new member-program
+        const response = await fetch('/api/programs/member/' + memberId, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            airlineId: program.id,
+            memberNumber: '', // Will be stored in customFields
+            statusLevel: 'basic',
+            currentMiles: 0,
+            customFields: data // Send the entire data array as-is
+          }),
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('Created new member-program:', result);
+          
+          // Refresh the data
+          queryClient.invalidateQueries({ queryKey: ["/api/dashboard/members-with-programs"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/programs"] });
+          
+          setLastSaved(new Date());
+          toast({
+            title: "Programa adicionado!",
+            description: "Suas credenciais foram salvas com sucesso",
+            duration: 3000,
+          });
+          
+          // Close modal to refresh with new data
+          setTimeout(() => onClose(), 1000);
+        } else {
+          const errorText = await response.text();
+          console.error('Failed to create member-program:', errorText);
+          throw new Error(`Falha ao criar programa: ${response.status}`);
+        }
       } else {
-        const errorText = await response.text();
-        console.error('Save failed:', errorText);
-        throw new Error(`Falha ao salvar: ${response.status} ${response.statusText}`);
+        // Update existing member-program
+        const programId = mpId || memberProgram?.id;
+        console.log('Updating existing member-program:', {
+          programId,
+          mpId,
+          memberProgram,
+          hasId: !!programId
+        });
+        
+        if (!programId) {
+          console.error('No program ID for update, this should have been a create!');
+          throw new Error('ID do programa não encontrado');
+        }
+        
+        console.log('🔍 Saving custom fields:', {
+          programId,
+          customFields: data
+        });
+        
+        const response = await fetch(`/api/programs/${programId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            memberNumber: memberProgram?.memberNumber || '',
+            currentMiles: memberProgram?.pointsBalance || 0,
+            statusLevel: memberProgram?.statusLevel || 'basic',
+            customFields: data // Send the entire data array as-is
+          }),
+        });
+
+        console.log('Update response:', response.status, response.statusText);
+
+        if (response.ok) {
+          queryClient.invalidateQueries({ queryKey: ["/api/dashboard/members-with-programs"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/member-programs"] });
+          
+          const data = await response.json();
+          queryClient.setQueryData(["/api/member-programs", programId], data);
+          
+          setLastSaved(new Date());
+          toast({
+            title: "Salvo com sucesso!",
+            description: "Dados da conta foram atualizados",
+            duration: 3000,
+          });
+        } else {
+          const errorText = await response.text();
+          console.error('Update failed - Status:', response.status);
+          console.error('Error details:', errorText);
+          console.error('Request URL:', `/api/programs/${programId}`);
+          throw new Error(`Falha ao atualizar: ${response.status} ${response.statusText}`);
+        }
       }
     } catch (error) {
       console.error('Error saving account data:', error);
@@ -215,11 +281,19 @@ export default function ProgramDetailsModal({
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [mpId, memberProgram, queryClient, toast, program, memberId]);
 
-  // Calculate value per thousand points
+  // Use auto-save hook
+  useAutoSave({
+    data: accountData,
+    onSave: autoSave,
+    delay: 300, // Save after 300ms of inactivity
+    enabled: isOpen && (!!mpId || !!memberProgram?.id), // Only auto-save when modal is open and has valid ID
+  });
+
+  // Calculate value per thousand points (pointValue is already per point in the database)
   const valuePerThousand = program.pointValue ? 
-    (parseFloat(program.pointValue) * 1000).toFixed(2) : '10.00';
+    (parseFloat(program.pointValue) * 1000).toFixed(2) : '30.00';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -238,7 +312,7 @@ export default function ProgramDetailsModal({
                 )}
               </AvatarFallback>
             </Avatar>
-            Conta {program.company} {memberName ? `- ${memberName}` : ''}
+            Conta {program.company || program.name || program.programName} {memberName ? `- ${memberName}` : ''}
           </DialogTitle>
         </DialogHeader>
 
@@ -348,20 +422,24 @@ export default function ProgramDetailsModal({
                   </div>
                 )}
                 
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground italic">
-                    As alterações são salvas automaticamente após 1 segundo
-                  </p>
-                  
-                  <Button
-                    onClick={handleManualSave}
-                    disabled={isSaving || !mpId}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    {isSaving ? 'Salvando...' : 'Salvar Agora'}
-                  </Button>
+                <div className="mt-4 pt-4 border-t">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {isSaving && (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Salvando...</span>
+                      </>
+                    )}
+                    {!isSaving && lastSaved && (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <span>Salvo automaticamente</span>
+                      </>
+                    )}
+                    {!isSaving && !lastSaved && (
+                      <span className="text-xs">As alterações são salvas automaticamente</span>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

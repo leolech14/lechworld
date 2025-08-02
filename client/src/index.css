@@ -43,11 +43,11 @@
   --bg-glass: hsla(210, 85%, 75%, 0.15);
   
   /* Enhanced liquid glass variables - Blue primary */
-  --liquid-glass-bg: rgba(240, 248, 255, 0.25);
+  --liquid-glass-bg: rgba(255, 255, 255, 0.7);
   --liquid-glass-border: rgba(96, 165, 250, 0.3);
   --liquid-glass-shadow: 0 8px 32px 0 rgba(96, 165, 250, 0.2);
   --liquid-glass-blur: blur(20px);
-  --liquid-glass-hover: rgba(240, 248, 255, 0.35);
+  --liquid-glass-hover: rgba(255, 255, 255, 0.8);
   
   /* Orange accent colors - for details only */
   --orange-accent: hsl(25, 85%, 65%);
@@ -87,6 +87,13 @@
   --destructive: hsl(0, 62.8%, 30.6%);
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(213, 94%, 68%);
+  
+  /* Dark mode glass variables */
+  --liquid-glass-bg: rgba(10, 10, 10, 0.6);
+  --liquid-glass-border: rgba(96, 165, 250, 0.2);
+  --liquid-glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --liquid-glass-blur: blur(20px);
+  --liquid-glass-hover: rgba(10, 10, 10, 0.7);
 }
 
 @layer base {

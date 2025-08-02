@@ -34,6 +34,8 @@ import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import SettingsModal from "@/components/settings-modal";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { getDashboardStats, getFamilyOverview } from "@/services/dashboard";
+import { getMembers } from "@/services/members";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
@@ -69,17 +71,20 @@ export default function Dashboard() {
   }, []);
 
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ["/api/dashboard/stats", user?.id],
+    queryKey: ['dashboard-stats'],
+    queryFn: getDashboardStats,
     enabled: !!user?.id,
   });
 
-  const { data: membersWithPrograms, isLoading: membersLoading } = useQuery({
-    queryKey: ["/api/dashboard/members-with-programs", user?.id],
+  const { data: familyOverview, isLoading: membersLoading } = useQuery({
+    queryKey: ['family-overview'],
+    queryFn: getFamilyOverview,
     enabled: !!user?.id,
   });
 
-  const { data: activities, isLoading: activitiesLoading } = useQuery({
-    queryKey: ["/api/activity", user?.id],
+  const { data: members } = useQuery({
+    queryKey: ['members'],
+    queryFn: getMembers,
     enabled: !!user?.id,
   });
 
@@ -188,14 +193,14 @@ export default function Dashboard() {
 
         {/* Members and Programs Table */}
         <MembersTable 
-          data={membersWithPrograms} 
-          isLoading={membersLoading}
+          data={familyOverview || []} 
+          isLoading={membersLoading || !familyOverview}
           sortBy={sortBy}
           sortOrder={sortOrder}
         />
 
         {/* Quick Actions */}
-        <QuickActions activities={activities} isLoading={activitiesLoading} />
+        <QuickActions activities={[]} isLoading={false} />
       </main>
 
       {/* Mobile WhatsApp Components */}

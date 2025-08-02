@@ -21,6 +21,17 @@ export default function MemberFrame({ member, variant = 'default', className = '
       onClick();
     }
   };
+  
+  // Determine text color based on background brightness
+  const getBrightness = (color: string) => {
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000;
+  };
+  
+  const textColor = getBrightness(colors.bg) > 128 ? '#1a1a1a' : '#ffffff';
 
   return (
     <div 
@@ -30,6 +41,7 @@ export default function MemberFrame({ member, variant = 'default', className = '
         border: `2px solid ${colors.border}`,
         width: width || undefined,
         display: 'flex',
+        color: textColor,
       }}
       onClick={handleClick}
       role={clickable ? "button" : undefined}

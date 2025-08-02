@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Member Update</title>
+</head>
+<body>
+    <h1>Test Member Update</h1>
+    <button onclick="testUpdate()">Test Update</button>
+    <pre id="output"></pre>
+
+    <script>
+        const output = document.getElementById('output');
+        
+        async function log(message) {
+            output.textContent += message + '\n';
+        }
+
+        async function testUpdate() {
+            try {
+                // First login
+                const loginResponse = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: 'lech',
+                        password: 'lechworld'
+                    })
+                });
+                
+                await log('Login response: ' + loginResponse.status);
+                
+                // Get members
+                const membersResponse = await fetch('/api/members', {
+                    credentials: 'include'
+                });
+                
+                const { members } = await membersResponse.json();
+                await log('Found ' + members.length + ' members');
+                
+                if (members.length > 0) {
+                    const member = members[0];
+                    await log('\nCurrent member:');
+                    await log(JSON.stringify({
+                        id: member.id,
+                        name: member.name,
+                        frameColor: member.frameColor,
+                        frameBorderColor: member.frameBorderColor,
+                        profileEmoji: member.profileEmoji
+                    }, null, 2));
+                    
+                    // Update member
+                    const updateData = {
+                        frameColor: '#FF0000',
+                        frameBorderColor: '#00FF00',
+                        profileEmoji: '🎨'
+                    };
+                    
+                    await log('\nSending update:');
+                    await log(JSON.stringify(updateData, null, 2));
+                    
+                    const updateResponse = await fetch(`/api/members/${member.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(updateData)
+                    });
+                    
+                    const result = await updateResponse.json();
+                    await log('\nUpdate response: ' + updateResponse.status);
+                    await log('Updated member:');
+                    await log(JSON.stringify({
+                        id: result.member.id,
+                        name: result.member.name,
+                        frameColor: result.member.frameColor,
+                        frameBorderColor: result.member.frameBorderColor,
+                        profileEmoji: result.member.profileEmoji
+                    }, null, 2));
+                }
+            } catch (error) {
+                await log('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

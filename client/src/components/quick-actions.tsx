@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UserPlus, CreditCard, RefreshCw, Download, Upload, Lock, Activity, Shield, MessageCircle } from "lucide-react";
+import { UserPlus, CreditCard, RefreshCw, Download, Upload, Lock, Activity, Shield, MessageCircle, Plane } from "lucide-react";
 import type { ActivityLog } from "@shared/schema";
 import { useState } from "react";
 import { WhatsAppShare } from "./whatsapp-share";
@@ -8,6 +8,7 @@ import NewMemberModal from "./new-member-modal";
 import NewProgramModal from "./new-program-modal";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 
 interface QuickActionsProps {
   activities?: ActivityLog[];
@@ -20,6 +21,7 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
   const [isUpdatingPoints, setIsUpdatingPoints] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
   
   const handleUpdateAllPoints = async () => {
     setIsUpdatingPoints(true);
@@ -237,6 +239,15 @@ export default function QuickActions({ activities, isLoading }: QuickActionsProp
               <RefreshCw className={`w-6 h-6 icon-accent ${isUpdatingPoints ? 'animate-spin' : ''}`} />
             </div>
             {isUpdatingPoints ? 'Atualizando...' : 'Atualizar Pontos'}
+          </Button>
+          <Button 
+            className="w-full h-16 btn-secondary transition-all duration-300 justify-start text-base font-semibold hover:scale-105 shadow-md"
+            onClick={() => navigate("/guide")}
+          >
+            <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-full mr-4">
+              <Plane className="w-6 h-6 text-purple-600" />
+            </div>
+            Guia de Programas
           </Button>
         </CardContent>
       </Card>

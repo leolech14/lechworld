@@ -12,29 +12,58 @@
  */
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { Pool } from "pg";
 import { storage } from "./storage";
+import bcrypt from "bcryptjs";
 import { 
   insertUserSchema, insertFamilyMemberSchema, insertLoyaltyProgramSchema, 
   insertMemberProgramSchema, insertActivityLogSchema 
 } from "@shared/schema";
 
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { email, password } = req.body;
-      const user = await storage.getUserByEmail(email);
+      const { username, password } = req.body;
       
-      if (!user || user.password !== password) {
+      // Try to find user by username (case-insensitive)
+      const user = await storage.getUserByUsername(username);
+      
+      if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
+      
+      // Check if first login (password is null)
+      if (!user.password && user.isFirstLogin) {
+        return res.json({ 
+          user: { ...user, password: undefined }, 
+          requiresPasswordCreation: true 
+        });
+      }
+      
+      // Verify password with bcrypt
+      const isValidPassword = user.password ? await bcrypt.compare(password, user.password) : false;
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // Update last login
+      await pool.query(
+        'UPDATE users SET last_login = NOW(), is_first_login = false WHERE id = $1',
+        [user.id]
+      );
       
       // Log activity
       await storage.logActivity({
         userId: user.id,
         action: "login",
-        description: "User logged in",
-        metadata: { email },
+        category: "auth",
+        description: `${user.name} logged in`,
+        metadata: { username },
       });
       
       res.json({ user: { ...user, password: undefined } });
@@ -65,6 +94,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json({ user: { ...user, password: undefined } });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
+    }
+  });
+  
+  // Set password on first login
+  app.post("/api/auth/set-password", async (req, res) => {
+    try {
+      const { userId, newPassword } = req.body;
+      
+      if (!userId || !newPassword || newPassword.length < 6) {
+        return res.status(400).json({ message: "Invalid password. Must be at least 6 characters." });
+      }
+      
+      const user = await storage.updateUserPassword(userId, newPassword);
+      
+      // Log activity
+      await storage.logActivity({
+        userId: user.id,
+        action: "password_set",
+        description: "User set initial password",
+        metadata: {},
+      });
+      
+      res.json({ user: { ...user, password: undefined } });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
     }
   });
 
