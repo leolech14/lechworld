@@ -1,5 +1,7 @@
 // API client with JWT token handling
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4444';
+
 class ApiClient {
   private token: string | null = null;
 
@@ -32,7 +34,10 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
-    const response = await fetch(url, {
+    // Prepend base URL if not already included
+    const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+
+    const response = await fetch(fullUrl, {
       ...options,
       headers,
       credentials: 'include', // Still include cookies for backward compatibility
