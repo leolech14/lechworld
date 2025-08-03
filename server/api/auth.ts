@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { eq, or } from 'drizzle-orm';
 import { db } from '../index.js';
-import { users, families } from '../../shared/schemas/database.js';
+import { users, families } from '../../shared/schemas/database';
 import { requireAuth } from '../middleware/auth-vercel.js';
 import * as dotenv from 'dotenv';
 

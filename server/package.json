@@ -5,10 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
+    "start": "node api/index.js",
     "dev": "tsx watch index.ts",
-    "build": "tsc --build",
-    "postinstall": "npm run build"
+    "build": "echo 'No build needed for Vercel'"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -27,5 +26,14 @@
     "pg": "^8.16.3",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.1.0",
+    "@types/pg": "^8.15.5"
   }
 }

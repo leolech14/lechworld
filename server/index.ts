@@ -96,7 +96,13 @@ app.use((req, res, next) => {
 // CORS configuration
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://lechworld.vercel.app', 'https://www.lech.world', 'https://lech.world']
+    ? [
+        'https://lechworld.vercel.app',
+        'https://lechworld-*.vercel.app',
+        'https://www.lech.world',
+        'https://lech.world',
+        /^https:\/\/lechworld-[a-zA-Z0-9]+-leolech14\.vercel\.app$/
+      ]
     : ['http://localhost:4445', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -171,6 +177,9 @@ process.on('SIGINT', async () => {
   await pool.end();
   process.exit(0);
 });
+
+// Export app for Vercel
+export default app;
 
 // Start the server
 startServer();
