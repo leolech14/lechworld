@@ -1,0 +1,2 @@
+Error: pandas not installed
+Please install pandas: pip install pandas openpyxl

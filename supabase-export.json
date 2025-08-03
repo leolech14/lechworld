@@ -1,0 +1,485 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Lech",
+      "email": "lech",
+      "password": "world",
+      "created_at": "2025-07-21T16:29:10.57699"
+    },
+    {
+      "id": 9,
+      "name": "Osvandré",
+      "email": "osvandre",
+      "password": "",
+      "created_at": "2025-08-02T18:00:11.219245"
+    },
+    {
+      "id": 10,
+      "name": "Marilise",
+      "email": "marilise",
+      "password": "",
+      "created_at": "2025-08-02T18:00:11.725"
+    },
+    {
+      "id": 11,
+      "name": "Denise",
+      "email": "denise",
+      "password": "",
+      "created_at": "2025-08-02T18:00:12.215946"
+    },
+    {
+      "id": 7,
+      "name": "Leonardo",
+      "email": "leonardo",
+      "password": "$2a$10$Cz/379L10OdSSDcXVy0aNOLpLDHm0TXe7fWw/9WIIR8.Ico3h3nry",
+      "created_at": "2025-08-02T18:00:10.238134"
+    },
+    {
+      "id": 8,
+      "name": "Graciela",
+      "email": "graciela",
+      "password": "$2a$10$THEkpNyV/27td.4w4yaGPej10jDbNUfn2X0jQirhHi7aoe/0k67gK",
+      "created_at": "2025-08-02T18:00:10.738885"
+    }
+  ],
+  "family_members": [
+    {
+      "id": 16,
+      "user_id": 1,
+      "name": "Leonardo",
+      "email": "leonardo@lech.world",
+      "phone": null,
+      "created_at": "2025-08-02T18:32:28.102031",
+      "cpf": null,
+      "birthdate": null,
+      "frame_color": "#FED7E2",
+      "frame_border_color": "#F687B3",
+      "profile_emoji": "👤"
+    },
+    {
+      "id": 17,
+      "user_id": 1,
+      "name": "Graciela",
+      "email": "graciela@lech.world",
+      "phone": null,
+      "created_at": "2025-08-02T18:32:28.29911",
+      "cpf": null,
+      "birthdate": null,
+      "frame_color": "#FED7E2",
+      "frame_border_color": "#F687B3",
+      "profile_emoji": "👤"
+    },
+    {
+      "id": 18,
+      "user_id": 1,
+      "name": "Osvandré",
+      "email": "osvandre@lech.world",
+      "phone": null,
+      "created_at": "2025-08-02T18:32:28.488001",
+      "cpf": null,
+      "birthdate": null,
+      "frame_color": "#FED7E2",
+      "frame_border_color": "#F687B3",
+      "profile_emoji": "👤"
+    },
+    {
+      "id": 19,
+      "user_id": 1,
+      "name": "Marilise",
+      "email": "marilise@lech.world",
+      "phone": null,
+      "created_at": "2025-08-02T18:32:28.678896",
+      "cpf": null,
+      "birthdate": null,
+      "frame_color": "#FED7E2",
+      "frame_border_color": "#F687B3",
+      "profile_emoji": "👤"
+    }
+  ],
+  "loyalty_programs": [
+    {
+      "id": 1,
+      "name": "LATAM Pass",
+      "company": "LATAM Airlines",
+      "logo_color": "#E2003C",
+      "website": "https://www.latampass.latam.com",
+      "created_at": "2025-07-21T20:12:51.855603"
+    },
+    {
+      "id": 2,
+      "name": "Smiles",
+      "company": "GOL",
+      "logo_color": "#FF6400",
+      "website": "https://www.smiles.com.br",
+      "created_at": "2025-07-21T20:12:51.989531"
+    },
+    {
+      "id": 3,
+      "name": "TudoAzul",
+      "company": "Azul",
+      "logo_color": "#003DA5",
+      "website": "https://tudoazul.voeazul.com.br",
+      "created_at": "2025-07-21T20:12:52.121604"
+    },
+    {
+      "id": 4,
+      "name": "TAP Miles&Go",
+      "company": "TAP",
+      "logo_color": "#00A83C",
+      "website": "https://www.flytap.com",
+      "created_at": "2025-07-21T20:12:52.253389"
+    },
+    {
+      "id": 5,
+      "name": "ALL - Accor Live Limitless",
+      "company": "Accor",
+      "logo_color": "#000000",
+      "website": "https://all.accor.com",
+      "created_at": "2025-07-21T20:12:52.385109"
+    },
+    {
+      "id": 6,
+      "name": "AAdvantage",
+      "company": "American Airlines",
+      "logo_color": "#0078D2",
+      "website": "https://www.aa.com",
+      "created_at": "2025-07-21T20:12:52.517963"
+    },
+    {
+      "id": 7,
+      "name": "LifeMiles",
+      "company": "Avianca",
+      "logo_color": "#FF0000",
+      "website": "https://www.lifemiles.com",
+      "created_at": "2025-07-21T20:12:52.649857"
+    },
+    {
+      "id": 8,
+      "name": "Miles&Smiles",
+      "company": "Turkish Airlines",
+      "logo_color": "#3B82F6",
+      "website": null,
+      "created_at": "2025-08-02T18:10:15.626067"
+    },
+    {
+      "id": 9,
+      "name": "ConnectMiles",
+      "company": "Copa Airlines",
+      "logo_color": "#3B82F6",
+      "website": null,
+      "created_at": "2025-08-02T18:10:16.652427"
+    }
+  ],
+  "member_programs": [
+    {
+      "id": 34,
+      "member_id": 18,
+      "program_id": 1,
+      "account_number": "20493592091",
+      "login": "20493592091",
+      "password": "L1e2c3h4",
+      "cpf": null,
+      "points_balance": 44578,
+      "elite_tier": "PLATINUM",
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": "L1e2c3h4",
+        "miles_password": "L1e2c3h4"
+      },
+      "last_updated": "2025-08-02T18:32:29.263729"
+    },
+    {
+      "id": 35,
+      "member_id": 19,
+      "program_id": 1,
+      "account_number": "47616237053",
+      "login": "47616237053",
+      "password": "M1@2r3i4",
+      "cpf": null,
+      "points_balance": 59699,
+      "elite_tier": "GOLD",
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": "M1@2r3i4",
+        "miles_password": "M1@2r3i4"
+      },
+      "last_updated": "2025-08-02T18:32:29.463345"
+    },
+    {
+      "id": 36,
+      "member_id": 17,
+      "program_id": 1,
+      "account_number": "02424404011",
+      "login": "02424404011",
+      "password": null,
+      "cpf": null,
+      "points_balance": 10565,
+      "elite_tier": "MULTIPLUS",
+      "is_active": true,
+      "notes": "nenhuma das senhas deu certo",
+      "custom_fields": {
+        "site_password": null,
+        "miles_password": "Graciela2019"
+      },
+      "last_updated": "2025-08-02T18:32:29.657745"
+    },
+    {
+      "id": 37,
+      "member_id": 16,
+      "program_id": 1,
+      "account_number": "02424403040",
+      "login": "02424403040",
+      "password": "Leo140195",
+      "cpf": null,
+      "points_balance": 10814,
+      "elite_tier": "MULTIPLUS",
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": "Leo140195",
+        "miles_password": "Leo140195"
+      },
+      "last_updated": "2025-08-02T18:32:30.133872"
+    },
+    {
+      "id": 38,
+      "member_id": 18,
+      "program_id": 2,
+      "account_number": "001827136",
+      "login": "001827136",
+      "password": "M1a2r3i4#",
+      "cpf": null,
+      "points_balance": 252713,
+      "elite_tier": "DIAMANTE",
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": "M1a2r3i4#",
+        "miles_password": "2049"
+      },
+      "last_updated": "2025-08-02T18:32:30.410993"
+    },
+    {
+      "id": 39,
+      "member_id": 19,
+      "program_id": 2,
+      "account_number": "001106910",
+      "login": "001106910",
+      "password": null,
+      "cpf": null,
+      "points_balance": 30109,
+      "elite_tier": "PRATA",
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": null,
+        "miles_password": "4736"
+      },
+      "last_updated": "2025-08-02T18:32:30.610422"
+    },
+    {
+      "id": 40,
+      "member_id": 17,
+      "program_id": 2,
+      "account_number": "226446080",
+      "login": "226446080",
+      "password": null,
+      "cpf": null,
+      "points_balance": 26953,
+      "elite_tier": "",
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": null,
+        "miles_password": "2419"
+      },
+      "last_updated": "2025-08-02T18:32:30.809694"
+    },
+    {
+      "id": 41,
+      "member_id": 16,
+      "program_id": 2,
+      "account_number": "226446264",
+      "login": "226446264",
+      "password": null,
+      "cpf": null,
+      "points_balance": 5888,
+      "elite_tier": "",
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": null,
+        "miles_password": "3040"
+      },
+      "last_updated": "2025-08-02T18:32:31.307771"
+    },
+    {
+      "id": 42,
+      "member_id": 18,
+      "program_id": 8,
+      "account_number": "164786073",
+      "login": "164786073",
+      "password": "122436",
+      "cpf": null,
+      "points_balance": 0,
+      "elite_tier": null,
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": "122436",
+        "miles_password": "122436"
+      },
+      "last_updated": "2025-08-02T18:32:31.817432"
+    },
+    {
+      "id": 43,
+      "member_id": 19,
+      "program_id": 8,
+      "account_number": "382486138",
+      "login": "382486138",
+      "password": "122436",
+      "cpf": null,
+      "points_balance": 0,
+      "elite_tier": null,
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": "122436",
+        "miles_password": "122436"
+      },
+      "last_updated": "2025-08-02T18:32:32.30939"
+    },
+    {
+      "id": 44,
+      "member_id": 18,
+      "program_id": 6,
+      "account_number": "48U8B80",
+      "login": "48U8B80",
+      "password": "122436",
+      "cpf": null,
+      "points_balance": 0,
+      "elite_tier": null,
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": "122436"
+      },
+      "last_updated": "2025-08-02T18:32:32.592996"
+    },
+    {
+      "id": 45,
+      "member_id": 19,
+      "program_id": 6,
+      "account_number": "49U6B98",
+      "login": "49U6B98",
+      "password": "122436",
+      "cpf": null,
+      "points_balance": 0,
+      "elite_tier": null,
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": "122436"
+      },
+      "last_updated": "2025-08-02T18:32:33.103839"
+    },
+    {
+      "id": 46,
+      "member_id": 16,
+      "program_id": 6,
+      "account_number": "069MX2",
+      "login": "069MX2",
+      "password": "122436",
+      "cpf": null,
+      "points_balance": 0,
+      "elite_tier": null,
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": "122436"
+      },
+      "last_updated": "2025-08-02T18:32:33.300544"
+    },
+    {
+      "id": 47,
+      "member_id": 18,
+      "program_id": 9,
+      "account_number": "294500664",
+      "login": "294500664",
+      "password": "Ol122436#",
+      "cpf": null,
+      "points_balance": 0,
+      "elite_tier": null,
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {
+        "site_password": "Ol122436#",
+        "miles_password": "2436"
+      },
+      "last_updated": "2025-08-02T18:32:33.796647"
+    },
+    {
+      "id": 48,
+      "member_id": 18,
+      "program_id": 3,
+      "account_number": "5110011922",
+      "login": "5110011922",
+      "password": null,
+      "cpf": null,
+      "points_balance": 11114,
+      "elite_tier": "DIAMANTE",
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {},
+      "last_updated": "2025-08-02T18:32:34.109183"
+    },
+    {
+      "id": 49,
+      "member_id": 19,
+      "program_id": 3,
+      "account_number": "4450011793",
+      "login": "4450011793",
+      "password": null,
+      "cpf": null,
+      "points_balance": 24437,
+      "elite_tier": "SAFIRA",
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {},
+      "last_updated": "2025-08-02T18:32:34.318841"
+    },
+    {
+      "id": 50,
+      "member_id": 17,
+      "program_id": 3,
+      "account_number": "4270015190",
+      "login": "4270015190",
+      "password": null,
+      "cpf": null,
+      "points_balance": 4478,
+      "elite_tier": null,
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {},
+      "last_updated": "2025-08-02T18:32:34.513645"
+    },
+    {
+      "id": 51,
+      "member_id": 16,
+      "program_id": 3,
+      "account_number": "2960015746",
+      "login": "2960015746",
+      "password": null,
+      "cpf": null,
+      "points_balance": 285,
+      "elite_tier": null,
+      "is_active": true,
+      "notes": null,
+      "custom_fields": {},
+      "last_updated": "2025-08-02T18:32:34.720471"
+    }
+  ]
+}
