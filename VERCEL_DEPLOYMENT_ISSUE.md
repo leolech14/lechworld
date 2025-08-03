@@ -7,6 +7,14 @@ The backend API server cannot deploy to Vercel. It keeps failing with different 
 - **Frontend**: Successfully deployed at https://lechworld-amlbryj6d-lbl14.vercel.app
 - **Backend**: All deployment attempts failing (last working deployment is 3+ hours old)
 
+## Deployment Fix
+
+To deploy the backend correctly:
+
+1. In Vercel project settings under **General**, set the **Root Directory** to `server`.
+2. Alternatively, deploy from the CLI with `vercel --prod server` so the `server` folder is used as the project root.
+3. Remove any higher-level `vercel.json` files that might override this configuration (the root `vercel.json` has been deleted).
+
 ## Error History
 
 ### Error 1: "No Output Directory named 'public' found"
