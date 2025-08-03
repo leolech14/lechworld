@@ -1,5 +1,6 @@
 import express from 'express';
 import session from 'express-session';
+import cookieParser from 'cookie-parser';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import * as dotenv from 'dotenv';
@@ -55,6 +56,7 @@ export const db = drizzle(pool);
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Request logging middleware
 app.use((req, res, next) => {

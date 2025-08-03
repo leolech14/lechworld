@@ -1,3 +1,5 @@
+import { apiClient } from '@/lib/api-client';
+
 export interface FamilyMember {
   id: number;
   userId: number;
@@ -37,10 +39,7 @@ export interface MemberWithPrograms extends FamilyMember {
 
 // Member CRUD operations
 export async function getMembers(): Promise<FamilyMember[]> {
-  const response = await fetch('/api/members', {
-    method: 'GET',
-    credentials: 'include',
-  });
+  const response = await apiClient.get('/api/members');
 
   if (!response.ok) {
     throw new Error('Failed to fetch members');
@@ -51,10 +50,7 @@ export async function getMembers(): Promise<FamilyMember[]> {
 }
 
 export async function getMemberWithPrograms(memberId: number): Promise<MemberWithPrograms> {
-  const response = await fetch(`/api/members/${memberId}`, {
-    method: 'GET',
-    credentials: 'include',
-  });
+  const response = await apiClient.get(`/api/members/${memberId}`);
 
   if (!response.ok) {
     throw new Error('Failed to fetch member');
@@ -65,14 +61,7 @@ export async function getMemberWithPrograms(memberId: number): Promise<MemberWit
 }
 
 export async function createMember(member: Partial<FamilyMember>): Promise<FamilyMember> {
-  const response = await fetch('/api/members', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify(member),
-  });
+  const response = await apiClient.post('/api/members', member);
 
   if (!response.ok) {
     throw new Error('Failed to create member');
@@ -83,14 +72,7 @@ export async function createMember(member: Partial<FamilyMember>): Promise<Famil
 }
 
 export async function updateMember(memberId: number, member: Partial<FamilyMember>): Promise<FamilyMember> {
-  const response = await fetch(`/api/members/${memberId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify(member),
-  });
+  const response = await apiClient.put(`/api/members/${memberId}`, member);
 
   if (!response.ok) {
     throw new Error('Failed to update member');
@@ -101,10 +83,7 @@ export async function updateMember(memberId: number, member: Partial<FamilyMembe
 }
 
 export async function deleteMember(memberId: number): Promise<void> {
-  const response = await fetch(`/api/members/${memberId}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  });
+  const response = await apiClient.delete(`/api/members/${memberId}`);
 
   if (!response.ok) {
     throw new Error('Failed to delete member');
@@ -120,14 +99,7 @@ export async function addProgram(program: {
   currentMiles?: number;
   accountPassword?: string;
 }): Promise<MemberProgram> {
-  const response = await fetch('/api/programs', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify(program),
-  });
+  const response = await apiClient.post('/api/programs', program);
 
   if (!response.ok) {
     throw new Error('Failed to add program');
@@ -138,14 +110,7 @@ export async function addProgram(program: {
 }
 
 export async function updateProgram(programId: number, program: Partial<MemberProgram>): Promise<MemberProgram> {
-  const response = await fetch(`/api/programs/${programId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify(program),
-  });
+  const response = await apiClient.put(`/api/programs/${programId}`, program);
 
   if (!response.ok) {
     throw new Error('Failed to update program');
@@ -156,10 +121,7 @@ export async function updateProgram(programId: number, program: Partial<MemberPr
 }
 
 export async function deleteProgram(programId: number): Promise<void> {
-  const response = await fetch(`/api/programs/${programId}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  });
+  const response = await apiClient.delete(`/api/programs/${programId}`);
 
   if (!response.ok) {
     throw new Error('Failed to delete program');

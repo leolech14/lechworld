@@ -236,16 +236,11 @@ export default function ProgramDetailsModal({
           customFields: data
         });
         
-        const response = await fetch(`/api/programs/${programId}`, {
+        const response = await fetch(`/api/members/${memberId}/programs/${program.company}/fields`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({
-            memberNumber: memberProgram?.accountNumber || memberProgram?.memberNumber || '',
-            currentMiles: memberProgram?.pointsBalance || 0,
-            statusLevel: memberProgram?.statusLevel || 'basic',
-            customFields: data // Send the entire data array as-is
-          }),
+          body: JSON.stringify(data), // Send the custom fields array directly
         });
 
         console.log('Update response:', response.status, response.statusText);
@@ -267,7 +262,7 @@ export default function ProgramDetailsModal({
           const errorText = await response.text();
           console.error('Update failed - Status:', response.status);
           console.error('Error details:', errorText);
-          console.error('Request URL:', `/api/programs/${programId}`);
+          console.error('Request URL:', `/api/members/${memberId}/programs/${program.company}/fields`);
           throw new Error(`Falha ao atualizar: ${response.status} ${response.statusText}`);
         }
       }

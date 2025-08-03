@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lech Family Loyalty Programs - Interactive Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #000;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .animated-bg {
+            background: linear-gradient(-45deg, #1e1b4b, #312e81, #1e3a8a, #1e1b4b);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        /* Glass morphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Neon effects */
+        .neon-blue {
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.5),
+                        0 0 60px rgba(59, 130, 246, 0.3),
+                        inset 0 0 30px rgba(59, 130, 246, 0.1);
+        }
+        
+        .neon-purple {
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.5),
+                        0 0 60px rgba(139, 92, 246, 0.3),
+                        inset 0 0 30px rgba(139, 92, 246, 0.1);
+        }
+        
+        /* Hover animations */
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+        
+        /* Status gradients */
+        .status-platinum {
+            background: linear-gradient(135deg, #e5e4e2 0%, #a8a29e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .status-gold {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .status-diamante {
+            background: linear-gradient(135deg, #b9f2ff 0%, #00d4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Loading animation */
+        .loader {
+            border-top-color: #3b82f6;
+            -webkit-animation: spinner 0.8s linear infinite;
+            animation: spinner 0.8s linear infinite;
+        }
+        
+        @-webkit-keyframes spinner {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Particle effect */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(59, 130, 246, 0.8);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(50px); }
+        }
+        
+        /* Counter animation */
+        @property --num {
+            syntax: '<integer>';
+            initial-value: 0;
+            inherits: false;
+        }
+        
+        .counter {
+            animation: counter 2s ease-out forwards;
+            counter-reset: num var(--num);
+        }
+        
+        .counter::after {
+            content: counter(num);
+        }
+        
+        @keyframes counter {
+            to { --num: 481633; }
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <!-- Animated Background -->
+    <div class="fixed inset-0 animated-bg opacity-20"></div>
+    
+    <!-- Particles -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 4s;"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative min-h-screen p-4 md:p-8" x-data="dashboard()">
+        <!-- Header with Animation -->
+        <header class="text-center mb-12 relative">
+            <h1 class="text-5xl md:text-7xl font-bold mb-4">
+                <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Lech Family
+                </span>
+            </h1>
+            <p class="text-2xl md:text-3xl text-gray-300 mb-2">Loyalty Programs Dashboard</p>
+            <div class="flex justify-center items-center space-x-4 text-sm text-gray-500">
+                <span>Last Update: <span x-text="currentTime"></span></span>
+                <span class="inline-flex items-center">
+                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></span>
+                    Live
+                </span>
+            </div>
+        </header>
+
+        <!-- Main Stats with Counters -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="glass hover-lift rounded-3xl p-8 text-center neon-blue cursor-pointer" @click="showDetail('total')">
+                <div class="text-5xl font-bold text-blue-400 mb-2 counter" style="--num: 481633;">481,633</div>
+                <div class="text-gray-300 text-lg">Total Points</div>
+                <div class="text-xs text-gray-500 mt-2">↑ 12.5% this month</div>
+            </div>
+            
+            <div class="glass hover-lift rounded-3xl p-8 text-center neon-purple cursor-pointer" @click="showDetail('programs')">
+                <div class="text-5xl font-bold text-purple-400 mb-2">18</div>
+                <div class="text-gray-300 text-lg">Active Programs</div>
+                <div class="text-xs text-gray-500 mt-2">6 Airlines</div>
+            </div>
+            
+            <div class="glass hover-lift rounded-3xl p-8 text-center cursor-pointer" @click="showDetail('value')">
+                <div class="text-5xl font-bold text-green-400 mb-2">R$ 14.4k</div>
+                <div class="text-gray-300 text-lg">Est. Value</div>
+                <div class="text-xs text-gray-500 mt-2">~$2,880 USD</div>
+            </div>
+            
+            <div class="glass hover-lift rounded-3xl p-8 text-center cursor-pointer" @click="showDetail('members')">
+                <div class="text-5xl font-bold text-orange-400 mb-2">4</div>
+                <div class="text-gray-300 text-lg">Family Members</div>
+                <div class="text-xs text-gray-500 mt-2">All Active</div>
+            </div>
+        </div>
+
+        <!-- Interactive Member Selector -->
+        <div class="mb-12">
+            <div class="flex justify-center space-x-4 mb-8">
+                <template x-for="member in members" :key="member.name">
+                    <button 
+                        @click="selectedMember = member.name"
+                        :class="selectedMember === member.name ? 'bg-blue-600 border-blue-400' : 'bg-gray-900 border-gray-700'"
+                        class="px-6 py-3 rounded-full border-2 transition-all duration-300 hover:scale-105"
+                        x-text="member.name"
+                    ></button>
+                </template>
+            </div>
+            
+            <!-- Member Details -->
+            <div class="glass-dark rounded-3xl p-8 transition-all duration-500">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Member Info -->
+                    <div class="text-center lg:text-left">
+                        <h2 class="text-3xl font-bold mb-4" x-text="getMemberData().name"></h2>
+                        <div class="space-y-3">
+                            <div>
+                                <span class="text-gray-400">Total Points:</span>
+                                <span class="text-2xl font-bold text-blue-400 ml-2" x-text="getMemberData().totalPoints.toLocaleString()"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Programs:</span>
+                                <span class="text-xl font-semibold ml-2" x-text="getMemberData().programs"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Best Status:</span>
+                                <span class="text-xl font-semibold ml-2" 
+                                      :class="'status-' + getMemberData().bestStatus.toLowerCase()" 
+                                      x-text="getMemberData().bestStatus"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Programs List -->
+                    <div class="lg:col-span-2">
+                        <h3 class="text-xl font-semibold mb-4">Active Programs</h3>
+                        <div class="space-y-3">
+                            <template x-for="program in getMemberData().programsList" :key="program.name">
+                                <div class="glass hover-lift rounded-2xl p-4 flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium" x-text="program.name"></div>
+                                        <div class="text-sm" :class="'status-' + program.status.toLowerCase()" x-text="program.status"></div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-2xl font-bold" x-text="program.points.toLocaleString()"></div>
+                                        <div class="text-xs text-gray-400">points</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Airlines Overview -->
+        <div class="mb-12">
+            <h2 class="text-3xl font-bold text-center mb-8">
+                <span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    Airlines Overview
+                </span>
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <template x-for="airline in airlines" :key="airline.name">
+                    <div class="glass hover-lift rounded-2xl p-6 text-center cursor-pointer"
+                         @click="selectedAirline = airline.name"
+                         :class="selectedAirline === airline.name ? 'neon-blue' : ''">
+                        <div class="text-4xl mb-3" x-text="airline.emoji"></div>
+                        <div class="font-medium mb-1" x-text="airline.name"></div>
+                        <div class="text-2xl font-bold text-blue-400" x-text="airline.points.toLocaleString()"></div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Real-time Activity Feed -->
+        <div class="glass-dark rounded-3xl p-8">
+            <h3 class="text-2xl font-bold mb-6">Live Activity Feed</h3>
+            <div class="space-y-4">
+                <template x-for="activity in activities" :key="activity.id">
+                    <div class="flex items-center space-x-4 py-4 border-b border-gray-800"
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 transform translate-x-4"
+                         x-transition:enter-end="opacity-100 transform translate-x-0">
+                        <div class="w-2 h-2 rounded-full animate-pulse"
+                             :class="activity.type === 'increase' ? 'bg-green-400' : 'bg-blue-400'"></div>
+                        <div class="flex-1">
+                            <div class="font-medium" x-text="activity.description"></div>
+                            <div class="text-sm text-gray-400" x-text="activity.time"></div>
+                        </div>
+                        <div class="font-bold"
+                             :class="activity.type === 'increase' ? 'text-green-400' : 'text-blue-400'"
+                             x-text="activity.value"></div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function dashboard() {
+            return {
+                selectedMember: 'Osvandré',
+                selectedAirline: 'LATAM',
+                currentTime: new Date().toLocaleString(),
+                activities: [
+                    { id: 1, type: 'increase', description: 'Osvandré - LATAM Pass Updated', time: '2 minutes ago', value: '+2,150 miles' },
+                    { id: 2, type: 'sync', description: 'Marilise - GOL Smiles Synced', time: '1 hour ago', value: 'Synced' },
+                    { id: 3, type: 'increase', description: 'Leonardo - Azul Points Added', time: '3 hours ago', value: '+500 points' }
+                ],
+                members: [
+                    {
+                        name: 'Osvandré',
+                        totalPoints: 297291,
+                        programs: 5,
+                        bestStatus: 'DIAMANTE',
+                        programsList: [
+                            { name: 'LATAM Pass', status: 'PLATINUM', points: 44578 },
+                            { name: 'Smiles GOL', status: 'DIAMANTE', points: 252713 }
+                        ]
+                    },
+                    {
+                        name: 'Marilise',
+                        totalPoints: 108119,
+                        programs: 5,
+                        bestStatus: 'GOLD',
+                        programsList: [
+                            { name: 'LATAM Pass', status: 'GOLD', points: 59699 },
+                            { name: 'Smiles GOL', status: 'Member', points: 48420 }
+                        ]
+                    },
+                    {
+                        name: 'Graciela',
+                        totalPoints: 52965,
+                        programs: 4,
+                        bestStatus: 'MULTIPLUS',
+                        programsList: [
+                            { name: 'LATAM Pass', status: 'MULTIPLUS', points: 10565 },
+                            { name: 'Smiles GOL', status: 'Member', points: 26680 }
+                        ]
+                    },
+                    {
+                        name: 'Leonardo',
+                        totalPoints: 23258,
+                        programs: 4,
+                        bestStatus: 'MULTIPLUS',
+                        programsList: [
+                            { name: 'LATAM Pass', status: 'MULTIPLUS', points: 10814 },
+                            { name: 'American AAdvantage', status: 'Member', points: 7644 }
+                        ]
+                    }
+                ],
+                airlines: [
+                    { name: 'LATAM', emoji: '🇧🇷', points: 125556 },
+                    { name: 'GOL', emoji: '🟠', points: 327593 },
+                    { name: 'Turkish', emoji: '🇹🇷', points: 17430 },
+                    { name: 'American', emoji: '🇺🇸', points: 8334 },
+                    { name: 'Copa', emoji: '🇵🇦', points: 550 },
+                    { name: 'Azul', emoji: '🔵', points: 2720 }
+                ],
+                getMemberData() {
+                    return this.members.find(m => m.name === this.selectedMember) || this.members[0];
+                },
+                showDetail(type) {
+                    console.log('Showing detail for:', type);
+                    // Add modal or detail view logic here
+                },
+                init() {
+                    // Update time every second
+                    setInterval(() => {
+                        this.currentTime = new Date().toLocaleString();
+                    }, 1000);
+                    
+                    // Simulate live updates
+                    setInterval(() => {
+                        const newActivity = {
+                            id: Date.now(),
+                            type: Math.random() > 0.5 ? 'increase' : 'sync',
+                            description: `${this.members[Math.floor(Math.random() * 4)].name} - Activity Update`,
+                            time: 'Just now',
+                            value: Math.random() > 0.5 ? '+' + Math.floor(Math.random() * 1000) + ' miles' : 'Synced'
+                        };
+                        this.activities.unshift(newActivity);
+                        if (this.activities.length > 5) this.activities.pop();
+                    }, 15000);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

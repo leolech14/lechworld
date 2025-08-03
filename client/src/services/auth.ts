@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { apiClient } from '@/lib/api-client';
 
 // Validation schemas
 export const loginSchema = z.object({
@@ -31,21 +32,26 @@ export type SetPasswordInput = z.infer<typeof setPasswordSchema>;
 
 // API functions
 export async function login(data: LoginInput) {
-  const response = await fetch('/api/auth/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  });
+  const response = await apiClient.post('/api/auth/login', data);
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to login');
+    let errorMessage = 'Failed to login';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorData.message || errorMessage;
+    } catch (e) {
+      // If JSON parsing fails, use default error message
+      console.error('Failed to parse error response:', e);
+    }
+    throw new Error(errorMessage);
   }
 
   const result = await response.json();
+  
+  // Store the JWT token if present
+  if (result.token) {
+    apiClient.setToken(result.token);
+  }
   
   // Check if password creation is required
   if (result.requiresPasswordCreation) {
@@ -71,11 +77,19 @@ export async function setPassword(data: SetPasswordInput) {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to set password');
+    let errorMessage = 'Failed to set password';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorData.message || errorMessage;
+    } catch (e) {
+      console.error('Failed to parse error response:', e);
+    }
+    throw new Error(errorMessage);
   }
+  
+  const result = await response.json();
 
-  return response.json();
+  return result;
 }
 
 export async function register(data: RegisterInput) {
@@ -91,31 +105,36 @@ export async function register(data: RegisterInput) {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to register');
+    let errorMessage = 'Failed to register';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorData.message || errorMessage;
+    } catch (e) {
+      console.error('Failed to parse error response:', e);
+    }
+    throw new Error(errorMessage);
   }
+  
+  const result = await response.json();
 
-  return response.json();
+  return result;
 }
 
 export async function logout() {
-  const response = await fetch('/api/auth/logout', {
-    method: 'POST',
-    credentials: 'include',
-  });
+  const response = await apiClient.post('/api/auth/logout');
 
   if (!response.ok) {
     throw new Error('Failed to logout');
   }
 
+  // Clear the token
+  apiClient.setToken(null);
+
   return response.json();
 }
 
 export async function getCurrentUser() {
-  const response = await fetch('/api/auth/me', {
-    method: 'GET',
-    credentials: 'include',
-  });
+  const response = await apiClient.get('/api/auth/me');
 
   if (!response.ok) {
     if (response.status === 401) {

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lech Family Loyalty Programs - Dark Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .glass-hover:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .status-platinum { color: #e5e4e2; }
+        .status-gold { color: #ffd700; }
+        .status-diamante { color: #b9f2ff; }
+        .status-multiplus { color: #22c55e; }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100">
+    <!-- Background Effects -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative min-h-screen p-4 md:p-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-5xl md:text-6xl font-bold gradient-text mb-4">Lech Family Loyalty Programs</h1>
+            <p class="text-gray-400 text-lg">Real-time tracking of miles, points, and rewards</p>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="glass glass-hover rounded-2xl p-6 text-center">
+                <div class="text-3xl font-bold text-blue-400 mb-2">481,633</div>
+                <div class="text-gray-400">Total Points</div>
+            </div>
+            <div class="glass glass-hover rounded-2xl p-6 text-center">
+                <div class="text-3xl font-bold text-purple-400 mb-2">18</div>
+                <div class="text-gray-400">Active Programs</div>
+            </div>
+            <div class="glass glass-hover rounded-2xl p-6 text-center">
+                <div class="text-3xl font-bold text-green-400 mb-2">R$ 14,449</div>
+                <div class="text-gray-400">Est. Value</div>
+            </div>
+            <div class="glass glass-hover rounded-2xl p-6 text-center">
+                <div class="text-3xl font-bold text-orange-400 mb-2">4</div>
+                <div class="text-gray-400">Family Members</div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <!-- Points by Member Chart -->
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-xl font-semibold mb-4 text-gray-200">Points by Family Member</h3>
+                <div class="chart-container">
+                    <canvas id="memberChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Points by Airline Chart -->
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-xl font-semibold mb-4 text-gray-200">Points by Airline</h3>
+                <div class="chart-container">
+                    <canvas id="airlineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Member Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <!-- Member 1: Osvandré -->
+            <div class="glass rounded-2xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-gray-100">Osvandré</h3>
+                    <span class="text-3xl">✈️</span>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center py-3 border-b border-gray-800">
+                        <div>
+                            <div class="font-medium">LATAM Pass</div>
+                            <div class="text-sm status-platinum">PLATINUM</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-semibold">44,578</div>
+                            <div class="text-xs text-gray-500">miles</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-gray-800">
+                        <div>
+                            <div class="font-medium">Smiles GOL</div>
+                            <div class="text-sm status-diamante">DIAMANTE</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-semibold">252,713</div>
+                            <div class="text-xs text-gray-500">miles</div>
+                        </div>
+                    </div>
+                    <div class="text-right mt-4">
+                        <div class="text-sm text-gray-400">Total</div>
+                        <div class="text-2xl font-bold text-blue-400">297,291 points</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Member 2: Marilise -->
+            <div class="glass rounded-2xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-gray-100">Marilise</h3>
+                    <span class="text-3xl">🎖️</span>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center py-3 border-b border-gray-800">
+                        <div>
+                            <div class="font-medium">LATAM Pass</div>
+                            <div class="text-sm status-gold">GOLD</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-semibold">59,699</div>
+                            <div class="text-xs text-gray-500">miles</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-gray-800">
+                        <div>
+                            <div class="font-medium">Smiles GOL</div>
+                            <div class="text-sm text-gray-400">Member</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-semibold">48,420</div>
+                            <div class="text-xs text-gray-500">miles</div>
+                        </div>
+                    </div>
+                    <div class="text-right mt-4">
+                        <div class="text-sm text-gray-400">Total</div>
+                        <div class="text-2xl font-bold text-purple-400">108,119 points</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Airlines Grid -->
+        <div class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center gradient-text">Programs Overview</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div class="glass glass-hover rounded-xl p-4 text-center">
+                    <div class="text-3xl mb-2">🇧🇷</div>
+                    <div class="font-medium">LATAM</div>
+                    <div class="text-2xl font-bold text-blue-400 mt-1">125,556</div>
+                </div>
+                <div class="glass glass-hover rounded-xl p-4 text-center">
+                    <div class="text-3xl mb-2">🟠</div>
+                    <div class="font-medium">GOL</div>
+                    <div class="text-2xl font-bold text-orange-400 mt-1">327,593</div>
+                </div>
+                <div class="glass glass-hover rounded-xl p-4 text-center">
+                    <div class="text-3xl mb-2">🇹🇷</div>
+                    <div class="font-medium">Turkish</div>
+                    <div class="text-2xl font-bold text-red-400 mt-1">17,430</div>
+                </div>
+                <div class="glass glass-hover rounded-xl p-4 text-center">
+                    <div class="text-3xl mb-2">🇺🇸</div>
+                    <div class="font-medium">American</div>
+                    <div class="text-2xl font-bold text-blue-500 mt-1">8,334</div>
+                </div>
+                <div class="glass glass-hover rounded-xl p-4 text-center">
+                    <div class="text-3xl mb-2">🔵</div>
+                    <div class="font-medium">Azul</div>
+                    <div class="text-2xl font-bold text-sky-400 mt-1">2,720</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="glass rounded-2xl p-8">
+            <h3 class="text-2xl font-bold mb-6 text-gray-100">Recent Updates</h3>
+            <div class="space-y-4">
+                <div class="flex items-center space-x-4 py-3 border-b border-gray-800">
+                    <div class="w-2 h-2 bg-green-400 rounded-full pulse"></div>
+                    <div class="flex-1">
+                        <div class="font-medium">Osvandré - LATAM Pass</div>
+                        <div class="text-sm text-gray-400">Updated 07/07/2025</div>
+                    </div>
+                    <div class="text-green-400">+2,150 miles</div>
+                </div>
+                <div class="flex items-center space-x-4 py-3 border-b border-gray-800">
+                    <div class="w-2 h-2 bg-blue-400 rounded-full pulse"></div>
+                    <div class="flex-1">
+                        <div class="font-medium">Marilise - LATAM Pass</div>
+                        <div class="text-sm text-gray-400">Updated 17/07/2025</div>
+                    </div>
+                    <div class="text-blue-400">+5,200 miles</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data for charts
+        const loyaltyData = {
+            members: {
+                'Osvandré': 297291,
+                'Marilise': 108119,
+                'Graciela': 52965,
+                'Leonardo': 23258
+            },
+            airlines: {
+                'LATAM Pass': 125556,
+                'Smiles GOL': 327593,
+                'Turkish Airlines': 17430,
+                'American Airlines': 8334,
+                'Azul TudoAzul': 2720
+            }
+        };
+
+        // Chart defaults
+        Chart.defaults.color = '#9CA3AF';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+        // Member Chart
+        const memberCtx = document.getElementById('memberChart').getContext('2d');
+        new Chart(memberCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(loyaltyData.members),
+                datasets: [{
+                    data: Object.values(loyaltyData.members),
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(139, 92, 246, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(251, 146, 60, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(139, 92, 246, 1)',
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(251, 146, 60, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Airline Chart
+        const airlineCtx = document.getElementById('airlineChart').getContext('2d');
+        new Chart(airlineCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(loyaltyData.airlines),
+                datasets: [{
+                    label: 'Total Points',
+                    data: Object.values(loyaltyData.airlines),
+                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Interactive hover effects
+        document.querySelectorAll('.glass-hover').forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                this.classList.add('neon-glow');
+            });
+            element.addEventListener('mouseleave', function() {
+                this.classList.remove('neon-glow');
+            });
+        });
+    </script>
+</body>
+</html>

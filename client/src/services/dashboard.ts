@@ -1,3 +1,5 @@
+import { apiClient } from '@/lib/api-client';
+
 export interface DashboardStats {
   totalMembers: number;
   totalPrograms: number;
@@ -36,10 +38,7 @@ export interface FamilyOverview {
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
-  const response = await fetch('/api/dashboard/stats', {
-    method: 'GET',
-    credentials: 'include',
-  });
+  const response = await apiClient.get('/api/dashboard/stats');
 
   if (!response.ok) {
     throw new Error('Failed to fetch dashboard stats');
@@ -49,10 +48,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 }
 
 export async function getFamilyOverview(): Promise<any> {
-  const response = await fetch('/api/dashboard/family-overview', {
-    method: 'GET',
-    credentials: 'include',
-  });
+  const response = await apiClient.get('/api/dashboard/family-overview');
 
   if (!response.ok) {
     throw new Error('Failed to fetch family overview');
@@ -62,10 +58,7 @@ export async function getFamilyOverview(): Promise<any> {
 }
 
 export async function getExpiringMiles(days: number = 90) {
-  const response = await fetch(`/api/transactions/expiring?days=${days}`, {
-    method: 'GET',
-    credentials: 'include',
-  });
+  const response = await apiClient.get(`/api/transactions/expiring?days=${days}`);
 
   if (!response.ok) {
     throw new Error('Failed to fetch expiring miles');

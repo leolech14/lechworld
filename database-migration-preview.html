@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LechWorld Database Migration Preview - Supabase to Neon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #5a67d8;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        .migration-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .info-card {
+            text-align: center;
+            padding: 10px;
+        }
+        .info-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        .info-card p {
+            opacity: 0.9;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .tab:hover {
+            background: #cbd5e0;
+        }
+        .tab.active {
+            background: #5a67d8;
+            color: white;
+        }
+        .content {
+            display: none;
+        }
+        .content.active {
+            display: block;
+        }
+        .schema-diagram {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .table-box {
+            background: white;
+            border: 2px solid #4299e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px;
+            display: inline-block;
+            vertical-align: top;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .table-box h4 {
+            color: #2d3748;
+            border-bottom: 2px solid #4299e1;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .field {
+            padding: 5px 0;
+            font-size: 14px;
+        }
+        .field-name {
+            font-weight: bold;
+            color: #4299e1;
+        }
+        .field-type {
+            color: #718096;
+            font-size: 12px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .data-table th {
+            background: #4299e1;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .data-table tr:hover {
+            background: #f7fafc;
+        }
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        .relationship {
+            color: #9f7aea;
+            font-style: italic;
+            font-size: 12px;
+        }
+        .approval-section {
+            background: #fef5e7;
+            border: 2px solid #f39c12;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        .approval-section h3 {
+            color: #e67e22;
+            margin-bottom: 15px;
+        }
+        .approval-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .btn-approve {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-approve:hover {
+            background: #229954;
+        }
+        .btn-cancel {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-cancel:hover {
+            background: #c0392b;
+        }
+        .sql-preview {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        .sql-keyword {
+            color: #63b3ed;
+        }
+        .sql-table {
+            color: #68d391;
+        }
+        .sql-type {
+            color: #fbb6ce;
+        }
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .feature-card {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .feature-card h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        .feature-list {
+            list-style: none;
+            padding-left: 20px;
+        }
+        .feature-list li:before {
+            content: "✓ ";
+            color: #48bb78;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 LechWorld Database Migration Preview</h1>
+        <p class="subtitle">Migrating from Supabase to Neon - Complete Database Structure & Data</p>
+        
+        <div class="migration-info">
+            <div class="info-card">
+                <h3>5</h3>
+                <p>Tables</p>
+            </div>
+            <div class="info-card">
+                <h3>6</h3>
+                <p>Users</p>
+            </div>
+            <div class="info-card">
+                <h3>18</h3>
+                <p>Loyalty Programs</p>
+            </div>
+            <div class="info-card">
+                <h3>481,633</h3>
+                <p>Total Miles Tracked</p>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('schema')">📊 Database Schema</button>
+            <button class="tab" onclick="showTab('data')">📁 Current Data</button>
+            <button class="tab" onclick="showTab('sql')">💻 SQL Preview</button>
+            <button class="tab" onclick="showTab('features')">✨ New Features</button>
+        </div>
+
+        <div id="schema" class="content active">
+            <h2>Database Schema Structure</h2>
+            <div class="schema-diagram">
+                <div class="table-box">
+                    <h4>🏠 families</h4>
+                    <div class="field">
+                        <span class="field-name">id</span>
+                        <span class="field-type">SERIAL PRIMARY KEY</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">name</span>
+                        <span class="field-type">TEXT NOT NULL</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">created_at</span>
+                        <span class="field-type">TIMESTAMP DEFAULT NOW()</span>
+                    </div>
+                </div>
+
+                <div class="table-box">
+                    <h4>👤 users</h4>
+                    <div class="field">
+                        <span class="field-name">id</span>
+                        <span class="field-type">SERIAL PRIMARY KEY</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">username</span>
+                        <span class="field-type">TEXT UNIQUE</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">email</span>
+                        <span class="field-type">TEXT UNIQUE NOT NULL</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">password</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">name</span>
+                        <span class="field-type">TEXT NOT NULL</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">family_id</span>
+                        <span class="field-type">INTEGER</span>
+                        <span class="relationship">→ families.id</span>
+                    </div>
+                </div>
+
+                <div class="table-box">
+                    <h4>👨‍👩‍👧‍👦 family_members</h4>
+                    <div class="field">
+                        <span class="field-name">id</span>
+                        <span class="field-type">SERIAL PRIMARY KEY</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">user_id</span>
+                        <span class="field-type">INTEGER NOT NULL</span>
+                        <span class="relationship">→ users.id</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">family_id</span>
+                        <span class="field-type">INTEGER</span>
+                        <span class="relationship">→ families.id</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">name</span>
+                        <span class="field-type">TEXT NOT NULL</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">email</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">role</span>
+                        <span class="field-type">TEXT DEFAULT 'member'</span>
+                    </div>
+                </div>
+
+                <div class="table-box">
+                    <h4>✈️ loyalty_programs</h4>
+                    <div class="field">
+                        <span class="field-name">id</span>
+                        <span class="field-type">SERIAL PRIMARY KEY</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">name</span>
+                        <span class="field-type">TEXT NOT NULL</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">type</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">airline_code</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">icon_url</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">mile_value_brl</span>
+                        <span class="field-type">DECIMAL(10,6)</span>
+                    </div>
+                </div>
+
+                <div class="table-box">
+                    <h4>🎯 member_programs</h4>
+                    <div class="field">
+                        <span class="field-name">id</span>
+                        <span class="field-type">SERIAL PRIMARY KEY</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">member_id</span>
+                        <span class="field-type">INTEGER NOT NULL</span>
+                        <span class="relationship">→ family_members.id</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">program_id</span>
+                        <span class="field-type">INTEGER NOT NULL</span>
+                        <span class="relationship">→ loyalty_programs.id</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">account_number</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">points_balance</span>
+                        <span class="field-type">INTEGER DEFAULT 0</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">status</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">expiry_date</span>
+                        <span class="field-type">DATE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="data" class="content">
+            <h2>Current Data to be Migrated</h2>
+            
+            <h3>👤 Users (6 records)</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>lech</td>
+                        <td>lech@lechworld.com</td>
+                        <td>Lech</td>
+                        <td>admin</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>leonardo</td>
+                        <td>leonardo@lech.world</td>
+                        <td>Leonardo</td>
+                        <td>member</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>graciela</td>
+                        <td>graciela@lech.world</td>
+                        <td>Graciela</td>
+                        <td>member</td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>osvandre</td>
+                        <td>osvandre@lech.world</td>
+                        <td>Osvandré</td>
+                        <td>member</td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>marilise</td>
+                        <td>marilise@lech.world</td>
+                        <td>Marilise</td>
+                        <td>member</td>
+                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td>denise</td>
+                        <td>denise@lech.world</td>
+                        <td>Denise</td>
+                        <td>staff</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>👨‍👩‍👧‍👦 Family Members (4 records)</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Leonardo</td>
+                        <td>leonardo@lech.world</td>
+                        <td>member</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Graciela</td>
+                        <td>graciela@lech.world</td>
+                        <td>member</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Osvandré</td>
+                        <td>osvandre@lech.world</td>
+                        <td>member</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Marilise</td>
+                        <td>marilise@lech.world</td>
+                        <td>member</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>✈️ Loyalty Programs (9 records)</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Airline Code</th>
+                        <th>Mile Value (BRL)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>LATAM Pass</td>
+                        <td>airline</td>
+                        <td>LA</td>
+                        <td>0.02</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Smiles GOL</td>
+                        <td>airline</td>
+                        <td>G3</td>
+                        <td>0.014</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>TudoAzul</td>
+                        <td>airline</td>
+                        <td>AD</td>
+                        <td>0.016</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Miles&Go TAP</td>
+                        <td>airline</td>
+                        <td>TP</td>
+                        <td>0.015</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>LifeMiles Avianca</td>
+                        <td>airline</td>
+                        <td>AV</td>
+                        <td>0.018</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>AAdvantage</td>
+                        <td>airline</td>
+                        <td>AA</td>
+                        <td>0.03</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>Accor ALL</td>
+                        <td>hotel</td>
+                        <td>ALL</td>
+                        <td>0.02</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>Livelo</td>
+                        <td>other</td>
+                        <td>LVL</td>
+                        <td>0.01</td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>Esfera</td>
+                        <td>other</td>
+                        <td>ESF</td>
+                        <td>0.012</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>🎯 Member Programs Summary (18 records)</h3>
+            <div class="feature-card">
+                <h4>Total Points by Member:</h4>
+                <ul class="feature-list">
+                    <li>Leonardo: 232,483 points</li>
+                    <li>Graciela: 145,234 points</li>
+                    <li>Osvandré: 67,890 points</li>
+                    <li>Marilise: 36,026 points</li>
+                </ul>
+                <p><strong>Total Family Points: 481,633</strong></p>
+            </div>
+        </div>
+
+        <div id="sql" class="content">
+            <h2>SQL Migration Script Preview</h2>
+            <div class="sql-preview">
+                <span class="sql-keyword">-- Create families table</span><br>
+                <span class="sql-keyword">CREATE TABLE</span> <span class="sql-table">families</span> (<br>
+                &nbsp;&nbsp;id <span class="sql-type">SERIAL PRIMARY KEY</span>,<br>
+                &nbsp;&nbsp;name <span class="sql-type">TEXT NOT NULL</span>,<br>
+                &nbsp;&nbsp;created_at <span class="sql-type">TIMESTAMP DEFAULT NOW()</span><br>
+                );<br><br>
+
+                <span class="sql-keyword">-- Create users table with family reference</span><br>
+                <span class="sql-keyword">CREATE TABLE</span> <span class="sql-table">users</span> (<br>
+                &nbsp;&nbsp;id <span class="sql-type">SERIAL PRIMARY KEY</span>,<br>
+                &nbsp;&nbsp;username <span class="sql-type">TEXT UNIQUE</span>,<br>
+                &nbsp;&nbsp;email <span class="sql-type">TEXT UNIQUE NOT NULL</span>,<br>
+                &nbsp;&nbsp;password <span class="sql-type">TEXT</span>,<br>
+                &nbsp;&nbsp;name <span class="sql-type">TEXT NOT NULL</span>,<br>
+                &nbsp;&nbsp;role <span class="sql-type">TEXT DEFAULT 'member'</span>,<br>
+                &nbsp;&nbsp;family_id <span class="sql-type">INTEGER REFERENCES families(id)</span>,<br>
+                &nbsp;&nbsp;created_at <span class="sql-type">TIMESTAMP DEFAULT NOW()</span>,<br>
+                &nbsp;&nbsp;updated_at <span class="sql-type">TIMESTAMP DEFAULT NOW()</span><br>
+                );<br><br>
+
+                <span class="sql-keyword">-- Additional tables follow similar pattern...</span>
+            </div>
+        </div>
+
+        <div id="features" class="content">
+            <h2>New Features with Neon</h2>
+            <div class="feature-card">
+                <h4>🚀 Performance Improvements</h4>
+                <ul class="feature-list">
+                    <li>Serverless architecture - scales to zero when not in use</li>
+                    <li>Faster cold starts compared to traditional PostgreSQL</li>
+                    <li>Automatic connection pooling</li>
+                    <li>Global edge caching for frequently accessed data</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4>🔧 Developer Experience</h4>
+                <ul class="feature-list">
+                    <li>Database branching for testing (like Git for databases)</li>
+                    <li>Point-in-time restore capabilities</li>
+                    <li>Native PostgreSQL - no vendor lock-in</li>
+                    <li>Automatic backups and high availability</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4>💰 Cost Benefits</h4>
+                <ul class="feature-list">
+                    <li>Pay only for compute and storage used</li>
+                    <li>No charges when database is idle</li>
+                    <li>Transparent pricing model</li>
+                    <li>No user limits or hidden fees</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4>🔐 Security Enhancements</h4>
+                <ul class="feature-list">
+                    <li>Built-in SSL/TLS encryption</li>
+                    <li>IP allowlisting available</li>
+                    <li>Row-Level Security (RLS) fully supported</li>
+                    <li>Regular security updates</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="approval-section">
+            <h3>⚠️ Migration Approval Required</h3>
+            <p>This migration will:</p>
+            <ul style="list-style: none; padding: 0; margin: 15px 0;">
+                <li>✓ Create a fresh database on Neon with optimized schema</li>
+                <li>✓ Implement proper multi-tenancy with families table</li>
+                <li>✓ Migrate all existing users and loyalty program data</li>
+                <li>✓ Enable database branching for better testing</li>
+                <li>✓ Reduce costs with serverless architecture</li>
+            </ul>
+            <p style="color: #e74c3c; font-weight: bold; margin-top: 15px;">
+                ⚠️ Note: This is a one-way migration. Ensure you have backups of your Supabase data.
+            </p>
+            <div class="approval-buttons">
+                <button class="btn btn-approve" onclick="alert('Ready to proceed! The migration will:\n\n1. Create all tables on Neon\n2. Import seed data\n3. Update connection strings\n4. Test the application\n\nPlease confirm in the terminal to continue.')">
+                    ✅ Approve Migration
+                </button>
+                <button class="btn btn-cancel" onclick="alert('Migration cancelled. No changes have been made.')">
+                    ❌ Cancel Migration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all content
+            const contents = document.querySelectorAll('.content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

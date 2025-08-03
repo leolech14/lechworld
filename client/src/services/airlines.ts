@@ -1,3 +1,5 @@
+import { apiClient } from '@/lib/api-client';
+
 export interface Airline {
   id: number;
   code: string;
@@ -16,10 +18,7 @@ export interface Airline {
 }
 
 export async function getAirlines(): Promise<Airline[]> {
-  const response = await fetch('/api/programs/airlines', {
-    method: 'GET',
-    credentials: 'include',
-  });
+  const response = await apiClient.get('/api/programs/airlines');
 
   if (!response.ok) {
     throw new Error('Failed to fetch airlines');
@@ -45,10 +44,7 @@ export async function calculateTransferCost(
     params.append('memberStatus', memberStatus);
   }
 
-  const response = await fetch(`/api/programs/transfer-cost?${params}`, {
-    method: 'GET',
-    credentials: 'include',
-  });
+  const response = await apiClient.get(`/api/programs/transfer-cost?${params}`);
 
   if (!response.ok) {
     throw new Error('Failed to calculate transfer cost');

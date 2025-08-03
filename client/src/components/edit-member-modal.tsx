@@ -158,6 +158,8 @@ export default function EditMemberModal({ member, open, onClose, appearanceOnly 
   const autoSave = useCallback(async (data: typeof formData) => {
     setIsSaving(true);
     try {
+      console.log('[Auto-save] Sending data:', data);
+      
       const response = await fetch(`/api/members/${member.id}`, {
         method: "PUT",
         headers: {
@@ -168,7 +170,9 @@ export default function EditMemberModal({ member, open, onClose, appearanceOnly 
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update member");
+        const errorData = await response.json();
+        console.error('[Auto-save] Error response:', errorData);
+        throw new Error(errorData.message || `Failed to update member: ${response.status}`);
       }
 
       // Silently invalidate queries
