@@ -16,6 +16,6 @@
     }
   ],
   "buildCommand": "",
-  "installCommand": "cd api && npm install",
+  "installCommand": "npm install",
   "outputDirectory": null
 }
