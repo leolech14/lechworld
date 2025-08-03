@@ -1,21 +1,31 @@
 {
-  "name": "server",
+  "name": "lechworld-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "LechWorld Backend API",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "dev": "tsx watch index.ts",
+    "build": "tsc --build",
+    "postinstall": "npm run build"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+    "drizzle-orm": "^0.29.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
   }
 }

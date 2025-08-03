@@ -1,6 +1,7 @@
 import express from 'express';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import * as dotenv from 'dotenv';
@@ -92,28 +93,17 @@ app.use((req, res, next) => {
 //   },
 // }));
 
-// CORS configuration for development
-if (process.env.NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    // Allow requests from any origin in development
-    const origin = req.headers.origin;
-    if (origin) {
-      res.header('Access-Control-Allow-Origin', origin);
-    } else {
-      res.header('Access-Control-Allow-Origin', '*');
-    }
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(200);
-    }
-    
-    next();
-  });
-}
+// CORS configuration
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://lechworld.vercel.app', 'https://www.lech.world', 'https://lech.world']
+    : ['http://localhost:4445', 'http://localhost:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
