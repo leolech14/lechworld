@@ -15,7 +15,5 @@
       "destination": "/api/$1"
     }
   ],
-  "buildCommand": "",
-  "installCommand": "cd api && npm install",
-  "outputDirectory": null
+  "installCommand": "cd api && npm install"
 }
