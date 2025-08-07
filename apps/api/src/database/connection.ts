@@ -4,7 +4,7 @@
  */
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import * as schema from '@monorepo/database';
+// import * as schema from '@monorepo/database'; // Commented out - package doesn't exist
 
 class DatabaseConnection {
   private static instance: DatabaseConnection;
@@ -23,7 +23,9 @@ class DatabaseConnection {
       onnotice: () => {}, // Disable notices
     });
     
-    this.db = drizzle(this.client, { schema });
+    // TODO: Re-enable schema once @monorepo/database is available
+    // this.db = drizzle(this.client, { schema });
+    this.db = drizzle(this.client); // Initialize without schema for now
     this.isInitialized = true;
   }
 
