@@ -1,0 +1,506 @@
+#!/usr/bin/env bash
+# Enhanced agent monitoring tool for Ultimate Monorepo
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+NC='\033[0m'
+
+# Configuration
+COORDINATION_SERVICE_URL="http://localhost:8765"
+LOG_DIR="/tmp/dream-team-logs"
+REFRESH_INTERVAL=5
+
+show_usage() {
+    echo "Enhanced Agent Monitoring for Ultimate Monorepo"
+    echo ""
+    echo "Usage: $0 <command> [options]"
+    echo ""
+    echo "Commands:"
+    echo "  status              Show overall system status"
+    echo "  agents              List all agents and their status"
+    echo "  tasks               Show active tasks"
+    echo "  logs [agent]        Show logs for all agents or specific agent"
+    echo "  performance         Show performance metrics"
+    echo "  coordination        Show coordination activity"
+    echo "  health [agent]      Check health of system or specific agent"
+    echo "  dashboard           Start interactive dashboard"
+    echo "  tail [topic]        Tail logs for specific topic"
+    echo ""
+    echo "Options:"
+    echo "  -f, --follow        Follow/tail output continuously"
+    echo "  -n, --lines N       Show last N lines (default: 50)"
+    echo "  -j, --json          Output in JSON format"
+    echo "  --refresh N         Refresh interval in seconds (default: $REFRESH_INTERVAL)"
+    echo "  -h, --help          Show this help"
+    echo ""
+    echo "Examples:"
+    echo "  $0 status"
+    echo "  $0 agents"
+    echo "  $0 logs ui-specialist"
+    echo "  $0 tail coordination -f"
+    echo "  $0 dashboard"
+}
+
+log_event() {
+    local level="$1"
+    local message="$2"
+    local timestamp="$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")"
+    
+    case "$level" in
+        "INFO") echo -e "${GREEN}[INFO]${NC} $message" ;;
+        "WARN") echo -e "${YELLOW}[WARN]${NC} $message" ;;
+        "ERROR") echo -e "${RED}[ERROR]${NC} $message" ;;
+        "DEBUG") echo -e "${BLUE}[DEBUG]${NC} $message" ;;
+    esac
+}
+
+check_service_availability() {
+    if ! curl -s "$COORDINATION_SERVICE_URL/health" >/dev/null 2>&1; then
+        log_event "ERROR" "Coordination service not available at $COORDINATION_SERVICE_URL"
+        echo "Please start the coordination service first:"
+        echo "  cd $PROJECT_ROOT/.claude/scripts/v2"
+        echo "  python3 agent_coordination_system.py"
+        exit 1
+    fi
+}
+
+show_system_status() {
+    log_event "INFO" "System Status Overview"
+    echo "======================="
+    
+    # Get system health
+    local health_response
+    if health_response=$(curl -s "$COORDINATION_SERVICE_URL/health" 2>/dev/null); then
+        local status=$(echo "$health_response" | python3 -c "import sys, json; print(json.load(sys.stdin).get('status', 'unknown'))")
+        local last_check=$(echo "$health_response" | python3 -c "import sys, json; print(json.load(sys.stdin).get('last_check', 'unknown'))")
+        
+        case "$status" in
+            "healthy") echo -e "System Health: ${GREEN}✅ Healthy${NC}" ;;
+            "degraded") echo -e "System Health: ${YELLOW}⚠️ Degraded${NC}" ;;
+            "error") echo -e "System Health: ${RED}❌ Error${NC}" ;;
+            *) echo -e "System Health: ${YELLOW}? Unknown${NC}" ;;
+        esac
+        
+        echo "Last Check: $last_check"
+    else
+        echo -e "System Health: ${RED}❌ Service Unavailable${NC}"
+    fi
+    
+    # Show log bus status
+    echo ""
+    echo "Log Bus Status:"
+    if [ -d "$LOG_DIR" ]; then
+        local log_count=$(find "$LOG_DIR" -name "*.ndjson" 2>/dev/null | wc -l)
+        local total_size=$(du -sh "$LOG_DIR" 2>/dev/null | cut -f1)
+        echo "  Active Topics: $log_count"
+        echo "  Total Size: $total_size"
+        
+        # Show recent activity
+        local recent_messages=$(find "$LOG_DIR" -name "*.ndjson" -newer "/tmp/monitor-last-check-$$" 2>/dev/null | wc -l)
+        echo "  Recent Activity: $recent_messages new messages"
+        touch "/tmp/monitor-last-check-$$"
+    else
+        echo -e "  Status: ${RED}❌ Log directory not found${NC}"
+    fi
+    
+    # Show emergency status
+    echo ""
+    echo "Emergency Status:"
+    if [ -f "/tmp/dream-team-emergency.lock" ]; then
+        echo -e "  ${RED}🚨 Emergency lock active${NC}"
+        echo "  Created: $(stat -c %y "/tmp/dream-team-emergency.lock" 2>/dev/null || echo "unknown")"
+    else
+        echo -e "  ${GREEN}✅ Normal operation${NC}"
+    fi
+}
+
+show_agent_status() {
+    log_event "INFO" "Agent Status"
+    echo "============="
+    
+    # Define all agents
+    local agents=(
+        "orchestrator-prime" "development-lead" "operations-lead" "quality-lead"
+        "ui-specialist" "backend-specialist" "database-specialist" "bug-detective"
+        "auth-security-enforcer" "mobile-specialist" "devops-specialist"
+        "guardian-enforcer" "rapid-prototype" "performance-optimizer" "accessibility-enforcer"
+    )
+    
+    printf "%-25s %-12s %-15s %-20s\n" "Agent" "Status" "Current Task" "Last Activity"
+    printf "%-25s %-12s %-15s %-20s\n" "-----" "------" "------------" "-------------"
+    
+    for agent in "${agents[@]}"; do
+        local status="offline"
+        local current_task="-"
+        local last_activity="-"
+        
+        # Get latest heartbeat
+        if [ -d "$LOG_DIR/heartbeat" ]; then
+            local latest_heartbeat=$(grep "\"agent\":\"$agent\"" "$LOG_DIR/heartbeat"/*.ndjson 2>/dev/null | tail -1)
+            if [ -n "$latest_heartbeat" ]; then
+                status=$(echo "$latest_heartbeat" | python3 -c "import sys, json; data=json.loads(sys.stdin.read()); print(data.get('data', {}).get('status', 'unknown'))")
+                current_task=$(echo "$latest_heartbeat" | python3 -c "import sys, json; data=json.loads(sys.stdin.read()); print(data.get('data', {}).get('current_task', '-'))")
+                last_activity=$(echo "$latest_heartbeat" | python3 -c "import sys, json; data=json.loads(sys.stdin.read()); print(data.get('timestamp', '-'))")
+            fi
+        fi
+        
+        # Format status with colors
+        case "$status" in
+            "idle") status_colored="${GREEN}idle${NC}" ;;
+            "busy") status_colored="${BLUE}busy${NC}" ;;
+            "error") status_colored="${RED}error${NC}" ;;
+            "offline") status_colored="${YELLOW}offline${NC}" ;;
+            *) status_colored="${YELLOW}$status${NC}" ;;
+        esac
+        
+        printf "%-25s %-20s %-15s %-20s\n" "$agent" "$status_colored" "${current_task:0:14}" "${last_activity:0:19}"
+    done
+}
+
+show_active_tasks() {
+    log_event "INFO" "Active Tasks"
+    echo "============"
+    
+    # Get tasks from coordination service
+    local tasks_response
+    if tasks_response=$(curl -s "$COORDINATION_SERVICE_URL/tasks" 2>/dev/null); then
+        if [ "$JSON_OUTPUT" = "true" ]; then
+            echo "$tasks_response" | python3 -m json.tool
+        else
+            echo "$tasks_response" | python3 -c "
+import sys, json
+tasks = json.load(sys.stdin)
+if not tasks:
+    print('No active tasks')
+else:
+    print(f'{'Task ID':<36} {'Agent':<20} {'Status':<12} {'Priority':<8} {'Started':<20}')
+    print('-' * 100)
+    for task in tasks:
+        print(f'{task.get('task_id', ''):<36} {task.get('agent', ''):<20} {task.get('status', ''):<12} {task.get('priority', ''):<8} {task.get('started_at', ''):<20}')
+"
+        fi
+    else
+        echo "Failed to get tasks from coordination service"
+    fi
+}
+
+show_logs() {
+    local agent_filter="$1"
+    local lines="${LINES:-50}"
+    
+    if [ -n "$agent_filter" ]; then
+        log_event "INFO" "Logs for agent: $agent_filter (last $lines lines)"
+    else
+        log_event "INFO" "System logs (last $lines lines)"
+    fi
+    echo "=================="
+    
+    if [ ! -d "$LOG_DIR" ]; then
+        log_event "ERROR" "Log directory not found: $LOG_DIR"
+        return 1
+    fi
+    
+    # Find relevant log files
+    local log_files=()
+    if [ -n "$agent_filter" ]; then
+        mapfile -t log_files < <(find "$LOG_DIR" -name "*.ndjson" -exec grep -l "\"agent\":\"$agent_filter\"" {} \; 2>/dev/null)
+    else
+        mapfile -t log_files < <(find "$LOG_DIR" -name "*.ndjson" 2>/dev/null)
+    fi
+    
+    if [ ${#log_files[@]} -eq 0 ]; then
+        log_event "WARN" "No log files found"
+        return 0
+    fi
+    
+    # Display logs
+    if [ "$FOLLOW" = "true" ]; then
+        tail -f "${log_files[@]}" | while read -r line; do
+            format_log_line "$line"
+        done
+    else
+        for file in "${log_files[@]}"; do
+            tail -n "$lines" "$file" 2>/dev/null | while read -r line; do
+                format_log_line "$line"
+            done
+        done | sort -k1,1 | tail -n "$lines"
+    fi
+}
+
+format_log_line() {
+    local line="$1"
+    
+    if [ "$JSON_OUTPUT" = "true" ]; then
+        echo "$line"
+        return
+    fi
+    
+    # Try to parse as JSON and format
+    local timestamp agent level message
+    if timestamp=$(echo "$line" | python3 -c "import sys, json; print(json.load(sys.stdin).get('timestamp', ''))" 2>/dev/null); then
+        agent=$(echo "$line" | python3 -c "import sys, json; print(json.load(sys.stdin).get('agent', 'system'))" 2>/dev/null)
+        level=$(echo "$line" | python3 -c "import sys, json; print(json.load(sys.stdin).get('level', 'INFO'))" 2>/dev/null)
+        message=$(echo "$line" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('message', str(data)))" 2>/dev/null)
+        
+        # Format with colors
+        case "$level" in
+            "ERROR") level_colored="${RED}ERROR${NC}" ;;
+            "WARN") level_colored="${YELLOW}WARN${NC}" ;;
+            "INFO") level_colored="${GREEN}INFO${NC}" ;;
+            "DEBUG") level_colored="${BLUE}DEBUG${NC}" ;;
+            *) level_colored="$level" ;;
+        esac
+        
+        printf "%s [%-20s] %-5s %s\n" "${timestamp:0:19}" "$agent" "$level_colored" "$message"
+    else
+        echo "$line"
+    fi
+}
+
+show_performance_metrics() {
+    log_event "INFO" "Performance Metrics"
+    echo "==================="
+    
+    # Get metrics from coordination service
+    local metrics_response
+    if metrics_response=$(curl -s "$COORDINATION_SERVICE_URL/metrics" 2>/dev/null); then
+        if [ "$JSON_OUTPUT" = "true" ]; then
+            echo "$metrics_response" | python3 -m json.tool
+        else
+            echo "$metrics_response" | python3 -c "
+import sys, json
+metrics = json.load(sys.stdin)
+
+print('System Metrics:')
+print(f'  Active Tasks: {metrics.get('active_tasks', 0)}')
+print(f'  Total Tasks: {metrics.get('total_tasks', 0)}')
+print(f'  Uptime: {metrics.get('uptime', 'unknown')}')
+
+if 'log_bus_metrics' in metrics:
+    print('\nLog Bus Performance:')
+    for operation, data in metrics['log_bus_metrics'].items():
+        print(f'  {operation}: {data.get('count', 0)} ops, avg {data.get('avg_duration', 0):.3f}s')
+
+if 'agent_performance' in metrics:
+    print('\nAgent Performance:')
+    for agent, perf in metrics['agent_performance'].items():
+        print(f'  {agent}: {perf.get('tasks_completed', 0)} tasks, {perf.get('avg_duration', 0):.2f}s avg')
+"
+        fi
+    else
+        echo "Failed to get metrics from coordination service"
+    fi
+}
+
+show_coordination_activity() {
+    log_event "INFO" "Coordination Activity"
+    echo "===================="
+    
+    local coordination_logs="$LOG_DIR/coordination"
+    
+    if [ ! -d "$coordination_logs" ]; then
+        log_event "WARN" "No coordination logs found"
+        return 0
+    fi
+    
+    # Show recent coordination events
+    find "$coordination_logs" -name "*.ndjson" -exec tail -n 20 {} \; 2>/dev/null | \
+    sort -k1,1 | tail -n 20 | while read -r line; do
+        if [ -n "$line" ]; then
+            format_log_line "$line"
+        fi
+    done
+}
+
+tail_topic() {
+    local topic="$1"
+    local topic_dir="$LOG_DIR/$topic"
+    
+    if [ ! -d "$topic_dir" ]; then
+        log_event "ERROR" "Topic not found: $topic"
+        return 1
+    fi
+    
+    log_event "INFO" "Tailing topic: $topic"
+    
+    if [ "$FOLLOW" = "true" ]; then
+        tail -f "$topic_dir"/*.ndjson 2>/dev/null | while read -r line; do
+            format_log_line "$line"
+        done
+    else
+        tail -n "${LINES:-50}" "$topic_dir"/*.ndjson 2>/dev/null | while read -r line; do
+            format_log_line "$line"
+        done
+    fi
+}
+
+start_dashboard() {
+    log_event "INFO" "Starting interactive dashboard..."
+    
+    # Check if we have the required tools
+    if ! command -v tput >/dev/null 2>&1; then
+        log_event "ERROR" "Dashboard requires 'tput' command"
+        return 1
+    fi
+    
+    local refresh_interval="${REFRESH_INTERVAL}"
+    
+    while true; do
+        clear
+        echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${BLUE}                                    ULTIMATE MONOREPO AGENT DASHBOARD                                    ${NC}"
+        echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo ""
+        
+        # System status section
+        show_system_status
+        echo ""
+        
+        # Agent status section
+        show_agent_status
+        echo ""
+        
+        # Recent activity
+        echo -e "${BLUE}Recent Activity (last 10 events):${NC}"
+        echo "================================="
+        find "$LOG_DIR" -name "*.ndjson" -exec tail -n 1 {} \; 2>/dev/null | \
+        sort -k1,1 | tail -n 10 | while read -r line; do
+            format_log_line "$line"
+        done
+        
+        echo ""
+        echo -e "${YELLOW}Press Ctrl+C to exit | Refreshing every ${refresh_interval}s${NC}"
+        
+        sleep "$refresh_interval"
+    done
+}
+
+# Parse command line arguments
+COMMAND=""
+AGENT_FILTER=""
+TOPIC=""
+FOLLOW=false
+LINES=50
+JSON_OUTPUT=false
+REFRESH_INTERVAL=5
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        status|agents|tasks|logs|performance|coordination|health|dashboard|tail)
+            COMMAND="$1"
+            shift
+            ;;
+        -f|--follow)
+            FOLLOW=true
+            shift
+            ;;
+        -n|--lines)
+            LINES="$2"
+            shift 2
+            ;;
+        -j|--json)
+            JSON_OUTPUT=true
+            shift
+            ;;
+        --refresh)
+            REFRESH_INTERVAL="$2"
+            shift 2
+            ;;
+        -h|--help)
+            show_usage
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option $1"
+            show_usage
+            exit 1
+            ;;
+        *)
+            if [ "$COMMAND" = "logs" ] || [ "$COMMAND" = "health" ]; then
+                AGENT_FILTER="$1"
+            elif [ "$COMMAND" = "tail" ]; then
+                TOPIC="$1"
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Validate command
+if [ -z "$COMMAND" ]; then
+    echo "Error: Command is required"
+    show_usage
+    exit 1
+fi
+
+# Main execution
+main() {
+    # Check service availability (except for some commands)
+    if [ "$COMMAND" != "health" ] && [ "$COMMAND" != "logs" ]; then
+        check_service_availability
+    fi
+    
+    case "$COMMAND" in
+        status)
+            show_system_status
+            ;;
+        agents)
+            show_agent_status
+            ;;
+        tasks)
+            show_active_tasks
+            ;;
+        logs)
+            show_logs "$AGENT_FILTER"
+            ;;
+        performance)
+            show_performance_metrics
+            ;;
+        coordination)
+            show_coordination_activity
+            ;;
+        health)
+            if [ -n "$AGENT_FILTER" ]; then
+                log_event "INFO" "Health check for agent: $AGENT_FILTER"
+                # Agent-specific health check
+                show_logs "$AGENT_FILTER" 10
+            else
+                show_system_status
+            fi
+            ;;
+        dashboard)
+            start_dashboard
+            ;;
+        tail)
+            if [ -z "$TOPIC" ]; then
+                echo "Error: Topic is required for tail command"
+                exit 1
+            fi
+            tail_topic "$TOPIC"
+            ;;
+        *)
+            echo "Unknown command: $COMMAND"
+            show_usage
+            exit 1
+            ;;
+    esac
+}
+
+# Trap for cleanup
+cleanup() {
+    rm -f "/tmp/monitor-last-check-$$" 2>/dev/null
+    exit 0
+}
+trap cleanup INT TERM
+
+# Run main function
+main

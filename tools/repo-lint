@@ -1,0 +1,193 @@
+#!/usr/bin/env bash
+# repo-lint - Claude-aware repository hygiene checker
+# Ensures code quality before any agent commits
+
+set -euo pipefail
+
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Log functions
+log_info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Track overall status
+FAILED=0
+
+# Function to run a check
+run_check() {
+    local name="$1"
+    local command="$2"
+    
+    log_info "Running: $name"
+    
+    if eval "$command"; then
+        log_info "✅ $name passed"
+    else
+        log_error "❌ $name failed"
+        FAILED=1
+    fi
+}
+
+# Main checks
+log_info "Starting repository hygiene checks..."
+
+# 1. Format checking
+if command -v prettier &> /dev/null; then
+    run_check "Prettier formatting" "prettier --check '**/*.{js,jsx,ts,tsx,json,md}' 2>/dev/null || true"
+fi
+
+if command -v ruff &> /dev/null; then
+    run_check "Python formatting (Ruff)" "ruff format --check . 2>/dev/null || true"
+fi
+
+# 2. Linting
+if command -v eslint &> /dev/null; then
+    run_check "ESLint" "eslint . --ext .js,.jsx,.ts,.tsx 2>/dev/null || true"
+fi
+
+if command -v ruff &> /dev/null; then
+    run_check "Python linting (Ruff)" "ruff check . 2>/dev/null || true"
+fi
+
+if command -v shellcheck &> /dev/null; then
+    run_check "ShellCheck" "find . -name '*.sh' -exec shellcheck {} +"
+fi
+
+# 3. Type checking
+if [ -f "tsconfig.json" ] && command -v tsc &> /dev/null; then
+    run_check "TypeScript" "tsc --noEmit"
+fi
+
+# 4. Tests
+if [ -f "package.json" ] && command -v npm &> /dev/null; then
+    if grep -q '"test"' package.json; then
+        run_check "JavaScript tests" "npm test -- --passWithNoTests"
+    fi
+fi
+
+if command -v pytest &> /dev/null; then
+    if find . -name "test_*.py" -o -name "*_test.py" | grep -q .; then
+        run_check "Python tests" "pytest -v"
+    fi
+fi
+
+# 5. Dead code detection
+if command -v ts-prune &> /dev/null; then
+    log_info "Checking for dead TypeScript code..."
+    if ts-prune --error 2>/dev/null; then
+        log_info "✅ No dead code detected"
+    else
+        log_warn "⚠️  Dead code detected (non-blocking)"
+    fi
+fi
+
+# 6. Security checks
+if command -v gitleaks &> /dev/null; then
+    run_check "Secrets scan" "gitleaks detect --no-git"
+fi
+
+# 7. Check for common issues
+log_info "Checking for common issues..."
+
+# Check for console.log statements
+if grep -r "console\.log" --include="*.js" --include="*.ts" --include="*.jsx" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v ".test." | grep -v ".spec."; then
+    log_warn "⚠️  Found console.log statements"
+fi
+
+# Check for TODO/FIXME comments
+if grep -r "TODO\|FIXME\|XXX\|HACK" --include="*.js" --include="*.ts" --include="*.py" --include="*.jsx" --include="*.tsx" . 2>/dev/null | grep -v node_modules; then
+    log_warn "⚠️  Found TODO/FIXME comments"
+fi
+
+# Check for large files
+large_files=$(find . -type f -size +500k -not -path "./.git/*" -not -path "./node_modules/*" -not -path "./.turbo/*" 2>/dev/null)
+if [ -n "$large_files" ]; then
+    log_warn "⚠️  Found large files (>500KB):"
+    echo "$large_files"
+fi
+
+# 8. API contract validation
+if [ -f "api/openapi.yaml" ]; then
+    log_info "Checking API contract..."
+    
+    # Check if SDK needs regeneration
+    if [ -d "packages/api-sdk" ]; then
+        if [ "api/openapi.yaml" -nt "packages/api-sdk/src/index.ts" ] 2>/dev/null; then
+            log_error "❌ API contract changed but SDK not regenerated"
+            log_error "   Run: npm run codegen"
+            FAILED=1
+        else
+            log_info "✅ API SDK is up to date"
+        fi
+    fi
+fi
+
+# 9. Agent-specific checks
+if [ -d ".claude/agents" ]; then
+    log_info "Validating agent files..."
+    
+    for agent_file in .claude/agents/*.md; do
+        if [ -f "$agent_file" ]; then
+            # Check for proper frontmatter
+            if ! head -1 "$agent_file" | grep -q "^---$"; then
+                log_error "❌ Agent file missing frontmatter: $agent_file"
+                FAILED=1
+            fi
+            
+            # Check for required fields
+            if ! grep -q "^name:" "$agent_file"; then
+                log_error "❌ Agent file missing name field: $agent_file"
+                FAILED=1
+            fi
+            
+            if ! grep -q "^tools:" "$agent_file"; then
+                log_error "❌ Agent file missing tools field: $agent_file"
+                FAILED=1
+            fi
+        fi
+    done
+    
+    if [ $FAILED -eq 0 ]; then
+        log_info "✅ All agent files valid"
+    fi
+fi
+
+# 10. Check git status
+if [ -d ".git" ]; then
+    log_info "Checking git status..."
+    
+    # Check for uncommitted changes
+    if ! git diff --quiet; then
+        log_warn "⚠️  Uncommitted changes detected"
+    fi
+    
+    # Check for untracked files
+    untracked=$(git ls-files --others --exclude-standard)
+    if [ -n "$untracked" ]; then
+        log_warn "⚠️  Untracked files detected:"
+        echo "$untracked" | head -10
+    fi
+fi
+
+# Final summary
+echo
+if [ $FAILED -eq 0 ]; then
+    log_info "🎉 All checks passed! Repository is clean."
+    exit 0
+else
+    log_error "❌ Some checks failed. Please fix issues before committing."
+    exit 1
+fi

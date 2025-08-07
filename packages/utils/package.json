@@ -1,0 +1,21 @@
+{
+  "name": "@monorepo/utils",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "dev": "ts-node-dev src/index.ts"
+  },
+  "dependencies": {
+    "uuid": "^9.0.0",
+    "lodash": "^4.17.0",
+    "date-fns": "^2.30.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/uuid": "^9.0.0",
+    "@types/lodash": "^4.14.0"
+  }
+}

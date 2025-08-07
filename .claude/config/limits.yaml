@@ -1,0 +1,39 @@
+# Resource limits for Dream Team agents
+limits:
+  execution:
+    max_parallel_agents: 5
+    max_task_duration_ms: 300000  # 5 minutes
+    max_retries: 3
+    backoff_multiplier: 2
+    
+  memory:
+    max_log_size_mb: 100
+    max_cache_size_mb: 500
+    cleanup_threshold: 0.8  # Cleanup at 80% usage
+    
+  api:
+    rate_limit_per_minute: 100
+    burst_size: 20
+    cooldown_ms: 5000
+    
+  storage:
+    max_file_size_mb: 50
+    max_total_size_gb: 10
+    allowed_extensions:
+      - .md
+      - .json
+      - .yaml
+      - .yml
+      - .txt
+      - .log
+      - .ndjson
+      
+  security:
+    max_input_length: 100000
+    max_path_depth: 10
+    forbidden_paths:
+      - /etc
+      - /sys
+      - /proc
+      - ~/.ssh
+      - ~/.aws

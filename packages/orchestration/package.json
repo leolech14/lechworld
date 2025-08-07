@@ -1,0 +1,16 @@
+{
+  "name": "@monorepo/orchestration",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "dev": "ts-node-dev src/index.ts"
+  },
+  "dependencies": {
+    "redis": "^4.6.0",
+    "amqplib": "^0.10.0",
+    "@opentelemetry/api": "^1.7.0",
+    "circuit-breaker-js": "^1.0.0"
+  }
+}

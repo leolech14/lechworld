@@ -1,0 +1,26 @@
+# Allowed destructive actions for automated mode
+# One action per line, exact match required
+# Comments start with #
+
+# Development environment actions
+delete_test_data
+reset_development_db
+clean_temp_files
+remove_draft_files
+clear_agent_logs
+
+# Build and deployment
+clean_build_artifacts
+reset_node_modules
+clear_turbo_cache
+remove_generated_sdk
+
+# Testing
+delete_test_results
+reset_test_database
+clear_test_cache
+
+# Maintenance
+rotate_old_logs
+cleanup_audit_trail
+remove_old_backups

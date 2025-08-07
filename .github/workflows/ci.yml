@@ -1,0 +1,232 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
+jobs:
+  build-test-lint:
+    name: Build, Test & Lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20]
+        include:
+          - node: 20
+            check-types: true
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci --frozen-lockfile
+          
+      - name: Run linting
+        run: npm run lint
+        
+      - name: Run type checking
+        if: matrix.check-types
+        run: npm run typecheck
+        
+      - name: Run tests
+        run: npm run test
+        
+      - name: Build all packages
+        run: npm run build
+
+      - name: Check for dead code
+        run: npm run dead-code || true
+
+      - name: Upload coverage
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+
+  api-contract-check:
+    name: API Contract Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci --frozen-lockfile
+          
+      - name: Validate OpenAPI spec
+        run: |
+          npx @openapitools/openapi-generator-cli validate -i api/openapi.yaml
+          
+      - name: Generate SDK
+        run: npm run codegen
+        
+      - name: Check SDK is up to date
+        run: |
+          git diff --exit-code packages/api-sdk/
+          if [ $? -ne 0 ]; then
+            echo "Error: API SDK is out of date. Run 'npm run codegen' locally."
+            exit 1
+          fi
+          
+      - name: Run dead code detection after codegen
+        run: |
+          npm run dead-code
+          if [ $? -ne 0 ]; then
+            echo "Warning: Dead code detected in generated SDK"
+          fi
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+
+  agent-validation:
+    name: Validate Agent Files
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install pyyaml
+          
+      - name: Validate agents
+        run: python scripts/v2/validate_agents.py
+
+  danger:
+    name: Danger PR Checks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Danger
+        run: npx danger ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [build-test-lint]
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run integration tests
+        run: npm run test:e2e
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/dreamteam_test
+
+  repo-hygiene:
+    name: Repository Hygiene
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run repo-lint
+        run: ./tools/repo-lint
+
+  automerge:
+    name: Auto-merge Dependabot PRs
+    runs-on: ubuntu-latest
+    needs: [build-test-lint, security-scan]
+    if: github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'
+    
+    steps:
+      - name: Auto-merge minor updates
+        uses: ahmadnassri/action-dependabot-auto-merge@v2
+        with:
+          target: minor
+          github-token: ${{ secrets.GITHUB_TOKEN }}

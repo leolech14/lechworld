@@ -1,0 +1,19 @@
+{
+  "name": "@monorepo/config",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "dev": "ts-node-dev src/index.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.0",
+    "joi": "^17.11.0",
+    "yaml": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}

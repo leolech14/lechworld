@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Enhanced emergency stop for Ultimate Monorepo
+
+set -euo pipefail
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${RED}🚨 ULTIMATE MONOREPO EMERGENCY STOP${NC}"
+echo "=================================="
+
+# Create emergency lock
+LOCK_FILE="/tmp/dream-team-emergency.lock"
+echo "$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ"): Emergency stop activated by $(whoami)" > "$LOCK_FILE"
+
+# Stop coordination service
+echo "Stopping coordination service..."
+curl -X POST "http://localhost:8765/emergency-stop" 2>/dev/null || echo "Coordination service not responding"
+
+# Stop any running agents/processes
+echo "Stopping agent processes..."
+pkill -f "agent-orchestrate" || true
+pkill -f "agent-monitor" || true
+pkill -f "agent_coordination_system" || true
+
+# Stop Docker services
+echo "Stopping Docker services..."
+if [ -f "infrastructure/docker-compose.yml" ]; then
+    docker-compose -f infrastructure/docker-compose.yml stop || true
+fi
+
+# Disable all tools except this one
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+for tool in "$SCRIPT_DIR"/*; do
+    if [ -x "$tool" ] && [ "$(basename "$tool")" != "emergency-stop" ]; then
+        mv "$tool" "$tool.emergency-disabled" 2>/dev/null || true
+    fi
+done
+
+# Log emergency event
+if [ -f "$(dirname "$SCRIPT_DIR")/.claude/scripts/v2/audit_logger.py" ]; then
+    python3 "$(dirname "$SCRIPT_DIR")/.claude/scripts/v2/audit_logger.py" -c "
+from audit_logger import log_security_violation
+log_security_violation('system', 'emergency_stop', {
+    'user': '$(whoami)', 
+    'timestamp': '$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")',
+    'reason': 'manual_activation'
+})
+" 2>/dev/null || echo "Could not log emergency event"
+fi
+
+echo -e "${GREEN}✅ Emergency stop complete${NC}"
+echo ""
+echo -e "${YELLOW}All systems have been halted.${NC}"
+echo ""
+echo "To recover:"
+echo "1. Investigate the issue that triggered the emergency stop"
+echo "2. Remove emergency lock: rm $LOCK_FILE"
+echo "3. Re-enable tools: for f in tools/*.emergency-disabled; do mv \"\$f\" \"\${f%.emergency-disabled}\"; done"
+echo "4. Validate security: ./tools/validate-hardening"
+echo "5. Start services: npm run start-services"
+echo "6. Verify system health: ./tools/agent-monitor status"

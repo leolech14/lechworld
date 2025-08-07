@@ -1,0 +1,84 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "rules/*.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter (if running)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+
+  # Application metrics (if your apps expose metrics)
+  - job_name: 'monorepo-api'
+    static_configs:
+      - targets: ['localhost:3001']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # PostgreSQL metrics (via postgres_exporter)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['localhost:9187']
+
+  # Redis metrics (via redis_exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['localhost:9121']
+
+  # RabbitMQ metrics
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['localhost:15692']
+
+  # Docker container metrics (via cAdvisor)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['localhost:8080']
+
+  # Agent Coordination System metrics
+  - job_name: 'agent-coordination'
+    static_configs:
+      - targets: ['localhost:8765']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Grafana metrics
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['localhost:3000']
+    metrics_path: '/metrics'
+
+  # Custom application metrics
+  - job_name: 'custom-metrics'
+    file_sd_configs:
+      - files:
+          - 'targets/*.json'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 'localhost:9090'
+
+# Alertmanager configuration (optional)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - localhost:9093
+
+# Remote write configuration for long-term storage (optional)
+# remote_write:
+#   - url: "https://prometheus-remote-write-endpoint.com/api/v1/write"
+#     basic_auth:
+#       username: "your-username"
+#       password: "your-password"

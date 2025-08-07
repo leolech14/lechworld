@@ -1,0 +1,1074 @@
+#!/usr/bin/env bash
+# Enhanced system hardening script for Ultimate Monorepo
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo "🛡️  Ultimate Monorepo Security Hardening"
+echo "========================================"
+
+# Create directory structure if it doesn't exist
+echo -e "\n${BLUE}0. Initializing directory structure...${NC}"
+mkdir -p "$PROJECT_ROOT/.claude/agents"
+mkdir -p "$PROJECT_ROOT/.claude/scripts/v2"
+mkdir -p "$PROJECT_ROOT/.claude/config"
+mkdir -p "$PROJECT_ROOT/.claude/logs"
+mkdir -p "$PROJECT_ROOT/.claude/audit"
+mkdir -p "$PROJECT_ROOT/.claude/coordination"
+mkdir -p "$PROJECT_ROOT/tools"
+mkdir -p "$PROJECT_ROOT/docs"
+mkdir -p "$PROJECT_ROOT/infrastructure/monitoring"
+mkdir -p "$PROJECT_ROOT/apps"
+mkdir -p "$PROJECT_ROOT/packages"
+mkdir -p "$PROJECT_ROOT/api/schemas"
+echo -e "${GREEN}✓ Directory structure created${NC}"
+
+# 1. Verify Guardian Enforcer (will be created later)
+echo -e "\n${GREEN}1. Preparing Guardian Enforcer...${NC}"
+echo -e "${YELLOW}! Guardian Enforcer will be installed with agents${NC}"
+
+# 2. Set proper file permissions
+echo -e "\n${GREEN}2. Setting file permissions...${NC}"
+
+# Protect sensitive files
+chmod 600 "$PROJECT_ROOT"/.env* 2>/dev/null || true
+chmod 600 "$PROJECT_ROOT"/config/secrets/* 2>/dev/null || true
+chmod 700 "$PROJECT_ROOT"/.claude/scripts/ 2>/dev/null || true
+chmod 700 "$PROJECT_ROOT"/tools/ 2>/dev/null || true
+
+# Make logs readable but not writable by others
+chmod -R 640 "$PROJECT_ROOT"/.claude/logs/ 2>/dev/null || true
+
+echo -e "${GREEN}✓ File permissions secured${NC}"
+
+# 3. Install Git hooks
+echo -e "\n${GREEN}3. Installing Git hooks...${NC}"
+
+# Create .git directory if it doesn't exist (for new repos)
+mkdir -p "$PROJECT_ROOT/.git/hooks"
+
+# Create pre-commit hook
+cat > "$PROJECT_ROOT/.git/hooks/pre-commit" << 'EOF'
+#!/usr/bin/env bash
+# Enhanced pre-commit hook for Ultimate Monorepo
+
+# Get the commit message
+if [ -z "$1" ]; then
+    COMMIT_MSG_FILE=".git/COMMIT_EDITMSG"
+else
+    COMMIT_MSG_FILE="$1"
+fi
+
+# Check if we have a task ID (UUID format)
+if [ -f "$COMMIT_MSG_FILE" ]; then
+    if ! grep -qE 'Task-ID: [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' "$COMMIT_MSG_FILE"; then
+        echo "⚠️  Warning: No Task-ID found in commit message"
+        echo "   Consider adding: Task-ID: $(uuidgen 2>/dev/null || echo 'generated-uuid')"
+    fi
+fi
+
+# Run Guardian Enforcer validation
+if command -v python3 >/dev/null 2>&1 && [ -f ".claude/scripts/v2/guardian_check.py" ]; then
+    echo "🛡️  Running Guardian Enforcer validation..."
+    cd "$(git rev-parse --show-toplevel)"
+    python3 .claude/scripts/v2/guardian_check.py --pre-commit
+fi
+
+# Run security scans
+if command -v npm >/dev/null 2>&1; then
+    echo "🔍 Running security audit..."
+    npm audit --audit-level=high --only=prod || echo "⚠️ Security audit found issues"
+fi
+
+exit 0
+EOF
+
+chmod +x "$PROJECT_ROOT/.git/hooks/pre-commit"
+echo -e "${GREEN}✓ Git hooks installed${NC}"
+
+# 4. Create enhanced environment template
+echo -e "\n${GREEN}4. Creating secure environment template...${NC}"
+
+if [ ! -f "$PROJECT_ROOT/.env.example" ]; then
+    cat > "$PROJECT_ROOT/.env.example" << 'EOF'
+# Ultimate Monorepo Environment Configuration
+# Copy to .env and fill in values
+
+# API Keys (use secure vault in production)
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
+GITHUB_TOKEN=
+
+# Databases
+DATABASE_URL=postgresql://orchestrator:orchestrator123@localhost:5432/orchestrator
+TEST_DATABASE_URL=postgresql://orchestrator:orchestrator123@localhost:5432/orchestrator_test
+REDIS_URL=redis://localhost:6379
+
+# Message Queue
+RABBITMQ_URL=amqp://admin:admin123@localhost:5672
+
+# Security
+JWT_SECRET=generate-with-openssl-rand-base64-32
+ENCRYPTION_KEY=generate-with-openssl-rand-hex-32
+BCRYPT_ROUNDS=12
+
+# Monitoring & Observability
+SENTRY_DSN=
+LOG_LEVEL=info
+PROMETHEUS_URL=http://localhost:9090
+GRAFANA_URL=http://localhost:3000
+JAEGER_URL=http://localhost:16686
+
+# Feature Flags
+ENABLE_GUARDIAN_ENFORCER=true
+ENABLE_AUDIT_TRAIL=true
+ENABLE_RATE_LIMITING=true
+ENABLE_AGENT_COORDINATION=true
+ENABLE_TRACING=true
+
+# Resource Limits
+MAX_PARALLEL_AGENTS=8
+MAX_LOG_SIZE_MB=100
+MAX_TASK_DURATION_MS=300000
+
+# Development
+NODE_ENV=development
+DEBUG=app:*
+
+# Infrastructure
+DOCKER_HOST=unix:///var/run/docker.sock
+KUBERNETES_NAMESPACE=default
+EOF
+    echo -e "${GREEN}✓ Environment template created${NC}"
+else
+    echo -e "${YELLOW}! Environment template already exists${NC}"
+fi
+
+# 5. Create Guardian Enforcer helper script
+echo -e "\n${GREEN}5. Creating Guardian Enforcer integration...${NC}"
+
+cat > "$PROJECT_ROOT/.claude/scripts/v2/guardian_check.py" << 'EOF'
+#!/usr/bin/env python3
+"""Enhanced Guardian Enforcer validation script"""
+import sys
+import json
+import os
+import subprocess
+import re
+from pathlib import Path
+from datetime import datetime
+
+class GuardianValidator:
+    def __init__(self):
+        self.project_root = Path(__file__).parent.parent.parent.parent
+        self.violations = []
+        
+    def check_file_permissions(self):
+        """Check sensitive file permissions"""
+        sensitive_patterns = [
+            "**/.env*",
+            "**/secrets/*",
+            "**/*.key",
+            "**/*.pem",
+            "**/id_rsa*",
+            "**/*.p12",
+            "**/*.pfx",
+        ]
+        
+        for pattern in sensitive_patterns:
+            for file in self.project_root.glob(pattern):
+                if file.is_file():
+                    stat = file.stat()
+                    mode = oct(stat.st_mode)[-3:]
+                    if mode != "600":
+                        self.violations.append(f"Insecure permissions on {file}: {mode}")
+                        
+    def check_hardcoded_secrets(self):
+        """Scan for potential hardcoded secrets"""
+        patterns = [
+            r'(api[_-]?key|apikey|secret|password|pwd|token|auth)["\']?\s*[:=]\s*["\'][^"\']{8,}["\']',
+            r'(AWS|aws)[_-]?(ACCESS|access)[_-]?(KEY|key)[_-]?(ID|id)?["\']?\s*[:=]\s*["\'][A-Z0-9]{20}["\']',
+            r'(AWS|aws)[_-]?(SECRET|secret)[_-]?(ACCESS|access)[_-]?(KEY|key)["\']?\s*[:=]\s*["\'][A-Za-z0-9/+=]{40}["\']',
+            r'sk-[a-zA-Z0-9]{48}',  # OpenAI API keys
+            r'pk-[a-zA-Z0-9]{48}',  # Anthropic API keys
+            r'ghp_[a-zA-Z0-9]{36}', # GitHub tokens
+        ]
+        
+        exclude_patterns = [
+            r'\.example$',
+            r'\.template$',
+            r'\.sample$',
+            r'test.*\.(js|ts|py)$',
+            r'spec.*\.(js|ts|py)$',
+        ]
+        
+        code_files = list(self.project_root.glob("**/*.py")) + \
+                    list(self.project_root.glob("**/*.js")) + \
+                    list(self.project_root.glob("**/*.ts")) + \
+                    list(self.project_root.glob("**/*.jsx")) + \
+                    list(self.project_root.glob("**/*.tsx")) + \
+                    list(self.project_root.glob("**/*.yml")) + \
+                    list(self.project_root.glob("**/*.yaml")) + \
+                    list(self.project_root.glob("**/*.json"))
+                    
+        for file in code_files:
+            if ".git" in str(file) or "node_modules" in str(file):
+                continue
+                
+            # Skip example/template files
+            if any(re.search(pattern, str(file), re.IGNORECASE) for pattern in exclude_patterns):
+                continue
+                
+            try:
+                content = file.read_text()
+                for pattern in patterns:
+                    if re.search(pattern, content, re.IGNORECASE | re.MULTILINE):
+                        self.violations.append(f"Potential hardcoded secret in {file}")
+                        break
+            except:
+                pass
+                
+    def check_docker_security(self):
+        """Check Docker configurations for security issues"""
+        docker_files = list(self.project_root.glob("**/Dockerfile*")) + \
+                      list(self.project_root.glob("**/docker-compose*.yml"))
+                      
+        for file in docker_files:
+            try:
+                content = file.read_text()
+                # Check for running as root
+                if re.search(r'USER\s+root', content):
+                    self.violations.append(f"Docker file runs as root: {file}")
+                    
+                # Check for exposed secrets
+                if re.search(r'ENV\s+.*(?:PASSWORD|SECRET|TOKEN|KEY)', content, re.IGNORECASE):
+                    self.violations.append(f"Environment secrets exposed in Docker: {file}")
+            except:
+                pass
+                
+    def check_kubernetes_security(self):
+        """Check Kubernetes manifests for security issues"""
+        k8s_files = list(self.project_root.glob("**/k8s/**/*.yml")) + \
+                   list(self.project_root.glob("**/k8s/**/*.yaml")) + \
+                   list(self.project_root.glob("**/kubernetes/**/*.yml")) + \
+                   list(self.project_root.glob("**/kubernetes/**/*.yaml"))
+                   
+        for file in k8s_files:
+            try:
+                content = file.read_text()
+                # Check for privileged containers
+                if 'privileged: true' in content:
+                    self.violations.append(f"Privileged container in K8s manifest: {file}")
+                    
+                # Check for root security context
+                if re.search(r'runAsUser:\s*0', content):
+                    self.violations.append(f"Container runs as root in K8s manifest: {file}")
+            except:
+                pass
+                
+    def check_agent_permissions(self):
+        """Verify agent tool permissions match configuration"""
+        settings_file = self.project_root / ".claude/config/settings_v2.json"
+        if settings_file.exists():
+            try:
+                with open(settings_file) as f:
+                    settings = json.load(f)
+                    
+                allowed_tools = settings.get("security", {}).get("allowed_tools", {})
+                
+                # Check each agent's declared tools
+                agents_dir = self.project_root / ".claude/agents"
+                for agent_file in agents_dir.glob("*.md"):
+                    content = agent_file.read_text()
+                    if "Tools:" in content:
+                        # Extract tools list (simplified parsing)
+                        tools_section = content.split("Tools:")[1].split("\n")[0]
+                        declared_tools = [t.strip() for t in tools_section.split(",")]
+                        
+                        # Verify against allowed tools
+                        agent_name = agent_file.stem
+                        for tool in declared_tools:
+                            if tool and tool not in ["Read", "Write", "Task"]:
+                                # Enhanced validation for dangerous tools
+                                dangerous_tools = ["Bash", "Execute", "Shell", "System"]
+                                if tool in dangerous_tools:
+                                    self.violations.append(f"Agent {agent_name} has dangerous tool: {tool}")
+            except:
+                pass
+                
+    def validate(self, pre_commit=False):
+        """Run all validation checks"""
+        print("🛡️  Guardian Enforcer Validation (Enhanced)")
+        print("==========================================")
+        
+        self.check_file_permissions()
+        self.check_hardcoded_secrets()
+        self.check_docker_security()
+        self.check_kubernetes_security()
+        self.check_agent_permissions()
+        
+        if self.violations:
+            print(f"\n❌ Found {len(self.violations)} violations:")
+            for v in self.violations:
+                print(f"  - {v}")
+                
+            if pre_commit:
+                print("\n⚠️  Commit will proceed, but please address these issues.")
+                return 0  # Warning only for now
+            return 1
+        else:
+            print("\n✅ All security checks passed!")
+            return 0
+            
+if __name__ == "__main__":
+    validator = GuardianValidator()
+    pre_commit = "--pre-commit" in sys.argv
+    sys.exit(validator.validate(pre_commit))
+EOF
+
+chmod +x "$PROJECT_ROOT/.claude/scripts/v2/guardian_check.py"
+echo -e "${GREEN}✓ Guardian Enforcer integration created${NC}"
+
+# 6. Create enhanced resource limit configuration
+echo -e "\n${GREEN}6. Setting resource limits...${NC}"
+
+cat > "$PROJECT_ROOT/.claude/config/limits.yaml" << 'EOF'
+# Enhanced resource limits for Ultimate Monorepo
+limits:
+  execution:
+    max_parallel_agents: 8  # Increased for better performance
+    max_task_duration_ms: 300000  # 5 minutes
+    max_retries: 3
+    backoff_multiplier: 2
+    timeout_threshold: 0.8  # Timeout at 80% of max duration
+    
+  memory:
+    max_log_size_mb: 100
+    max_cache_size_mb: 1000  # Increased cache
+    cleanup_threshold: 0.8
+    log_rotation_size_mb: 50
+    
+  api:
+    rate_limit_per_minute: 150  # Increased rate limit
+    burst_size: 30
+    cooldown_ms: 3000  # Reduced cooldown
+    anthropic_rpm: 100
+    openai_rpm: 100
+    
+  storage:
+    max_file_size_mb: 100  # Increased for larger files
+    max_total_size_gb: 20  # Increased storage
+    allowed_extensions:
+      - .md
+      - .json
+      - .yaml
+      - .yml
+      - .txt
+      - .log
+      - .ndjson
+      - .js
+      - .ts
+      - .jsx
+      - .tsx
+      - .py
+      - .sql
+      - .graphql
+      - .proto
+      
+  security:
+    max_input_length: 200000  # Increased for complex prompts
+    max_path_depth: 15
+    forbidden_paths:
+      - /etc
+      - /sys
+      - /proc
+      - ~/.ssh
+      - ~/.aws
+      - /root
+      - /var/run/secrets
+    allowed_operations:
+      - read
+      - write
+      - create
+      - update
+    forbidden_operations:
+      - delete_system
+      - modify_permissions
+      - install_packages
+      
+  coordination:
+    max_coordination_depth: 5  # Max agent chain length
+    coordination_timeout_ms: 60000  # 1 minute
+    max_coordination_retries: 2
+    enable_parallel_coordination: true
+EOF
+echo -e "${GREEN}✓ Resource limits configured${NC}"
+
+# 7. Create enhanced audit trail configuration
+echo -e "\n${GREEN}7. Setting up audit trail...${NC}"
+
+cat > "$PROJECT_ROOT/.claude/scripts/v2/audit_logger.py" << 'EOF'
+#!/usr/bin/env python3
+"""Enhanced audit logger with structured logging"""
+import json
+import time
+import os
+import hashlib
+from datetime import datetime, timezone
+from pathlib import Path
+
+class AuditLogger:
+    def __init__(self):
+        self.audit_dir = Path(__file__).parent.parent / "audit"
+        self.audit_dir.mkdir(exist_ok=True)
+        
+    def log(self, event_type, agent, action, details=None, severity="info", correlation_id=None):
+        """Log an audit event with enhanced metadata"""
+        timestamp = datetime.now(timezone.utc)
+        event = {
+            "timestamp": timestamp.isoformat(),
+            "event_type": event_type,
+            "agent": agent,
+            "action": action,
+            "severity": severity,
+            "details": details or {},
+            "task_id": os.environ.get("TASK_ID", "unknown"),
+            "user": os.environ.get("USER", "unknown"),
+            "correlation_id": correlation_id or self._generate_correlation_id(),
+            "session_id": os.environ.get("SESSION_ID", "unknown"),
+            "version": "1.0",
+            "environment": os.environ.get("NODE_ENV", "development"),
+        }
+        
+        # Add security context
+        if event_type in ["security_violation", "permission_denied", "unauthorized_access"]:
+            event["security_context"] = {
+                "ip_address": os.environ.get("CLIENT_IP", "unknown"),
+                "user_agent": os.environ.get("USER_AGENT", "unknown"),
+                "request_id": os.environ.get("REQUEST_ID", "unknown"),
+            }
+        
+        # Write to daily audit file
+        audit_file = self.audit_dir / f"audit-{timestamp.strftime('%Y-%m-%d')}.ndjson"
+        with open(audit_file, "a", encoding='utf-8') as f:
+            f.write(json.dumps(event, ensure_ascii=False) + "\n")
+            
+        # For critical events, also create alert
+        if severity in ["error", "critical"]:
+            self._create_alert(event)
+            
+        # Performance metrics for high-frequency events
+        if event_type in ["agent_execution", "api_call", "file_access"]:
+            self._record_performance_metric(event)
+            
+    def _generate_correlation_id(self):
+        """Generate a correlation ID for tracing"""
+        return hashlib.md5(f"{time.time()}{os.getpid()}".encode()).hexdigest()[:16]
+        
+    def _create_alert(self, event):
+        """Create alert for critical events"""
+        alert_file = self.audit_dir / "alerts.ndjson"
+        alert = {
+            **event,
+            "alert_created": datetime.now(timezone.utc).isoformat(),
+            "alert_level": "high" if event["severity"] == "critical" else "medium",
+        }
+        with open(alert_file, "a", encoding='utf-8') as f:
+            f.write(json.dumps(alert, ensure_ascii=False) + "\n")
+            
+    def _record_performance_metric(self, event):
+        """Record performance metrics"""
+        metrics_file = self.audit_dir / "performance-metrics.ndjson"
+        metric = {
+            "timestamp": event["timestamp"],
+            "event_type": event["event_type"],
+            "agent": event["agent"],
+            "duration_ms": event["details"].get("duration_ms", 0),
+            "success": event["severity"] not in ["error", "critical"],
+        }
+        with open(metrics_file, "a", encoding='utf-8') as f:
+            f.write(json.dumps(metric) + "\n")
+
+# Enhanced helper functions
+def log_agent_execution(agent, task, duration_ms=None, success=True, details=None):
+    logger = AuditLogger()
+    severity = "info" if success else "error"
+    event_details = {"task": task, "duration_ms": duration_ms, **(details or {})}
+    logger.log("agent_execution", agent, "execute_task", event_details, severity)
+
+def log_file_access(agent, file_path, action="read", details=None):
+    logger = AuditLogger()
+    event_details = {"file": str(file_path), "action": action, **(details or {})}
+    logger.log("file_access", agent, action, event_details)
+    
+def log_api_call(agent, api, endpoint, status_code, duration_ms=None):
+    logger = AuditLogger()
+    severity = "error" if status_code >= 400 else "info"
+    event_details = {
+        "endpoint": endpoint,
+        "status_code": status_code,
+        "duration_ms": duration_ms,
+    }
+    logger.log("api_call", agent, f"call_{api}", event_details, severity)
+    
+def log_security_violation(agent, violation_type, details=None):
+    logger = AuditLogger()
+    logger.log("security_violation", agent, violation_type, details or {}, "critical")
+    
+def log_coordination_event(initiator_agent, target_agent, event_type, details=None):
+    logger = AuditLogger()
+    event_details = {
+        "initiator": initiator_agent,
+        "target": target_agent,
+        **(details or {})
+    }
+    logger.log("agent_coordination", initiator_agent, event_type, event_details)
+EOF
+
+chmod +x "$PROJECT_ROOT/.claude/scripts/v2/audit_logger.py"
+echo -e "${GREEN}✓ Audit trail configured${NC}"
+
+# 8. Create enhanced confirmation helper
+echo -e "\n${GREEN}8. Creating confirmation helper...${NC}"
+
+cat > "$PROJECT_ROOT/.claude/scripts/v2/confirm_action.sh" << 'EOF'
+#!/usr/bin/env bash
+# Enhanced confirmation helper for destructive operations
+
+confirm_destructive_action() {
+    local action="$1"
+    local target="$2"
+    local agent="${3:-unknown}"
+    local risk_level="${4:-medium}"
+    
+    echo "⚠️  DESTRUCTIVE ACTION REQUESTED"
+    echo "================================"
+    echo "Agent: $agent"
+    echo "Action: $action"
+    echo "Target: $target"
+    echo "Risk Level: $risk_level"
+    echo ""
+    
+    # Log the request with audit trail
+    python3 "$(dirname "$0")/audit_logger.py" -c "
+from audit_logger import log_security_violation
+log_security_violation('$agent', 'destructive_action_request', {
+    'action': '$action',
+    'target': '$target',
+    'risk_level': '$risk_level'
+})
+"
+    
+    # Check emergency mode
+    if [ -f "/tmp/dream-team-emergency.lock" ]; then
+        echo "❌ System in emergency mode - all destructive actions blocked"
+        return 1
+    fi
+    
+    # In automated mode, check policy
+    if [ "$DREAM_TEAM_AUTO_MODE" = "true" ]; then
+        local policy_file="$(dirname "$0")/../../config/allowed_destructive_actions.txt"
+        if [ -f "$policy_file" ]; then
+            # Check risk level limits
+            case "$risk_level" in
+                "low")
+                    if grep -q "^$action$" "$policy_file"; then
+                        echo "✓ Low-risk action allowed by policy"
+                        return 0
+                    fi
+                    ;;
+                "medium")
+                    if grep -q "^$action:medium$" "$policy_file"; then
+                        echo "✓ Medium-risk action allowed by policy"
+                        return 0
+                    fi
+                    ;;
+                "high")
+                    echo "❌ High-risk actions require manual approval"
+                    return 1
+                    ;;
+            esac
+        fi
+        
+        echo "✗ Action not in policy allowlist"
+        return 1
+    fi
+    
+    # Interactive confirmation with enhanced prompts
+    case "$risk_level" in
+        "high")
+            echo "🚨 HIGH RISK: This action could cause significant damage"
+            read -p "Type 'I UNDERSTAND THE RISK' to proceed: " -r
+            if [[ $REPLY == "I UNDERSTAND THE RISK" ]]; then
+                echo "✓ High-risk action confirmed"
+                return 0
+            fi
+            ;;
+        "medium")
+            read -p "Are you sure you want to proceed? (yes/no): " -r
+            if [[ $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
+                echo "✓ Medium-risk action confirmed"
+                return 0
+            fi
+            ;;
+        "low")
+            read -p "Proceed with low-risk action? (y/n): " -r
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                echo "✓ Low-risk action confirmed"
+                return 0
+            fi
+            ;;
+    esac
+    
+    echo "✗ Action cancelled"
+    return 1
+}
+
+# Export for use in other scripts
+export -f confirm_destructive_action
+EOF
+
+chmod +x "$PROJECT_ROOT/.claude/scripts/v2/confirm_action.sh"
+echo -e "${GREEN}✓ Confirmation helper created${NC}"
+
+# 9. Create enhanced input sanitizer
+echo -e "\n${GREEN}9. Creating input sanitizer...${NC}"
+
+cat > "$PROJECT_ROOT/.claude/scripts/v2/sanitize.py" << 'EOF'
+#!/usr/bin/env python3
+"""Enhanced input sanitization utilities"""
+import re
+import os
+import json
+import yaml
+from pathlib import Path
+from urllib.parse import urlparse
+
+class InputSanitizer:
+    def __init__(self):
+        self.max_length = int(os.environ.get("MAX_INPUT_LENGTH", "200000"))
+        self.forbidden_patterns = [
+            r'\.\./\.\./\.\.',  # Path traversal
+            r'/etc/passwd',      # System files
+            r'<script[^>]*>',    # XSS attempts
+            r'`[^`]*`',          # Command injection
+            r'\$\([^)]*\)',      # Command substitution
+            r'&&\s*(rm|del|format)',  # Dangerous commands
+            r';\s*(rm|del|format)',   # Command chaining
+            r'eval\s*\(',        # Code evaluation
+            r'exec\s*\(',        # Code execution
+            r'__import__\s*\(',  # Python imports
+            r'subprocess\.',     # Subprocess calls
+            r'os\.system',       # OS commands
+        ]
+        
+        self.dangerous_extensions = {
+            '.exe', '.bat', '.cmd', '.com', '.scr', '.pif', 
+            '.sh', '.bash', '.zsh', '.fish', '.ps1', '.vbs'
+        }
+        
+    def sanitize_path(self, path_str):
+        """Enhanced path sanitization"""
+        try:
+            # Normalize and resolve path
+            path = Path(path_str).resolve()
+            
+            # Check if path is within project
+            project_root = Path(__file__).parent.parent.parent
+            try:
+                path.relative_to(project_root)
+            except ValueError:
+                raise ValueError(f"Path outside project: {path}")
+                
+            # Check forbidden paths
+            forbidden = ["/etc", "/sys", "/proc", "/.ssh", "/.aws", "/root", "/var/run/secrets"]
+            for f in forbidden:
+                if str(path).startswith(f):
+                    raise ValueError(f"Forbidden path: {path}")
+                    
+            # Check dangerous file extensions
+            if path.suffix.lower() in self.dangerous_extensions:
+                raise ValueError(f"Dangerous file type: {path.suffix}")
+                    
+            return str(path)
+        except Exception as e:
+            raise ValueError(f"Invalid path: {e}")
+            
+    def sanitize_input(self, input_str):
+        """Enhanced input sanitization"""
+        if not isinstance(input_str, str):
+            raise ValueError("Input must be a string")
+            
+        # Check length
+        if len(input_str) > self.max_length:
+            raise ValueError(f"Input too long: {len(input_str)} > {self.max_length}")
+            
+        # Check forbidden patterns
+        for pattern in self.forbidden_patterns:
+            if re.search(pattern, input_str, re.IGNORECASE | re.MULTILINE):
+                raise ValueError(f"Forbidden pattern detected: {pattern}")
+                
+        # Enhanced escaping
+        sanitized = input_str
+        
+        # SQL injection prevention
+        sanitized = sanitized.replace("'", "''")
+        sanitized = sanitized.replace(";", "\\;")
+        
+        # JSON/XSS prevention
+        sanitized = sanitized.replace('"', '\\"')
+        sanitized = sanitized.replace('<', '&lt;')
+        sanitized = sanitized.replace('>', '&gt;')
+        
+        # Shell injection prevention
+        sanitized = sanitized.replace('`', '\\`')
+        sanitized = sanitized.replace('$', '\\$')
+        
+        return sanitized
+        
+    def sanitize_url(self, url_str):
+        """Sanitize URLs"""
+        try:
+            parsed = urlparse(url_str)
+            
+            # Check allowed schemes
+            allowed_schemes = {'http', 'https', 'ftp', 'sftp'}
+            if parsed.scheme.lower() not in allowed_schemes:
+                raise ValueError(f"Forbidden URL scheme: {parsed.scheme}")
+                
+            # Check for localhost/internal addresses in production
+            if os.environ.get('NODE_ENV') == 'production':
+                forbidden_hosts = {'localhost', '127.0.0.1', '0.0.0.0', '::1'}
+                if parsed.hostname in forbidden_hosts:
+                    raise ValueError(f"Internal URL not allowed in production: {parsed.hostname}")
+                    
+            # Check for private IP ranges
+            if parsed.hostname:
+                import ipaddress
+                try:
+                    ip = ipaddress.ip_address(parsed.hostname)
+                    if ip.is_private and os.environ.get('NODE_ENV') == 'production':
+                        raise ValueError(f"Private IP not allowed in production: {ip}")
+                except ValueError:
+                    pass  # Not an IP address, that's fine
+                    
+            return url_str
+        except Exception as e:
+            raise ValueError(f"Invalid URL: {e}")
+        
+    def validate_json(self, json_str):
+        """Enhanced JSON validation"""
+        try:
+            data = json.loads(json_str)
+            
+            # Check for dangerous keys
+            dangerous_keys = {'__proto__', 'constructor', 'prototype', 'eval', 'function'}
+            
+            def check_dangerous_keys(obj):
+                if isinstance(obj, dict):
+                    for key in obj.keys():
+                        if key in dangerous_keys:
+                            raise ValueError(f"Dangerous JSON key: {key}")
+                        check_dangerous_keys(obj[key])
+                elif isinstance(obj, list):
+                    for item in obj:
+                        check_dangerous_keys(item)
+                        
+            check_dangerous_keys(data)
+            return True
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON: {e}")
+        except Exception as e:
+            raise ValueError(f"Dangerous JSON content: {e}")
+            
+    def validate_yaml(self, yaml_str):
+        """Validate YAML safely"""
+        try:
+            # Use safe_load to prevent code execution
+            data = yaml.safe_load(yaml_str)
+            return True
+        except yaml.YAMLError as e:
+            raise ValueError(f"Invalid YAML: {e}")
+            
+    def sanitize_sql(self, sql_str):
+        """Basic SQL sanitization (use parameterized queries instead)"""
+        # Remove dangerous SQL keywords
+        dangerous_keywords = [
+            r'\bDROP\b', r'\bDELETE\b', r'\bTRUNCATE\b', r'\bALTER\b',
+            r'\bCREATE\b', r'\bINSERT\b', r'\bUPDATE\b', r'\bREPLACE\b',
+            r'\bEXEC\b', r'\bEVAL\b', r'\bSP_\w+\b'
+        ]
+        
+        for keyword in dangerous_keywords:
+            if re.search(keyword, sql_str, re.IGNORECASE):
+                raise ValueError(f"Dangerous SQL keyword detected: {keyword}")
+                
+        return sql_str
+            
+if __name__ == "__main__":
+    import sys
+    sanitizer = InputSanitizer()
+    
+    if len(sys.argv) > 2:
+        action = sys.argv[1]
+        value = sys.argv[2]
+        
+        try:
+            if action == "path":
+                print(sanitizer.sanitize_path(value))
+            elif action == "input":
+                print(sanitizer.sanitize_input(value))
+            elif action == "url":
+                print(sanitizer.sanitize_url(value))
+            elif action == "json":
+                sanitizer.validate_json(value)
+                print("Valid JSON")
+            elif action == "yaml":
+                sanitizer.validate_yaml(value)
+                print("Valid YAML")
+            elif action == "sql":
+                print(sanitizer.sanitize_sql(value))
+            else:
+                print("Usage: sanitize.py [path|input|url|json|yaml|sql] <value>")
+                sys.exit(1)
+        except ValueError as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+    else:
+        print("Usage: sanitize.py [path|input|url|json|yaml|sql] <value>")
+        sys.exit(1)
+EOF
+
+chmod +x "$PROJECT_ROOT/.claude/scripts/v2/sanitize.py"
+echo -e "${GREEN}✓ Input sanitizer created${NC}"
+
+# 10. Create hardening validation script
+echo -e "\n${GREEN}10. Creating validation script...${NC}"
+
+cat > "$PROJECT_ROOT/tools/validate-hardening" << 'EOF'
+#!/usr/bin/env bash
+# Enhanced validation of hardening measures
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo "🔍 Ultimate Monorepo Security Validation"
+echo "======================================="
+
+ISSUES=0
+WARNINGS=0
+
+# Check file permissions
+echo -n "Checking file permissions... "
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    ENV_PERMS=$(stat -c %a "$PROJECT_ROOT/.env" 2>/dev/null || stat -f %A "$PROJECT_ROOT/.env" 2>/dev/null || echo "unknown")
+    if [ "$ENV_PERMS" != "600" ]; then
+        echo -e "${RED}❌ .env has insecure permissions: $ENV_PERMS${NC}"
+        ((ISSUES++))
+    else
+        echo -e "${GREEN}✅${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠️  .env file not found${NC}"
+    ((WARNINGS++))
+fi
+
+# Check Git hooks
+echo -n "Checking Git hooks... "
+if [ ! -x "$PROJECT_ROOT/.git/hooks/pre-commit" ]; then
+    echo -e "${RED}❌ Pre-commit hook not installed${NC}"
+    ((ISSUES++))
+else
+    echo -e "${GREEN}✅${NC}"
+fi
+
+# Check Guardian scripts
+echo -n "Checking Guardian integration... "
+if [ ! -x "$PROJECT_ROOT/.claude/scripts/v2/guardian_check.py" ]; then
+    echo -e "${RED}❌ Guardian check script missing${NC}"
+    ((ISSUES++))
+else
+    echo -e "${GREEN}✅${NC}"
+fi
+
+# Check audit directory
+echo -n "Checking audit trail... "
+if [ ! -d "$PROJECT_ROOT/.claude/audit" ]; then
+    echo -e "${RED}❌ Audit directory missing${NC}"
+    ((ISSUES++))
+else
+    echo -e "${GREEN}✅${NC}"
+fi
+
+# Check resource limits
+echo -n "Checking resource limits... "
+if [ ! -f "$PROJECT_ROOT/.claude/config/limits.yaml" ]; then
+    echo -e "${RED}❌ Resource limits not configured${NC}"
+    ((ISSUES++))
+else
+    echo -e "${GREEN}✅${NC}"
+fi
+
+# Check Docker security
+echo -n "Checking Docker configuration... "
+if [ -f "$PROJECT_ROOT/infrastructure/docker-compose.yml" ]; then
+    if grep -q "privileged: true" "$PROJECT_ROOT/infrastructure/docker-compose.yml" 2>/dev/null; then
+        echo -e "${RED}❌ Privileged containers detected${NC}"
+        ((ISSUES++))
+    else
+        echo -e "${GREEN}✅${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠️  Docker compose not found${NC}"
+    ((WARNINGS++))
+fi
+
+# Check for hardcoded secrets
+echo -n "Checking for hardcoded secrets... "
+if python3 "$PROJECT_ROOT/.claude/scripts/v2/guardian_check.py" > /tmp/security-check.log 2>&1; then
+    echo -e "${GREEN}✅${NC}"
+else
+    echo -e "${RED}❌ Security violations found${NC}"
+    cat /tmp/security-check.log | grep -E "(violation|error)" || true
+    ((ISSUES++))
+fi
+
+# Check infrastructure health
+echo -n "Checking infrastructure services... "
+if command -v docker-compose >/dev/null 2>&1 && [ -f "$PROJECT_ROOT/infrastructure/docker-compose.yml" ]; then
+    if docker-compose -f "$PROJECT_ROOT/infrastructure/docker-compose.yml" ps | grep -q "Up"; then
+        echo -e "${GREEN}✅${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Services not running${NC}"
+        ((WARNINGS++))
+    fi
+else
+    echo -e "${YELLOW}⚠️  Docker compose not available${NC}"
+    ((WARNINGS++))
+fi
+
+# Summary
+echo ""
+echo "Security Validation Summary:"
+echo "=========================="
+
+if [ $ISSUES -eq 0 ]; then
+    echo -e "${GREEN}✅ All critical security checks passed!${NC}"
+    if [ $WARNINGS -gt 0 ]; then
+        echo -e "${YELLOW}⚠️  $WARNINGS warnings found (non-critical)${NC}"
+    fi
+    exit 0
+else
+    echo -e "${RED}❌ Found $ISSUES critical security issues${NC}"
+    if [ $WARNINGS -gt 0 ]; then
+        echo -e "${YELLOW}⚠️  Also found $WARNINGS warnings${NC}"
+    fi
+    echo ""
+    echo "Next steps:"
+    echo "1. Run './tools/harden-system' to fix issues"
+    echo "2. Review security documentation in docs/security.md"
+    echo "3. Check audit logs in .claude/audit/"
+    exit 1
+fi
+EOF
+
+chmod +x "$PROJECT_ROOT/tools/validate-hardening"
+echo -e "${GREEN}✓ Validation script created${NC}"
+
+# 11. Create emergency stop script
+echo -e "\n${GREEN}11. Creating emergency controls...${NC}"
+
+cat > "$PROJECT_ROOT/tools/emergency-stop" << 'EOF'
+#!/usr/bin/env bash
+# Emergency stop - immediately halt all agent operations
+
+set -euo pipefail
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${RED}🚨 EMERGENCY STOP ACTIVATED${NC}"
+echo "=========================="
+
+# Create emergency lock
+LOCK_FILE="/tmp/dream-team-emergency.lock"
+echo "$(date): Emergency stop activated by $(whoami)" > "$LOCK_FILE"
+
+# Stop any running agents/processes
+echo "Stopping agent processes..."
+pkill -f "agent-orchestrate" || true
+pkill -f "agent-monitor" || true
+pkill -f "bridge_service.py" || true
+
+# Disable all tools
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+for tool in "$SCRIPT_DIR"/*; do
+    if [ -x "$tool" ] && [ "$(basename "$tool")" != "emergency-stop" ]; then
+        mv "$tool" "$tool.emergency-disabled" 2>/dev/null || true
+    fi
+done
+
+# Log emergency event
+if [ -f "$(dirname "$SCRIPT_DIR")/.claude/scripts/v2/audit_logger.py" ]; then
+    python3 "$(dirname "$SCRIPT_DIR")/.claude/scripts/v2/audit_logger.py" -c "
+from audit_logger import log_security_violation
+log_security_violation('system', 'emergency_stop', {'user': '$(whoami)', 'timestamp': '$(date)'})
+" 2>/dev/null || true
+fi
+
+echo -e "${GREEN}✅ Emergency stop complete${NC}"
+echo ""
+echo "All agent operations have been halted."
+echo "To recover:"
+echo "1. Remove lock: rm $LOCK_FILE"
+echo "2. Re-enable tools: for f in tools/*.emergency-disabled; do mv \"\$f\" \"\${f%.emergency-disabled}\"; done"
+echo "3. Validate security: ./tools/validate-hardening"
+EOF
+
+chmod +x "$PROJECT_ROOT/tools/emergency-stop"
+echo -e "${GREEN}✓ Emergency controls created${NC}"
+
+# Final summary
+echo -e "\n${GREEN}🎉 Ultimate Monorepo Hardening Complete!${NC}"
+echo -e "\n${BLUE}Security Features Installed:${NC}"
+echo -e "  ✅ Enhanced Guardian Enforcer with Docker/K8s security"
+echo -e "  ✅ Multi-layer file permissions (600 on secrets)"
+echo -e "  ✅ Advanced Git hooks with security scanning"
+echo -e "  ✅ Comprehensive audit trail with performance metrics"
+echo -e "  ✅ Enhanced input sanitization (SQL, XSS, Path traversal)"
+echo -e "  ✅ Risk-based confirmation system"
+echo -e "  ✅ Emergency stop and recovery procedures"
+echo -e "  ✅ Resource limits with agent coordination"
+
+echo -e "\n${BLUE}Next Steps:${NC}"
+echo -e "  1. Copy and customize ${YELLOW}.env.example${NC} to ${YELLOW}.env${NC}"
+echo -e "  2. Run ${YELLOW}./tools/validate-hardening${NC} to verify setup"
+echo -e "  3. Start services: ${YELLOW}npm run start-services${NC}"
+echo -e "  4. Configure monitoring dashboards in Grafana"
+echo -e "  5. Review security documentation: ${YELLOW}docs/security.md${NC}"
+
+echo -e "\n${BLUE}Emergency Procedures:${NC}"
+echo -e "  🚨 Emergency stop: ${YELLOW}./tools/emergency-stop${NC}"
+echo -e "  🔍 Security check: ${YELLOW}./tools/validate-hardening${NC}"
+echo -e "  📊 Health check: ${YELLOW}npm run health-check${NC}"
+
+echo -e "\n${GREEN}Your Ultimate Monorepo is now production-ready! 🚀${NC}"

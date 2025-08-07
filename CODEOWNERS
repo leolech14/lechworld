@@ -1,0 +1,49 @@
+# CODEOWNERS - Enforces review requirements for critical paths
+
+# API contracts require backend team review
+/api/openapi.yaml               @backend-team
+/api/contracts/                 @backend-team
+/packages/api-sdk/**            @frontend-team @backend-team
+
+# Agent system requires AI core team review
+/.claude/agents/**              @ai-core-team
+/.claude/scripts/**             @ai-core-team
+/scripts/v2/                    @ai-core-team
+
+# Critical security paths
+/auth/                          @security-team @backend-team
+/payment/                       @security-team @backend-team
+/.env*                          @security-team
+/config/secrets/                @security-team
+
+# Frontend components
+/apps/web/                      @frontend-team
+/packages/ui-kit/               @frontend-team @design-team
+
+# Backend services
+/apps/backend/                  @backend-team
+/apps/api/                      @backend-team
+
+# Infrastructure and DevOps
+/.github/                       @devops-team
+/scripts/                       @devops-team
+/tools/                         @devops-team
+Dockerfile*                     @devops-team
+docker-compose*                 @devops-team
+
+# Documentation requires team lead review
+/docs/                          @team-leads
+README.md                       @team-leads
+
+# Database changes require DBA review
+/migrations/                    @dba-team @backend-team
+**/schema.sql                   @dba-team @backend-team
+**/*.prisma                     @dba-team @backend-team
+
+# Configuration files
+/.pre-commit-config.yaml        @devops-team @ai-core-team
+/dangerfile.js                  @devops-team
+/turbo.json                     @devops-team
+
+# Default owners for everything else
+*                               @team-leads

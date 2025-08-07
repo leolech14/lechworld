@@ -1,0 +1,270 @@
+#!/usr/bin/env bash
+# agent-maint - Automated maintenance for agent workspace
+# Handles cleanup, deduplication, and orphan branch trimming
+
+set -euo pipefail
+
+# Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+LOG_BUS_DIR="$PROJECT_ROOT/.claude/logs"
+MAX_SIZE_MB=20
+
+# Import log bus functions
+source "$PROJECT_ROOT/scripts/v2/log_bus_functions.sh" || {
+    echo "Error: Cannot source log bus functions" >&2
+    exit 1
+}
+
+# Initialize
+AGENT_NAME="agent-maint"
+export AGENT_NAME
+
+# Log maintenance start
+jlog "maintenance" "info" "Starting weekly maintenance run"
+
+# Function to check directory size
+get_dir_size_mb() {
+    local dir="$1"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        du -sm "$dir" 2>/dev/null | cut -f1
+    else
+        # Linux
+        du -sm "$dir" 2>/dev/null | cut -f1
+    fi
+}
+
+# Function to clean old logs
+clean_old_logs() {
+    jlog "maintenance" "info" "Cleaning old log files"
+    
+    # Find logs older than 7 days
+    find "$LOG_BUS_DIR" -name "*.ndjson.gz" -mtime +7 -type f | while read -r logfile; do
+        size=$(stat -f%z "$logfile" 2>/dev/null || stat -c%s "$logfile" 2>/dev/null)
+        rm -f "$logfile"
+        jlog "maintenance" "info" "Removed old log: $(basename "$logfile") ($(( size / 1024 ))KB)"
+    done
+}
+
+# Function to deduplicate files
+deduplicate_files() {
+    jlog "maintenance" "info" "Checking for duplicate files"
+    
+    # Use fdupes if available, otherwise use basic find + md5
+    if command -v fdupes &> /dev/null; then
+        # Find duplicates but don't delete automatically
+        duplicates=$(fdupes -r "$PROJECT_ROOT" \
+            --exclude .git \
+            --exclude node_modules \
+            --exclude .turbo \
+            --exclude .next \
+            --exclude dist \
+            --exclude build \
+            2>/dev/null || true)
+        
+        if [ -n "$duplicates" ]; then
+            jlog "maintenance" "warn" "Found duplicate files - manual review needed"
+            echo "$duplicates" | head -20
+        fi
+    else
+        jlog "maintenance" "info" "fdupes not available, skipping deduplication"
+    fi
+}
+
+# Function to clean build artifacts
+clean_build_artifacts() {
+    jlog "maintenance" "info" "Cleaning build artifacts"
+    
+    local before_size=$(get_dir_size_mb "$PROJECT_ROOT")
+    
+    # Clean common build directories
+    find "$PROJECT_ROOT" -type d \( \
+        -name "dist" -o \
+        -name "build" -o \
+        -name ".next" -o \
+        -name ".turbo" -o \
+        -name "__pycache__" -o \
+        -name "*.egg-info" -o \
+        -name ".pytest_cache" \
+    \) -not -path "*/node_modules/*" -exec rm -rf {} + 2>/dev/null || true
+    
+    # Clean temporary files
+    find "$PROJECT_ROOT" -type f \( \
+        -name "*.tmp" -o \
+        -name "*.temp" -o \
+        -name "*.backup" -o \
+        -name "*_old" -o \
+        -name "*_backup" -o \
+        -name "*.draft" -o \
+        -name ".DS_Store" -o \
+        -name "Thumbs.db" \
+    \) -not -path "*/.git/*" -exec rm -f {} + 2>/dev/null || true
+    
+    local after_size=$(get_dir_size_mb "$PROJECT_ROOT")
+    local freed=$((before_size - after_size))
+    
+    jlog "maintenance" "info" "Freed ${freed}MB of disk space"
+    
+    # Check if we should create a cleanup PR
+    if [ "$freed" -gt "$MAX_SIZE_MB" ]; then
+        jlog "maintenance" "warn" "Freed more than ${MAX_SIZE_MB}MB - creating cleanup PR"
+        create_cleanup_pr "$freed"
+    fi
+}
+
+# Function to prune git objects
+prune_git_objects() {
+    jlog "maintenance" "info" "Pruning git objects"
+    
+    cd "$PROJECT_ROOT"
+    
+    # Fetch and prune remote branches
+    git fetch --prune origin 2>/dev/null || true
+    
+    # Clean up unreachable objects
+    git gc --aggressive --prune=now 2>/dev/null || true
+    
+    # Remove orphaned branches
+    git for-each-ref --format='%(refname:short)' refs/heads | while read -r branch; do
+        # Skip main/master branches
+        if [[ "$branch" == "main" ]] || [[ "$branch" == "master" ]]; then
+            continue
+        fi
+        
+        # Check if branch is merged
+        if git branch --merged main | grep -q "^  $branch$"; then
+            jlog "maintenance" "info" "Removing merged branch: $branch"
+            git branch -d "$branch" 2>/dev/null || true
+        fi
+    done
+}
+
+# Function to validate agent files
+validate_agents() {
+    jlog "maintenance" "info" "Validating agent files"
+    
+    local issues=0
+    
+    for agent_file in "$PROJECT_ROOT"/.claude/agents/*.md; do
+        if [ -f "$agent_file" ]; then
+            # Check file size
+            size=$(stat -f%z "$agent_file" 2>/dev/null || stat -c%s "$agent_file" 2>/dev/null)
+            if [ "$size" -eq 0 ]; then
+                jlog "maintenance" "error" "Empty agent file: $(basename "$agent_file")"
+                ((issues++))
+            fi
+            
+            # Check for valid YAML frontmatter
+            if ! head -1 "$agent_file" | grep -q "^---$"; then
+                jlog "maintenance" "error" "Invalid frontmatter: $(basename "$agent_file")"
+                ((issues++))
+            fi
+        fi
+    done
+    
+    if [ "$issues" -gt 0 ]; then
+        jlog "maintenance" "error" "Found $issues issues with agent files"
+    else
+        jlog "maintenance" "info" "All agent files valid"
+    fi
+}
+
+# Function to create cleanup PR
+create_cleanup_pr() {
+    local freed_mb="$1"
+    local branch_name="auto/cleanup-$(date +%Y%m%d-%H%M%S)"
+    
+    cd "$PROJECT_ROOT"
+    
+    # Create branch
+    git checkout -b "$branch_name" 2>/dev/null || return 1
+    
+    # Commit changes
+    git add -A
+    git commit -m "chore: automated cleanup freed ${freed_mb}MB
+
+- Removed build artifacts and temporary files
+- Cleaned old log files
+- Pruned git objects
+
+[skip ci]" || return 1
+    
+    # Push branch
+    git push origin "$branch_name" 2>/dev/null || return 1
+    
+    # Create PR using gh CLI if available
+    if command -v gh &> /dev/null; then
+        gh pr create \
+            --title "chore: automated cleanup (${freed_mb}MB freed)" \
+            --body "Automated maintenance run freed ${freed_mb}MB of disk space.
+
+## Changes
+- Removed build artifacts
+- Cleaned temporary files  
+- Pruned old logs
+- Optimized git objects
+
+This PR was created automatically by agent-maint." \
+            --label "maintenance" \
+            --label "automated" \
+            2>/dev/null || true
+    fi
+    
+    # Return to main branch
+    git checkout main 2>/dev/null || true
+}
+
+# Function to generate report
+generate_report() {
+    local report_file="$PROJECT_ROOT/reports/maintenance-$(date +%Y%m%d).md"
+    mkdir -p "$(dirname "$report_file")"
+    
+    cat > "$report_file" << EOF
+# Maintenance Report - $(date +%Y-%m-%d)
+
+## Summary
+- Repository size: $(get_dir_size_mb "$PROJECT_ROOT")MB
+- Log directory size: $(get_dir_size_mb "$LOG_BUS_DIR")MB
+- Agent files: $(find "$PROJECT_ROOT/.claude/agents" -name "*.md" | wc -l)
+
+## Actions Taken
+$(grep "maintenance" "$LOG_BUS_DIR"/*.ndjson 2>/dev/null | tail -20 || echo "No recent actions")
+
+## Recommendations
+- Review and merge any automated cleanup PRs
+- Check for large files that should use Git LFS
+- Validate agent performance metrics
+
+Generated by agent-maint at $(date)
+EOF
+    
+    jlog "maintenance" "info" "Report generated: $report_file"
+}
+
+# Main maintenance workflow
+main() {
+    jlog "maintenance" "info" "Starting maintenance workflow"
+    
+    # Don't run during business hours on weekdays
+    hour=$(date +%H)
+    dow=$(date +%u)  # 1-7, Monday-Sunday
+    
+    if [ "$dow" -lt 6 ] && [ "$hour" -ge 8 ] && [ "$hour" -lt 20 ]; then
+        jlog "maintenance" "warn" "Skipping maintenance during business hours"
+        exit 0
+    fi
+    
+    # Run maintenance tasks
+    clean_old_logs
+    deduplicate_files
+    clean_build_artifacts
+    prune_git_objects
+    validate_agents
+    generate_report
+    
+    jlog "maintenance" "info" "Maintenance workflow completed"
+}
+
+# Run main function
+main "$@"

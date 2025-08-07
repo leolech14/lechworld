@@ -1,0 +1,459 @@
+#!/usr/bin/env bash
+# Enhanced agent orchestration tool for Ultimate Monorepo
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+NC='\033[0m'
+
+# Configuration
+COORDINATION_SERVICE_URL="http://localhost:8765"
+LOG_DIR="/tmp/dream-team-logs"
+MAX_PARALLEL_AGENTS=8
+DEFAULT_TIMEOUT=300
+
+show_usage() {
+    echo "Enhanced Agent Orchestration for Ultimate Monorepo"
+    echo ""
+    echo "Usage: $0 [OPTIONS] <task_description>"
+    echo ""
+    echo "Options:"
+    echo "  -a, --agent AGENT        Target specific agent"
+    echo "  -p, --priority PRIORITY  Set task priority (1-10)"
+    echo "  -t, --timeout TIMEOUT    Set timeout in seconds (default: $DEFAULT_TIMEOUT)"
+    echo "  -d, --dependencies DEPS  Comma-separated dependency list"
+    echo "  -v, --verbose           Enable verbose output"
+    echo "  -n, --dry-run           Show what would be executed"
+    echo "  --parallel COUNT        Max parallel agents (default: $MAX_PARALLEL_AGENTS)"
+    echo "  --safe-mode            Enable safe mode with extra validations"
+    echo "  --emergency-stop       Emergency stop all agents"
+    echo "  --health-check         Check orchestration system health"
+    echo "  -h, --help             Show this help"
+    echo ""
+    echo "Examples:"
+    echo "  $0 'create user authentication system'"
+    echo "  $0 -a ui-specialist 'build responsive dashboard'"
+    echo "  $0 -p 1 --dependencies 'task-123,task-456' 'optimize performance'"
+    echo "  $0 --health-check"
+    echo "  $0 --emergency-stop"
+    echo ""
+    echo "Available Agents:"
+    echo "  Leadership: orchestrator-prime, development-lead, operations-lead, quality-lead"
+    echo "  Specialists: ui-specialist, backend-specialist, database-specialist, bug-detective"
+    echo "  Security: auth-security-enforcer, guardian-enforcer"
+    echo "  Mobile: mobile-specialist"
+    echo "  Infrastructure: devops-specialist"
+    echo "  Support: rapid-prototype, performance-optimizer, accessibility-enforcer"
+}
+
+log_event() {
+    local level="$1"
+    local message="$2"
+    local timestamp="$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")"
+    
+    case "$level" in
+        "INFO") echo -e "${GREEN}[INFO]${NC} $message" ;;
+        "WARN") echo -e "${YELLOW}[WARN]${NC} $message" ;;
+        "ERROR") echo -e "${RED}[ERROR]${NC} $message" ;;
+        "DEBUG") [ "$VERBOSE" = "true" ] && echo -e "${BLUE}[DEBUG]${NC} $message" ;;
+    esac
+    
+    # Log to file
+    echo "{\"timestamp\": \"$timestamp\", \"level\": \"$level\", \"message\": \"$message\", \"component\": \"orchestrator\"}" >> "$LOG_DIR/orchestrator.ndjson"
+}
+
+check_prerequisites() {
+    log_event "INFO" "Checking prerequisites..."
+    
+    # Check if Python is available
+    if ! command -v python3 >/dev/null 2>&1; then
+        log_event "ERROR" "Python 3 is required but not installed"
+        exit 1
+    fi
+    
+    # Check if coordination system is running
+    if ! curl -s "$COORDINATION_SERVICE_URL/health" >/dev/null 2>&1; then
+        log_event "WARN" "Coordination service not running, starting it..."
+        start_coordination_service
+    fi
+    
+    # Create log directory
+    mkdir -p "$LOG_DIR"
+    
+    # Check Guardian Enforcer if in safe mode
+    if [ "$SAFE_MODE" = "true" ]; then
+        if ! python3 "$PROJECT_ROOT/.claude/scripts/v2/guardian_check.py" >/dev/null 2>&1; then
+            log_event "ERROR" "Guardian Enforcer validation failed in safe mode"
+            exit 1
+        fi
+    fi
+    
+    log_event "INFO" "Prerequisites check complete"
+}
+
+start_coordination_service() {
+    log_event "INFO" "Starting coordination service..."
+    
+    # Start the coordination service in background
+    cd "$PROJECT_ROOT/.claude/scripts/v2"
+    nohup python3 agent_coordination_system.py > "$LOG_DIR/coordination.log" 2>&1 &
+    
+    # Wait for service to be ready
+    for i in {1..30}; do
+        if curl -s "$COORDINATION_SERVICE_URL/health" >/dev/null 2>&1; then
+            log_event "INFO" "Coordination service started successfully"
+            return 0
+        fi
+        sleep 1
+    done
+    
+    log_event "ERROR" "Failed to start coordination service"
+    exit 1
+}
+
+emergency_stop() {
+    log_event "ERROR" "EMERGENCY STOP ACTIVATED"
+    
+    # Stop coordination service
+    curl -X POST "$COORDINATION_SERVICE_URL/emergency-stop" 2>/dev/null || true
+    
+    # Kill any running agent processes
+    pkill -f "agent-orchestrate" || true
+    pkill -f "agent_coordination_system" || true
+    
+    # Create emergency lock
+    touch "/tmp/dream-team-emergency.lock"
+    
+    # Run system emergency stop
+    if [ -x "$PROJECT_ROOT/tools/emergency-stop" ]; then
+        "$PROJECT_ROOT/tools/emergency-stop"
+    fi
+    
+    log_event "ERROR" "Emergency stop complete"
+    exit 1
+}
+
+health_check() {
+    log_event "INFO" "Performing health check..."
+    
+    local health_status="healthy"
+    
+    # Check coordination service
+    echo -n "Coordination Service: "
+    if curl -s "$COORDINATION_SERVICE_URL/health" | grep -q '"status":"healthy"'; then
+        echo -e "${GREEN}✅ Healthy${NC}"
+    else
+        echo -e "${RED}❌ Unhealthy${NC}"
+        health_status="degraded"
+    fi
+    
+    # Check log bus
+    echo -n "Log Bus: "
+    if [ -d "$LOG_DIR" ] && [ "$(ls -A "$LOG_DIR" 2>/dev/null | wc -l)" -gt 0 ]; then
+        echo -e "${GREEN}✅ Active${NC}"
+    else
+        echo -e "${YELLOW}⚠️ No activity${NC}"
+        health_status="degraded"
+    fi
+    
+    # Check Guardian Enforcer
+    echo -n "Guardian Enforcer: "
+    if python3 "$PROJECT_ROOT/.claude/scripts/v2/guardian_check.py" >/dev/null 2>&1; then
+        echo -e "${GREEN}✅ Validated${NC}"
+    else
+        echo -e "${RED}❌ Validation failed${NC}"
+        health_status="degraded"
+    fi
+    
+    # Check emergency lock
+    echo -n "Emergency Status: "
+    if [ -f "/tmp/dream-team-emergency.lock" ]; then
+        echo -e "${RED}❌ Emergency lock active${NC}"
+        health_status="emergency"
+    else
+        echo -e "${GREEN}✅ Normal operation${NC}"
+    fi
+    
+    # Overall status
+    echo ""
+    case "$health_status" in
+        "healthy") echo -e "Overall Status: ${GREEN}✅ HEALTHY${NC}" && exit 0 ;;
+        "degraded") echo -e "Overall Status: ${YELLOW}⚠️ DEGRADED${NC}" && exit 1 ;;
+        "emergency") echo -e "Overall Status: ${RED}🚨 EMERGENCY${NC}" && exit 2 ;;
+    esac
+}
+
+determine_optimal_agent() {
+    local task="$1"
+    local suggested_agent=""
+    
+    # Simple keyword-based agent selection
+    case "$task" in
+        *"ui"*|*"frontend"*|*"component"*|*"react"*|*"interface"*)
+            suggested_agent="ui-specialist" ;;
+        *"mobile"*|*"react native"*|*"ios"*|*"android"*)
+            suggested_agent="mobile-specialist" ;;
+        *"api"*|*"backend"*|*"server"*|*"endpoint"*)
+            suggested_agent="backend-specialist" ;;
+        *"database"*|*"sql"*|*"schema"*|*"migration"*)
+            suggested_agent="database-specialist" ;;
+        *"auth"*|*"security"*|*"login"*|*"jwt"*)
+            suggested_agent="auth-security-enforcer" ;;
+        *"performance"*|*"optimization"*|*"speed"*)
+            suggested_agent="performance-optimizer" ;;
+        *"accessibility"*|*"a11y"*|*"wcag"*)
+            suggested_agent="accessibility-enforcer" ;;
+        *"deploy"*|*"docker"*|*"kubernetes"*|*"infra"*)
+            suggested_agent="devops-specialist" ;;
+        *"test"*|*"quality"*|*"review"*)
+            suggested_agent="quality-lead" ;;
+        *"bug"*|*"debug"*|*"error"*|*"fix"*)
+            suggested_agent="bug-detective" ;;
+        *"prototype"*|*"mvp"*|*"demo"*)
+            suggested_agent="rapid-prototype" ;;
+        *"complex"*|*"coordinate"*|*"manage"*)
+            suggested_agent="orchestrator-prime" ;;
+        *)
+            suggested_agent="development-lead" ;;
+    esac
+    
+    echo "$suggested_agent"
+}
+
+generate_task_id() {
+    # Generate UUID-like task ID
+    if command -v uuidgen >/dev/null 2>&1; then
+        uuidgen | tr '[:upper:]' '[:lower:]'
+    else
+        python3 -c "import uuid; print(str(uuid.uuid4()))"
+    fi
+}
+
+execute_task() {
+    local task="$1"
+    local agent="$2"
+    local task_id="$3"
+    local dependencies="$4"
+    
+    log_event "INFO" "Executing task: $task"
+    log_event "INFO" "Assigned agent: $agent"
+    log_event "INFO" "Task ID: $task_id"
+    
+    if [ "$DRY_RUN" = "true" ]; then
+        log_event "INFO" "DRY RUN - Would execute:"
+        echo "  Task: $task"
+        echo "  Agent: $agent"
+        echo "  Dependencies: $dependencies"
+        return 0
+    fi
+    
+    # Create task execution payload
+    local payload="{
+        \"task_id\": \"$task_id\",
+        \"agent\": \"$agent\",
+        \"description\": \"$task\",
+        \"priority\": $PRIORITY,
+        \"timeout\": $TIMEOUT,
+        \"dependencies\": [$(echo "$dependencies" | sed 's/,/","/g' | sed 's/^/\"/' | sed 's/$/\"/' | sed 's/\"\"//g')],
+        \"safe_mode\": $SAFE_MODE,
+        \"metadata\": {
+            \"user\": \"$(whoami)\",
+            \"timestamp\": \"$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")\",
+            \"project_root\": \"$PROJECT_ROOT\"
+        }
+    }"
+    
+    # Submit task to coordination service
+    log_event "DEBUG" "Submitting task payload: $payload"
+    
+    local response
+    if response=$(curl -s -X POST \
+        -H "Content-Type: application/json" \
+        -d "$payload" \
+        "$COORDINATION_SERVICE_URL/tasks" 2>&1); then
+        
+        log_event "INFO" "Task submitted successfully"
+        log_event "DEBUG" "Response: $response"
+        
+        # Monitor task execution
+        monitor_task_execution "$task_id"
+        
+    else
+        log_event "ERROR" "Failed to submit task: $response"
+        return 1
+    fi
+}
+
+monitor_task_execution() {
+    local task_id="$1"
+    local start_time=$(date +%s)
+    local status="pending"
+    
+    log_event "INFO" "Monitoring task execution: $task_id"
+    
+    while [ "$status" != "completed" ] && [ "$status" != "failed" ]; do
+        local current_time=$(date +%s)
+        local elapsed=$((current_time - start_time))
+        
+        # Check timeout
+        if [ $elapsed -gt $TIMEOUT ]; then
+            log_event "ERROR" "Task timeout after $TIMEOUT seconds"
+            return 1
+        fi
+        
+        # Get task status
+        local status_response
+        if status_response=$(curl -s "$COORDINATION_SERVICE_URL/tasks/$task_id/status" 2>&1); then
+            status=$(echo "$status_response" | python3 -c "import sys, json; print(json.load(sys.stdin).get('status', 'unknown'))")
+            
+            case "$status" in
+                "pending")
+                    echo -ne "\r${YELLOW}⏳ Task pending... (${elapsed}s)${NC}"
+                    ;;
+                "running")
+                    echo -ne "\r${BLUE}🔄 Task running... (${elapsed}s)${NC}"
+                    ;;
+                "completed")
+                    echo -e "\r${GREEN}✅ Task completed in ${elapsed}s${NC}"
+                    log_event "INFO" "Task completed successfully"
+                    return 0
+                    ;;
+                "failed")
+                    echo -e "\r${RED}❌ Task failed after ${elapsed}s${NC}"
+                    log_event "ERROR" "Task failed"
+                    
+                    # Get error details
+                    local error_response
+                    if error_response=$(curl -s "$COORDINATION_SERVICE_URL/tasks/$task_id/error" 2>&1); then
+                        echo "Error details: $error_response"
+                    fi
+                    return 1
+                    ;;
+                "blocked")
+                    echo -ne "\r${PURPLE}🚧 Task blocked... (${elapsed}s)${NC}"
+                    log_event "WARN" "Task is blocked"
+                    ;;
+            esac
+        else
+            log_event "WARN" "Could not get task status: $status_response"
+        fi
+        
+        sleep 2
+    done
+}
+
+# Parse command line arguments
+AGENT=""
+PRIORITY=5
+TIMEOUT=$DEFAULT_TIMEOUT
+DEPENDENCIES=""
+VERBOSE=false
+DRY_RUN=false
+SAFE_MODE=false
+PARALLEL_COUNT=$MAX_PARALLEL_AGENTS
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -a|--agent)
+            AGENT="$2"
+            shift 2
+            ;;
+        -p|--priority)
+            PRIORITY="$2"
+            shift 2
+            ;;
+        -t|--timeout)
+            TIMEOUT="$2"
+            shift 2
+            ;;
+        -d|--dependencies)
+            DEPENDENCIES="$2"
+            shift 2
+            ;;
+        -v|--verbose)
+            VERBOSE=true
+            shift
+            ;;
+        -n|--dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        --parallel)
+            PARALLEL_COUNT="$2"
+            shift 2
+            ;;
+        --safe-mode)
+            SAFE_MODE=true
+            shift
+            ;;
+        --emergency-stop)
+            emergency_stop
+            ;;
+        --health-check)
+            health_check
+            ;;
+        -h|--help)
+            show_usage
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option $1"
+            show_usage
+            exit 1
+            ;;
+        *)
+            TASK="$1"
+            shift
+            ;;
+    esac
+done
+
+# Validate arguments
+if [ -z "${TASK:-}" ] && [ "$#" -eq 0 ]; then
+    echo "Error: Task description is required"
+    show_usage
+    exit 1
+fi
+
+# Main execution
+main() {
+    log_event "INFO" "Starting Ultimate Monorepo Agent Orchestration"
+    
+    # Check for emergency lock
+    if [ -f "/tmp/dream-team-emergency.lock" ]; then
+        log_event "ERROR" "System is in emergency mode. Remove /tmp/dream-team-emergency.lock to continue."
+        exit 1
+    fi
+    
+    # Check prerequisites
+    check_prerequisites
+    
+    # Determine optimal agent if not specified
+    if [ -z "$AGENT" ]; then
+        AGENT=$(determine_optimal_agent "$TASK")
+        log_event "INFO" "Auto-selected agent: $AGENT"
+    fi
+    
+    # Generate task ID
+    TASK_ID=$(generate_task_id)
+    
+    # Execute task
+    if execute_task "$TASK" "$AGENT" "$TASK_ID" "$DEPENDENCIES"; then
+        log_event "INFO" "Task orchestration completed successfully"
+        exit 0
+    else
+        log_event "ERROR" "Task orchestration failed"
+        exit 1
+    fi
+}
+
+# Run main function
+main

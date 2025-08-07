@@ -1,0 +1,61 @@
+{
+  "name": "@your-org/monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo template following o3 skeleton specification",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean",
+    "codegen": "turbo run codegen",
+    "repo-lint": "./tools/repo-lint",
+    "agent-maint": "./tools/agent-maint",
+    "dead-code": "turbo run dead-code",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml}\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "danger": "^11.3.0",
+    "eslint": "^8.56.0",
+    "eslint-config-standard": "^17.1.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.2.4",
+    "ts-prune": "^0.10.3",
+    "turbo": "^1.11.3",
+    "typescript": "^5.3.3"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.py": [
+      "ruff format",
+      "ruff check --fix"
+    ],
+    "*.sh": [
+      "shellcheck"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "packageManager": "npm@10.2.5"
+}

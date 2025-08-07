@@ -1,0 +1,18 @@
+{
+  "name": "@monorepo/api-client",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "codegen": "openapi-generator-cli generate -i ../../api/openapi.yaml -g typescript-axios -o src/generated"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "query-string": "^8.1.0"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.7.0"
+  }
+}

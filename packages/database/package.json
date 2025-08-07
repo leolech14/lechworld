@@ -1,0 +1,22 @@
+{
+  "name": "@monorepo/database",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "dev": "ts-node-dev src/index.ts",
+    "migrate": "prisma migrate dev",
+    "generate": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.0",
+    "pg": "^8.11.0",
+    "redis": "^4.6.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.7.0",
+    "@types/pg": "^8.10.0"
+  }
+}

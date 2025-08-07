@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# Safe deletion wrapper with confirmation
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Source confirmation helper
+source "$PROJECT_ROOT/.claude/scripts/v2/confirm_action.sh"
+
+# Validate arguments
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <file_or_directory> [agent_name]"
+    echo "Safely delete files with confirmation and audit trail"
+    exit 1
+fi
+
+TARGET="$1"
+AGENT="${2:-manual}"
+
+# Sanitize the target path
+SAFE_TARGET=$("$PROJECT_ROOT/.claude/scripts/v2/sanitize.py" path "$TARGET" 2>/dev/null) || {
+    echo "❌ Invalid or forbidden path: $TARGET"
+    exit 1
+}
+
+# Check if target exists
+if [ ! -e "$SAFE_TARGET" ]; then
+    echo "❌ Target does not exist: $SAFE_TARGET"
+    exit 1
+fi
+
+# Determine action type
+if [ -d "$SAFE_TARGET" ]; then
+    ACTION="delete_directory"
+    DESCRIPTION="Delete directory and all contents"
+else
+    ACTION="delete_file"
+    DESCRIPTION="Delete file"
+fi
+
+# Request confirmation
+if confirm_destructive_action "$ACTION" "$SAFE_TARGET" "$AGENT"; then
+    # Perform deletion with audit trail
+    echo "🗑️  Deleting $SAFE_TARGET..."
+    
+    # Log the deletion
+    python3 "$PROJECT_ROOT/.claude/scripts/v2/audit_logger.py" << EOF
+import sys
+sys.path.insert(0, "$PROJECT_ROOT/.claude/scripts/v2")
+from audit_logger import AuditLogger
+logger = AuditLogger()
+logger.log("file_deletion", "$AGENT", "$ACTION", {
+    "target": "$SAFE_TARGET",
+    "type": "$( [ -d "$SAFE_TARGET" ] && echo "directory" || echo "file" )",
+    "size": "$( [ -f "$SAFE_TARGET" ] && stat -c%s "$SAFE_TARGET" 2>/dev/null || echo "N/A" )"
+})
+EOF
+    
+    # Perform the deletion
+    rm -rf "$SAFE_TARGET"
+    
+    echo "✅ Deletion complete"
+else
+    echo "❌ Deletion cancelled"
+    exit 1
+fi

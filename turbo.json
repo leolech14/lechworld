@@ -1,0 +1,53 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build", "codegen"],
+      "outputs": ["dist/**", ".next/**", "build/**"],
+      "cache": true
+    },
+    "codegen": {
+      "inputs": ["api/openapi.yaml", "api/contracts/**"],
+      "outputs": ["packages/api-sdk/src/**"],
+      "cache": true
+    },
+    "lint": {
+      "outputs": [],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**"],
+      "cache": true,
+      "env": ["NODE_ENV"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "outputs": [],
+      "cache": false
+    },
+    "typecheck": {
+      "outputs": [],
+      "cache": true
+    },
+    "dev": {
+      "dependsOn": ["codegen"],
+      "cache": false,
+      "persistent": true
+    },
+    "clean": {
+      "cache": false
+    },
+    "repo-lint": {
+      "dependsOn": ["lint", "typecheck", "test"],
+      "outputs": ["reports/**"],
+      "cache": false
+    },
+    "dead-code": {
+      "dependsOn": ["build"],
+      "outputs": ["dead-code-report.json"],
+      "cache": true
+    }
+  }
+}

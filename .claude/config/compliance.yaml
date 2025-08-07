@@ -1,0 +1,107 @@
+# Compliance configuration for Dream Team agents
+# Enable compliance modes based on your requirements
+
+compliance:
+  # General compliance level
+  mode: "standard"  # Options: standard, soc2, gdpr, hipaa, pci
+  
+  # Data protection
+  data_protection:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    data_retention_days: 365
+    right_to_deletion: true  # GDPR
+    data_minimization: true
+    
+  # Access control
+  access_control:
+    multi_factor_auth: false  # Enable for SOC2/HIPAA
+    session_timeout_minutes: 30
+    password_policy:
+      min_length: 12
+      require_special: true
+      require_numbers: true
+      require_uppercase: true
+      max_age_days: 90
+      
+  # Audit requirements
+  audit:
+    log_all_access: true
+    log_all_changes: true
+    immutable_logs: false  # Enable for HIPAA/PCI
+    external_audit_webhook: ""  # URL for external logging
+    retention_years: 7  # HIPAA requires 6 years
+    
+  # Privacy
+  privacy:
+    anonymize_logs: false  # Enable for GDPR
+    cookie_consent: false  # Enable for GDPR
+    data_portability: false  # Enable for GDPR
+    purpose_limitation: true
+    
+  # Security scanning
+  security:
+    vulnerability_scanning: true
+    dependency_scanning: true
+    secret_scanning: true
+    static_analysis: true
+    penetration_testing_days: 90  # Frequency
+    
+  # Specific compliance features
+  soc2:
+    enabled: false
+    controls:
+      - access_control
+      - availability
+      - processing_integrity
+      - confidentiality
+      - privacy
+      
+  gdpr:
+    enabled: false
+    features:
+      - consent_management
+      - data_portability
+      - right_to_erasure
+      - privacy_by_design
+      - data_breach_notification
+      
+  hipaa:
+    enabled: false
+    features:
+      - phi_encryption
+      - access_logs
+      - data_backup
+      - disaster_recovery
+      - employee_training
+      
+  pci:
+    enabled: false
+    level: 4  # 1-4, based on transaction volume
+    features:
+      - card_data_encryption
+      - network_segmentation
+      - vulnerability_management
+      - access_control
+      - monitoring
+      
+# Compliance contacts
+contacts:
+  data_protection_officer: ""
+  security_officer: ""
+  compliance_team: ""
+  incident_response: ""
+  
+# Automated compliance checks
+automated_checks:
+  - name: "Daily security scan"
+    schedule: "0 2 * * *"  # 2 AM daily
+    command: "./tools/security-scan"
+    
+  - name: "Weekly compliance audit"
+    schedule: "0 9 * * 1"  # Monday 9 AM
+    command: "python3 .claude/scripts/v2/compliance_audit.py"
+    
+  - name: "Monthly penetration test"
+    schedule: "0 0 1 * *"  # First day of month
+    command: "./tools/pentest-lite"

@@ -1,0 +1,788 @@
+openapi: 3.0.3
+info:
+  title: Ultimate Monorepo API
+  description: |
+    Complete API specification for the Ultimate Monorepo, featuring:
+    - AI Agent coordination endpoints
+    - Security-first design with Guardian Enforcer integration
+    - Real-time monitoring and observability
+    - Comprehensive error handling and validation
+  version: 1.0.0
+  contact:
+    name: Development Team
+    email: dev@yourcompany.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development server
+  - url: https://api.staging.yourcompany.com/v1
+    description: Staging environment
+  - url: https://api.yourcompany.com/v1
+    description: Production environment
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+paths:
+  # Health and Status Endpoints
+  /health:
+    get:
+      tags: [System]
+      summary: Health check endpoint
+      description: Returns the current health status of the API and all connected services
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+        '503':
+          description: System is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /metrics:
+    get:
+      tags: [System]
+      summary: Get system metrics
+      description: Returns Prometheus-compatible metrics
+      operationId: getMetrics
+      security: []
+      responses:
+        '200':
+          description: Metrics data
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  # HELP api_requests_total Total number of API requests
+                  # TYPE api_requests_total counter
+                  api_requests_total{method="GET",status="200"} 1234
+
+  # Agent Coordination Endpoints
+  /agents:
+    get:
+      tags: [Agents]
+      summary: List all agents
+      description: Returns a list of all available agents and their current status
+      operationId: listAgents
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agent'
+
+  /agents/{agentId}/status:
+    get:
+      tags: [Agents]
+      summary: Get agent status
+      description: Returns the current status of a specific agent
+      operationId: getAgentStatus
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: ui-specialist
+      responses:
+        '200':
+          description: Agent status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentStatus'
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tasks:
+    get:
+      tags: [Tasks]
+      summary: List tasks
+      description: Returns a list of tasks with optional filtering
+      operationId: listTasks
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, running, completed, failed, blocked]
+        - name: agent
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      tags: [Tasks]
+      summary: Create a new task
+      description: Creates a new task and assigns it to an agent
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden by Guardian Enforcer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+
+  /tasks/{taskId}:
+    get:
+      tags: [Tasks]
+      summary: Get task details
+      description: Returns detailed information about a specific task
+      operationId: getTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Tasks]
+      summary: Cancel a task
+      description: Cancels a pending or running task
+      operationId: cancelTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Task cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Cannot cancel task in current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tasks/{taskId}/logs:
+    get:
+      tags: [Tasks]
+      summary: Get task logs
+      description: Returns logs for a specific task
+      operationId: getTaskLogs
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: level
+          in: query
+          schema:
+            type: string
+            enum: [debug, info, warn, error]
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+      responses:
+        '200':
+          description: Task logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogEntry'
+
+  # Security Endpoints
+  /security/validate:
+    post:
+      tags: [Security]
+      summary: Validate operation security
+      description: Validates an operation against security policies using Guardian Enforcer
+      operationId: validateSecurity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecurityValidationRequest'
+      responses:
+        '200':
+          description: Security validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityValidationResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /security/audit:
+    get:
+      tags: [Security]
+      summary: Get security audit logs
+      description: Returns security audit logs with optional filtering
+      operationId: getAuditLogs
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [info, warn, error, critical]
+        - name: agent
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+      responses:
+        '200':
+          description: Audit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditLogEntry'
+
+  # Coordination Endpoints
+  /coordination/messages:
+    get:
+      tags: [Coordination]
+      summary: Get coordination messages
+      description: Returns messages from the agent coordination system
+      operationId: getCoordinationMessages
+      parameters:
+        - name: topic
+          in: query
+          schema:
+            type: string
+        - name: agent
+          in: query
+          schema:
+            type: string
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 500
+      responses:
+        '200':
+          description: Coordination messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CoordinationMessage'
+
+    post:
+      tags: [Coordination]
+      summary: Send coordination message
+      description: Sends a message through the agent coordination system
+      operationId: sendCoordinationMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCoordinationMessageRequest'
+      responses:
+        '201':
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoordinationMessage'
+        '400':
+          description: Invalid message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    # System Schemas
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        services:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: [up, down, degraded]
+              responseTime:
+                type: number
+              details:
+                type: object
+      required: [status, timestamp, version]
+
+    # Agent Schemas
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+          example: ui-specialist
+        name:
+          type: string
+          example: UI Specialist
+        description:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: '#/components/schemas/AgentStatus'
+        metadata:
+          type: object
+          properties:
+            version:
+              type: string
+            lastUpdated:
+              type: string
+              format: date-time
+      required: [id, name, status]
+
+    AgentStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [idle, busy, error, offline]
+        currentTask:
+          type: string
+          nullable: true
+        lastHeartbeat:
+          type: string
+          format: date-time
+        resourceUsage:
+          type: object
+          properties:
+            cpu:
+              type: number
+              minimum: 0
+              maximum: 100
+            memory:
+              type: number
+              minimum: 0
+              maximum: 100
+            activeTasks:
+              type: integer
+              minimum: 0
+      required: [status]
+
+    # Task Schemas
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        description:
+          type: string
+          maxLength: 1000
+        agent:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, completed, failed, blocked]
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+        createdAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        dependencies:
+          type: array
+          items:
+            type: string
+            format: uuid
+        metadata:
+          type: object
+        result:
+          type: object
+          nullable: true
+        error:
+          type: string
+          nullable: true
+      required: [id, description, agent, status, priority, createdAt]
+
+    CreateTaskRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          maxLength: 1000
+        agent:
+          type: string
+          nullable: true
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+        timeout:
+          type: integer
+          minimum: 1000
+          maximum: 3600000
+          default: 300000
+        dependencies:
+          type: array
+          items:
+            type: string
+            format: uuid
+        metadata:
+          type: object
+      required: [description]
+
+    # Coordination Schemas
+    CoordinationMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        topic:
+          type: string
+        agent:
+          type: string
+        taskId:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          type: object
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+      required: [id, topic, agent, taskId, timestamp]
+
+    CreateCoordinationMessageRequest:
+      type: object
+      properties:
+        topic:
+          type: string
+        agent:
+          type: string
+        taskId:
+          type: string
+          format: uuid
+        data:
+          type: object
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      required: [topic, agent, taskId]
+
+    # Security Schemas
+    SecurityValidationRequest:
+      type: object
+      properties:
+        operation:
+          type: string
+        resource:
+          type: string
+        context:
+          type: object
+        agent:
+          type: string
+      required: [operation, resource, agent]
+
+    SecurityValidationResponse:
+      type: object
+      properties:
+        approved:
+          type: boolean
+        riskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        violations:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              description:
+                type: string
+              severity:
+                type: string
+                enum: [low, medium, high, critical]
+        recommendations:
+          type: array
+          items:
+            type: string
+        complianceStatus:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [compliant, non_compliant, not_applicable]
+      required: [approved, riskLevel, score]
+
+    SecurityError:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        securityViolations:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              description:
+                type: string
+              severity:
+                type: string
+        guardianEnforcerDecision:
+          type: string
+          enum: [blocked, escalated, conditional]
+      required: [error, code, guardianEnforcerDecision]
+
+    # Logging Schemas
+    LogEntry:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        level:
+          type: string
+          enum: [debug, info, warn, error]
+        message:
+          type: string
+        agent:
+          type: string
+        taskId:
+          type: string
+          format: uuid
+          nullable: true
+        metadata:
+          type: object
+      required: [timestamp, level, message]
+
+    AuditLogEntry:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        eventType:
+          type: string
+        agent:
+          type: string
+        action:
+          type: string
+        severity:
+          type: string
+          enum: [info, warn, error, critical]
+        details:
+          type: object
+        correlationId:
+          type: string
+        userId:
+          type: string
+          nullable: true
+      required: [timestamp, eventType, agent, action, severity]
+
+    # Common Schemas
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+      required: [error, code, timestamp]
+
+    Pagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+        offset:
+          type: integer
+        total:
+          type: integer
+        hasMore:
+          type: boolean
+      required: [limit, offset, total, hasMore]
+
+tags:
+  - name: System
+    description: System health and monitoring endpoints
+  - name: Agents
+    description: Agent management and status endpoints
+  - name: Tasks
+    description: Task creation and management endpoints
+  - name: Security
+    description: Security validation and audit endpoints
+  - name: Coordination
+    description: Agent coordination and messaging endpoints
