@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/simple-index.ts",
     "build": "tsc",
-    "start": "node dist/simple-index.js",
+    "start": "node dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "typecheck": "tsc --noEmit",
