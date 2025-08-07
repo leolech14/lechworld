@@ -1,27 +1,19 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import App from './App';
-import './index.css';
+import { createRoot } from "react-dom/client";
+import App from "./App";
+import { ThemeProvider } from "./context/theme-context";
+import { ErrorBoundary } from "./error-boundary";
+import "./index.css";
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-});
+const root = document.getElementById("root");
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+if (!root) {
+  document.body.innerHTML = '<div style="padding: 20px; color: red;">Error: Root element not found</div>';
+} else {
+  createRoot(root).render(
+    <ErrorBoundary>
+      <ThemeProvider>
         <App />
-      </BrowserRouter>
-    </QueryClientProvider>
-  </React.StrictMode>,
-);
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
+}

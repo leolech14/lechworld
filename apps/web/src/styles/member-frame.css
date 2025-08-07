@@ -1,0 +1,146 @@
+/* Member Frame Styles - Liquid Glass Effect */
+.member-frame {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  font-weight: 600;
+  font-size: 14px;
+  color: #2D3748;
+  transition: all 0.3s ease;
+  min-width: 140px;
+  
+  /* Liquid glass effect */
+  backdrop-filter: blur(12px);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.member-frame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  pointer-events: none;
+}
+
+.member-frame-emoji {
+  font-size: 18px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  z-index: 1;
+}
+
+.member-frame-name {
+  z-index: 1;
+  letter-spacing: 0.3px;
+}
+
+/* Hover effect */
+.member-frame:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode support */
+.dark-minimal .member-frame {
+  color: #ffffff;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.dark-minimal .member-frame::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+}
+
+/* Compact version for tables */
+.member-frame-compact {
+  padding: 4px 12px;
+  font-size: 13px;
+  min-width: 120px;
+}
+
+.member-frame-compact .member-frame-emoji {
+  font-size: 16px;
+}
+
+/* Settings modal version */
+.settings-member-frame {
+  padding: 8px 16px;
+  border-radius: 28px;
+  min-width: 160px;
+}
+
+.settings-member-frame .member-frame-emoji {
+  font-size: 20px;
+}
+
+/* Container for member frames to ensure consistent width */
+.member-frames-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.member-frames-container .member-frame {
+  width: 100%;
+  max-width: 200px;
+}
+
+/* Clickable member frame styles */
+.member-frame.cursor-pointer {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.member-frame.cursor-pointer:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 20px rgba(168, 204, 236, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.05);
+  border-color: var(--trust-blue-pastel-dark, #7FB2E5);
+}
+
+.member-frame.cursor-pointer:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 4px 12px rgba(168, 204, 236, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.member-frame.cursor-pointer:focus-visible {
+  outline: 2px solid var(--trust-blue-pastel, #A8CCEC);
+  outline-offset: 2px;
+}
+
+/* Add hover effect to name */
+.member-frame.cursor-pointer:hover .member-frame-name {
+  text-decoration: underline;
+  text-decoration-color: var(--trust-blue-pastel, #A8CCEC);
+  text-underline-offset: 2px;
+}

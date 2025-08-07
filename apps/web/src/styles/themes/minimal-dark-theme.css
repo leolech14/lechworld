@@ -1,0 +1,111 @@
+/**
+ * @purpose: THEME/STYLE/minimal-dark
+ * @connects-to: theme-context.tsx, theme-toggle.tsx
+ * @description: Minimal dark theme with pure black background
+ */
+
+.minimal-dark-theme {
+  /* Color Variables */
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-card: rgba(20, 20, 20, 0.95);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #e5e5e5;
+  --text-muted: #a3a3a3;
+  
+  --border-color: #262626;
+  --border-hover: #404040;
+  
+  --accent-primary: #ffffff;
+  --accent-secondary: #e5e5e5;
+  --accent-hover: #d4d4d4;
+  
+  /* Minimal Glass Effects */
+  --glass-bg: rgba(20, 20, 20, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(10px);
+  --glass-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* Apply theme colors */
+.minimal-dark-theme {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.minimal-dark-theme * {
+  /* Remove all colorful accents */
+  --tw-text-opacity: 1;
+}
+
+.minimal-dark-theme .glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.minimal-dark-theme .glass-nav {
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Monochrome buttons */
+.minimal-dark-theme button {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.minimal-dark-theme button:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-hover);
+}
+
+/* Remove all color badges - make them monochrome */
+.minimal-dark-theme [class*="bg-blue"],
+.minimal-dark-theme [class*="bg-green"],
+.minimal-dark-theme [class*="bg-purple"],
+.minimal-dark-theme [class*="bg-orange"],
+.minimal-dark-theme [class*="bg-yellow"],
+.minimal-dark-theme [class*="bg-red"] {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-color);
+}
+
+/* Logo adjustments for minimal theme */
+.minimal-dark-theme .nav-logo {
+  filter: invert(1) brightness(0.9);
+  opacity: 0.8;
+}
+
+/* Hide colorful elements */
+.minimal-dark-theme [class*="text-blue"],
+.minimal-dark-theme [class*="text-green"],
+.minimal-dark-theme [class*="text-purple"],
+.minimal-dark-theme [class*="text-orange"] {
+  color: var(--text-secondary) !important;
+}
+
+/* Minimal table styles */
+.minimal-dark-theme table {
+  border-color: var(--border-color);
+}
+
+.minimal-dark-theme th,
+.minimal-dark-theme td {
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+/* Minimal input styles */
+.minimal-dark-theme input,
+.minimal-dark-theme select,
+.minimal-dark-theme textarea {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}

@@ -1,0 +1,153 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "npm install && npm run build:api",
+    "watchPatterns": [
+      "apps/api/**",
+      "packages/**"
+    ]
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "startCommand": "npm run start:api",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 30,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3,
+    "region": "us-west1"
+  },
+  "environments": {
+    "production": {
+      "build": {
+        "buildCommand": "npm install && npm run build:api:prod"
+      },
+      "deploy": {
+        "numReplicas": 2,
+        "startCommand": "npm run start:api:prod"
+      }
+    },
+    "staging": {
+      "build": {
+        "buildCommand": "npm install && npm run build:api:staging"
+      },
+      "deploy": {
+        "numReplicas": 1,
+        "startCommand": "npm run start:api:staging"
+      }
+    }
+  },
+  "services": [
+    {
+      "name": "api",
+      "source": "apps/api",
+      "buildCommand": "cd ../.. && npm install && npm run build:api",
+      "startCommand": "cd ../.. && npm run start:api",
+      "envVars": {
+        "NODE_ENV": {
+          "type": "static",
+          "value": "production"
+        },
+        "PORT": {
+          "type": "static",
+          "value": "3000"
+        },
+        "DATABASE_URL": {
+          "type": "reference",
+          "value": "${{POSTGRES.DATABASE_URL}}"
+        },
+        "REDIS_URL": {
+          "type": "reference",
+          "value": "${{REDIS.REDIS_URL}}"
+        },
+        "JWT_SECRET": {
+          "type": "secret"
+        },
+        "JWT_REFRESH_SECRET": {
+          "type": "secret"
+        },
+        "CORS_ORIGIN": {
+          "type": "static",
+          "value": "https://lechworld.vercel.app"
+        },
+        "SENTRY_DSN": {
+          "type": "secret"
+        },
+        "AWS_ACCESS_KEY_ID": {
+          "type": "secret"
+        },
+        "AWS_SECRET_ACCESS_KEY": {
+          "type": "secret"
+        },
+        "AWS_REGION": {
+          "type": "static",
+          "value": "us-west-2"
+        },
+        "S3_BUCKET": {
+          "type": "static",
+          "value": "lechworld-assets"
+        },
+        "SMTP_HOST": {
+          "type": "secret"
+        },
+        "SMTP_PORT": {
+          "type": "static",
+          "value": "587"
+        },
+        "SMTP_USER": {
+          "type": "secret"
+        },
+        "SMTP_PASS": {
+          "type": "secret"
+        },
+        "SMTP_FROM": {
+          "type": "static",
+          "value": "noreply@lechworld.com"
+        },
+        "STRIPE_SECRET_KEY": {
+          "type": "secret"
+        },
+        "STRIPE_WEBHOOK_SECRET": {
+          "type": "secret"
+        },
+        "OPENAI_API_KEY": {
+          "type": "secret"
+        },
+        "RATE_LIMIT_WINDOW_MS": {
+          "type": "static",
+          "value": "900000"
+        },
+        "RATE_LIMIT_MAX_REQUESTS": {
+          "type": "static",
+          "value": "100"
+        }
+      }
+    },
+    {
+      "name": "postgres",
+      "plugin": "postgresql",
+      "version": "15"
+    },
+    {
+      "name": "redis",
+      "plugin": "redis",
+      "version": "7"
+    }
+  ],
+  "nixpacksConfig": {
+    "providers": ["node"],
+    "buildImage": "ghcr.io/railwayapp/nixpacks:node-18",
+    "setup": {
+      "nixPkgs": ["nodejs-18_x", "npm-9_x"]
+    },
+    "install": {
+      "cmds": ["npm ci --prefer-offline --no-audit"]
+    },
+    "build": {
+      "cmds": ["npm run build:api"]
+    },
+    "start": {
+      "cmd": "npm run start:api"
+    }
+  }
+}

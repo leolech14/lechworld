@@ -174,6 +174,11 @@ dead-code-report.json
 *.key
 *.pem
 .secrets/
+.env.production.secrets
+.env.*.secrets
+.vault-secrets.json
+security-report-*.txt
+backups/secrets/
 
 # Generated files
 packages/api-sdk/src/generated/

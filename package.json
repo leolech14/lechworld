@@ -10,6 +10,10 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "build:api": "cd apps/api && npm run build",
+    "build:api:prod": "cd apps/api && npm run build",
+    "start:api": "cd apps/api && npm run start",
+    "start:api:prod": "NODE_ENV=production cd apps/api && npm run start",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
@@ -57,5 +61,8 @@
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
   },
-  "packageManager": "npm@10.2.5"
+  "packageManager": "npm@10.2.5",
+  "dependencies": {
+    "@types/opossum": "^8.1.9"
+  }
 }

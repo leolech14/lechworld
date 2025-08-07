@@ -7,16 +7,29 @@
     "build": "tsc",
     "test": "jest",
     "dev": "ts-node-dev src/index.ts",
-    "migrate": "prisma migrate dev",
-    "generate": "prisma generate"
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx src/seed.ts",
+    "db:reset": "tsx src/scripts/reset-db.ts",
+    "migrate:legacy": "tsx src/migrate-legacy-data.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.7.0",
-    "pg": "^8.11.0",
-    "redis": "^4.6.0"
+    "drizzle-orm": "^0.29.0",
+    "drizzle-zod": "^0.5.1",
+    "pg": "^8.11.3",
+    "postgres": "^3.4.3",
+    "bcryptjs": "^2.4.3",
+    "zod": "^3.22.4",
+    "csv-parse": "^5.5.2"
   },
   "devDependencies": {
-    "prisma": "^5.7.0",
-    "@types/pg": "^8.10.0"
+    "drizzle-kit": "^0.20.4",
+    "@types/pg": "^8.10.9",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/csv-parse": "^1.2.2",
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.3"
   }
 }
