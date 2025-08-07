@@ -26,8 +26,9 @@ app.get('/health', (_req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    environment: process.env.NODE_ENV || 'development'
+    version: '1.0.1',
+    environment: process.env.NODE_ENV || 'development',
+    buildTime: '2025-08-07T18:58:00Z'
   });
 });
 
