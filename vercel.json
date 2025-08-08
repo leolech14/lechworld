@@ -18,7 +18,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://api.lechworld.railway.app/:path*"
+      "destination": "https://lechworld-api-production.up.railway.app/api/:path*"
     },
     {
       "source": "/(.*)",
