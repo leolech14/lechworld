@@ -1,6 +1,6 @@
 // API client with JWT token handling
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://lech.world';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://lechworld-api-production.up.railway.app';
 
 class ApiClient {
   private token: string | null = null;

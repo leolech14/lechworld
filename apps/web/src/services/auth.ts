@@ -32,7 +32,7 @@ export type SetPasswordInput = z.infer<typeof setPasswordSchema>;
 
 // API functions
 export async function login(data: LoginInput) {
-  const response = await apiClient.post('/api/auth/login', data);
+  const response = await apiClient.post('/api/auth/login', { ...data, email: data.username + "@lech.world" });
 
   if (!response.ok) {
     let errorMessage = 'Failed to login';

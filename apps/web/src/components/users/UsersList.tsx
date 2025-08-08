@@ -4,7 +4,7 @@ import { Search, UserPlus, MoreVertical, Mail, Shield, Calendar } from 'lucide-r
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://lech.world',
+  baseURL: import.meta.env.VITE_API_URL || 'https://lechworld-api-production.up.railway.app',
 });
 
 interface User {
