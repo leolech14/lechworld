@@ -21,6 +21,21 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Root endpoint
+app.get('/', (_req, res) => {
+  res.json({
+    name: 'Lechworld API',
+    version: '1.0.1',
+    status: 'online',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth/login'
+    },
+    documentation: 'https://lech.world/docs',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Health check endpoint
 app.get('/health', (_req, res) => {
   res.json({
