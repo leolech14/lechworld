@@ -8,7 +8,7 @@ config();
 
 // Create Express app
 const app = express();
-const port = process.env.PORT || 3001;
+const port = parseInt(process.env.PORT || '3001', 10);
 
 // Security middleware
 app.use(helmet());
@@ -56,9 +56,9 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // Start server
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 API server running on port ${port}`);
-  console.log(`📍 Health check: http://localhost:${port}/health`);
+  console.log(`📍 Health check: http://0.0.0.0:${port}/health`);
 });
 
 export default app;
