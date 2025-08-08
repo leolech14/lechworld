@@ -49,16 +49,16 @@ app.get('/health', (_req, res) => {
 
 // Basic auth endpoint for testing
 app.post('/api/auth/login', (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
   
   // Simple mock auth for now
-  if (email && password) {
+  if (username && password) {
     res.json({
       success: true,
       token: 'mock-jwt-token',
       user: {
         id: 1,
-        email,
+        username,
         name: 'Test User'
       }
     });
@@ -68,6 +68,15 @@ app.post('/api/auth/login', (req, res) => {
       error: 'Invalid credentials'
     });
   }
+});
+
+// GET /api/auth/me endpoint for checking current user
+app.get("/api/auth/me", (req, res) => {
+  res.json({
+    id: 1,
+    username: "test",
+    name: "Test User"
+  });
 });
 
 // Start server
