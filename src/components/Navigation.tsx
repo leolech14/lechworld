@@ -158,7 +158,7 @@ export function Navigation() {
     {
       title: t('home', language),
       icon: (
-        <HomeIcon className='h-full w-full' style={{ color: '#026E81' }} />
+        <HomeIcon className='h-full w-full' style={{ color: '#FFFFFF' }} />
       ),
       onClick: () => router.push('/dashboard'),
       bgColor: '#4CC2D7',
@@ -167,7 +167,7 @@ export function Navigation() {
     {
       title: t('shareReport', language),
       icon: (
-        <Share2 className='h-full w-full' style={{ color: '#026E81' }} />
+        <Share2 className='h-full w-full' style={{ color: '#FFFFFF' }} />
       ),
       onClick: handleShare,
       bgColor: '#4CC2D7',
@@ -176,7 +176,7 @@ export function Navigation() {
     {
       title: t('export', language),
       icon: (
-        <Download className='h-full w-full' style={{ color: '#026E81' }} />
+        <Download className='h-full w-full' style={{ color: '#FFFFFF' }} />
       ),
       onClick: handleExport,
       bgColor: '#4CC2D7',
@@ -185,7 +185,7 @@ export function Navigation() {
     {
       title: t('import', language),
       icon: (
-        <Upload className='h-full w-full' style={{ color: '#026E81' }} />
+        <Upload className='h-full w-full' style={{ color: '#FFFFFF' }} />
       ),
       onClick: handleImport,
       bgColor: '#4CC2D7',
@@ -194,7 +194,7 @@ export function Navigation() {
     {
       title: t('refresh', language),
       icon: (
-        <RefreshCw className='h-full w-full' style={{ color: '#026E81' }} />
+        <RefreshCw className='h-full w-full' style={{ color: '#FFFFFF' }} />
       ),
       onClick: () => {
         // Force a re-render without page reload
@@ -213,7 +213,7 @@ export function Navigation() {
     {
       title: t('statistics', language),
       icon: (
-        <BarChart3 className='h-full w-full' style={{ color: '#026E81' }} />
+        <BarChart3 className='h-full w-full' style={{ color: '#FFFFFF' }} />
       ),
       onClick: () => router.push('/statistics'),
       bgColor: '#4CC2D7',
@@ -222,7 +222,7 @@ export function Navigation() {
     {
       title: t('settings', language),
       icon: (
-        <Settings className='h-full w-full' style={{ color: '#026E81' }} />
+        <Settings className='h-full w-full' style={{ color: '#FFFFFF' }} />
       ),
       onClick: () => router.push('/settings'),
       bgColor: '#4CC2D7',
@@ -231,7 +231,7 @@ export function Navigation() {
     {
       title: t('guide', language),
       icon: (
-        <Book className='h-full w-full' style={{ color: '#026E81' }} />
+        <Book className='h-full w-full' style={{ color: '#FFFFFF' }} />
       ),
       onClick: () => router.push('/guide'),
       bgColor: '#4CC2D7',
@@ -240,7 +240,7 @@ export function Navigation() {
     {
       title: t('help', language),
       icon: (
-        <HelpCircle className='h-full w-full' style={{ color: '#026E81' }} />
+        <HelpCircle className='h-full w-full' style={{ color: '#FFFFFF' }} />
       ),
       onClick: () => setShowHelp(true),
       bgColor: '#4CC2D7',
@@ -249,7 +249,7 @@ export function Navigation() {
     {
       title: t('logout', language),
       icon: (
-        <LogOut className='h-full w-full' style={{ color: '#026E81' }} />
+        <LogOut className='h-full w-full' style={{ color: '#FFFFFF' }} />
       ),
       onClick: handleLogout,
       bgColor: '#4CC2D7',
