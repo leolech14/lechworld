@@ -287,8 +287,14 @@ export function Navigation() {
             >
               <DockLabel>{item.title}</DockLabel>
               <DockIcon>
-                <div className="w-full h-full rounded-full flex items-center justify-center p-3"
-                     style={{ backgroundColor: item.bgColor, border: `2px solid ${item.borderColor}` }}>
+                <div className="w-full h-full rounded-full flex items-center justify-center"
+                     style={{ 
+                       backgroundColor: item.bgColor, 
+                       border: `2px solid ${item.borderColor}`,
+                       padding: '8px',
+                       minWidth: '40px',
+                       minHeight: '40px'
+                     }}>
                   {item.icon}
                 </div>
               </DockIcon>
