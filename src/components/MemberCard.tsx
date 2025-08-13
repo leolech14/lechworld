@@ -15,30 +15,62 @@ interface MemberCardProps {
   milesValue: { [key: string]: number };
 }
 
-// Member-specific gradient configurations - subtle for compact view
-const memberGradients: { [key: string]: string } = {
-  'Leonardo': 'from-blue-500/20 to-blue-600/20',
-  'Osvandré': 'from-green-500/20 to-green-600/20',
-  'Marilise': 'from-purple-500/20 to-purple-600/20',
-  'Graciela': 'from-pink-500/20 to-pink-600/20'
+// Member-specific configurations using Untitled UI colors
+const memberConfigs: { [key: string]: { gradient: string, border: string, avatar: string } } = {
+  'Leonardo': {
+    gradient: 'from-[var(--color-blue-50)] to-[var(--color-blue-100)]',
+    border: 'border-[var(--color-blue-600)]',
+    avatar: 'bg-gradient-to-br from-[var(--color-blue-600)] to-[var(--color-blue-700)]'
+  },
+  'Osvandré': {
+    gradient: 'from-[var(--color-success-50)] to-[var(--color-success-100)]',
+    border: 'border-[var(--color-success-600)]',
+    avatar: 'bg-gradient-to-br from-[var(--color-success-600)] to-[var(--color-success-700)]'
+  },
+  'Marilise': {
+    gradient: 'from-[var(--color-primary-50)] to-[var(--color-primary-100)]',
+    border: 'border-[var(--color-primary-600)]',
+    avatar: 'bg-gradient-to-br from-[var(--color-primary-600)] to-[var(--color-primary-700)]'
+  },
+  'Graciela': {
+    gradient: 'from-[var(--color-error-50)] to-[var(--color-error-100)]',
+    border: 'border-[var(--color-error-600)]',
+    avatar: 'bg-gradient-to-br from-[var(--color-error-600)] to-[var(--color-error-700)]'
+  }
 };
 
-// Member accent colors for borders and highlights
-const memberAccents: { [key: string]: string } = {
-  'Leonardo': 'border-blue-500',
-  'Osvandré': 'border-green-500',
-  'Marilise': 'border-purple-500',
-  'Graciela': 'border-pink-500'
-};
-
-// Status badge colors - ultra compact
-const statusColors: { [key: string]: { bg: string, text: string } } = {
-  'PLATINUM': { bg: 'bg-yellow-400/20', text: 'text-yellow-300' },
-  'GOLD PLUS': { bg: 'bg-amber-400/20', text: 'text-amber-300' }, 
-  'DIAMANTE': { bg: 'bg-cyan-400/20', text: 'text-cyan-300' },
-  'SAFIRA': { bg: 'bg-blue-500/20', text: 'text-blue-300' },
-  'PRATA': { bg: 'bg-gray-300/20', text: 'text-gray-300' },
-  'MULTIPLUS': { bg: 'bg-indigo-400/20', text: 'text-indigo-300' }
+// Status badge colors using Untitled UI semantic colors
+const statusColors: { [key: string]: { bg: string, text: string, border: string } } = {
+  'PLATINUM': { 
+    bg: 'bg-[var(--color-warning-50)]', 
+    text: 'text-[var(--color-warning-700)]',
+    border: 'border-[var(--color-warning-200)]'
+  },
+  'GOLD PLUS': { 
+    bg: 'bg-[var(--color-warning-100)]', 
+    text: 'text-[var(--color-warning-800)]',
+    border: 'border-[var(--color-warning-300)]'
+  }, 
+  'DIAMANTE': { 
+    bg: 'bg-[var(--color-blue-50)]', 
+    text: 'text-[var(--color-blue-700)]',
+    border: 'border-[var(--color-blue-200)]'
+  },
+  'SAFIRA': { 
+    bg: 'bg-[var(--color-blue-100)]', 
+    text: 'text-[var(--color-blue-800)]',
+    border: 'border-[var(--color-blue-300)]'
+  },
+  'PRATA': { 
+    bg: 'bg-[var(--color-gray-100)]', 
+    text: 'text-[var(--color-gray-700)]',
+    border: 'border-[var(--color-gray-300)]'
+  },
+  'MULTIPLUS': { 
+    bg: 'bg-[var(--color-primary-50)]', 
+    text: 'text-[var(--color-primary-700)]',
+    border: 'border-[var(--color-primary-200)]'
+  }
 };
 
 export function MemberCard({ member, accounts, milesValue }: MemberCardProps) {
@@ -55,8 +87,11 @@ export function MemberCard({ member, accounts, milesValue }: MemberCardProps) {
   );
 
   // Get styling for member
-  const gradient = memberGradients[member] || 'from-gray-500/20 to-gray-600/20';
-  const accent = memberAccents[member] || 'border-gray-500';
+  const config = memberConfigs[member] || {
+    gradient: 'from-[var(--color-gray-50)] to-[var(--color-gray-100)]',
+    border: 'border-[var(--color-gray-600)]',
+    avatar: 'bg-gradient-to-br from-[var(--color-gray-600)] to-[var(--color-gray-700)]'
+  };
 
   return (
     <>
@@ -65,12 +100,13 @@ export function MemberCard({ member, accounts, milesValue }: MemberCardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className={`
-          relative rounded-lg border backdrop-blur-sm
-          transition-all duration-300
-          ${accent} ${isExpanded ? 'border-opacity-60' : 'border-opacity-30'}
-          bg-gradient-to-br ${gradient}
-          ${isMobile ? '' : 'hover:shadow-lg'}
+          relative bg-white dark:bg-[var(--color-gray-900)] 
+          border border-[var(--color-gray-200)] dark:border-[var(--color-gray-800)]
+          transition-all duration-[var(--duration-200)]
+          ${isExpanded ? 'shadow-lg' : 'shadow-sm'}
+          ${isMobile ? '' : 'hover:shadow-xl'}
         `}
+        style={{ borderRadius: 'var(--radius-lg)' }}
       >
         {/* Ultra Compact Collapsed View - 60-70px height on mobile */}
         <button
@@ -82,51 +118,61 @@ export function MemberCard({ member, accounts, milesValue }: MemberCardProps) {
           `}
         >
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            {/* Avatar Circle */}
+            {/* Avatar Circle - Untitled UI Style */}
             <div className={`
-              flex-shrink-0 rounded-full flex items-center justify-center font-bold
-              ${isMobile ? 'w-10 h-10 text-sm' : 'w-12 h-12 text-base'}
-              bg-gradient-to-br ${gradient.replace('/20', '/40')} border ${accent}
-              text-white shadow-sm
-            `}>
+              flex-shrink-0 rounded-full flex items-center justify-center
+              ${isMobile ? 'w-10 h-10' : 'w-12 h-12'}
+              ${config.avatar}
+              text-white shadow-md
+            `}
+            style={{ fontWeight: 'var(--font-weight-semibold)', fontSize: isMobile ? 'var(--font-size-sm)' : 'var(--font-size-md)' }}>
               {member[0]}
             </div>
             
             {/* Compact Info */}
             <div className="flex-1 min-w-0 text-left">
-              <h3 className={`
-                font-semibold text-white truncate
-                ${isMobile ? 'text-sm' : 'text-base'}
-              `}>
+              <h3 className="truncate"
+                style={{ 
+                  fontWeight: 'var(--font-weight-semibold)',
+                  fontSize: isMobile ? 'var(--font-size-sm)' : 'var(--font-size-md)',
+                  color: 'var(--color-gray-900)',
+                  lineHeight: isMobile ? 'var(--line-height-sm)' : 'var(--line-height-md)'
+                }}>
                 {member}
               </h3>
               <div className="flex items-center gap-3">
-                <span className={`
-                  text-blue-200/80 flex items-center gap-1
-                  ${isMobile ? 'text-xs' : 'text-sm'}
-                `}>
-                  <TrendingUp className={isMobile ? 'w-3 h-3' : 'w-4 h-4'} />
+                <span className="flex items-center gap-1"
+                  style={{ 
+                    fontSize: isMobile ? 'var(--font-size-xs)' : 'var(--font-size-sm)',
+                    color: 'var(--color-gray-600)'
+                  }}>
+                  <TrendingUp className={isMobile ? 'w-3 h-3' : 'w-4 h-4'} style={{ color: 'var(--color-blue-600)' }} />
                   {totalMiles.toLocaleString()}
                 </span>
-                <span className={`
-                  text-green-200/80 flex items-center gap-1
-                  ${isMobile ? 'text-xs' : 'text-sm'}
-                `}>
-                  <DollarSign className={isMobile ? 'w-3 h-3' : 'w-4 h-4'} />
+                <span className="flex items-center gap-1"
+                  style={{ 
+                    fontSize: isMobile ? 'var(--font-size-xs)' : 'var(--font-size-sm)',
+                    color: 'var(--color-gray-600)'
+                  }}>
+                  <DollarSign className={isMobile ? 'w-3 h-3' : 'w-4 h-4'} style={{ color: 'var(--color-success-600)' }} />
                   {totalValue.toFixed(0)}
                 </span>
               </div>
             </div>
           </div>
           
-          {/* Expand/Collapse Icon */}
+          {/* Expand/Collapse Icon - Untitled UI Style */}
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
             className={`
-              rounded-full p-1 bg-white/10 text-white/60
+              rounded-full p-2 transition-colors
               ${isMobile ? 'ml-2' : 'ml-3'}
             `}
+            style={{ 
+              backgroundColor: isExpanded ? 'var(--color-gray-100)' : 'var(--color-gray-50)',
+              color: 'var(--color-gray-600)'
+            }}
           >
             <ChevronDown className={isMobile ? 'w-4 h-4' : 'w-5 h-5'} />
           </motion.div>
@@ -153,57 +199,86 @@ export function MemberCard({ member, accounts, milesValue }: MemberCardProps) {
                       transition={{ duration: 0.2 }}
                       onClick={() => setSelectedProgram(program)}
                       className={`
-                        w-full rounded-md bg-white/5 hover:bg-white/10 
-                        transition-all duration-200 flex items-center justify-between
-                        text-left group border border-white/5 hover:border-white/10
+                        w-full flex items-center justify-between
+                        text-left group transition-all
                         ${isMobile ? 'p-2' : 'p-2.5'}
                       `}
+                      style={{ 
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: 'var(--color-gray-50)',
+                        border: '1px solid var(--color-gray-200)',
+                        transitionDuration: 'var(--duration-200)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--color-gray-100)';
+                        e.currentTarget.style.borderColor = 'var(--color-gray-300)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--color-gray-50)';
+                        e.currentTarget.style.borderColor = 'var(--color-gray-200)';
+                      }}
                     >
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <Plane className={`
-                          text-white/50 flex-shrink-0
+                          flex-shrink-0
                           ${isMobile ? 'w-3 h-3' : 'w-4 h-4'}
-                        `} />
+                        `} style={{ color: 'var(--color-gray-400)' }} />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className={`
-                              font-medium text-white/90 truncate
-                              ${isMobile ? 'text-xs' : 'text-sm'}
-                            `}>
+                            <span className="truncate"
+                              style={{ 
+                                fontWeight: 'var(--font-weight-medium)',
+                                fontSize: isMobile ? 'var(--font-size-xs)' : 'var(--font-size-sm)',
+                                color: 'var(--color-gray-900)'
+                              }}>
                               {program}
                             </span>
                             {account.status && (
                               <span className={`
-                                px-1.5 py-0.5 rounded-full font-medium
-                                ${statusColors[account.status]?.bg || 'bg-gray-400/20'}
-                                ${statusColors[account.status]?.text || 'text-gray-300'}
-                                ${isMobile ? 'text-[10px]' : 'text-xs'}
-                              `}>
+                                px-2 py-0.5 rounded-full border
+                                ${statusColors[account.status]?.bg || 'bg-[var(--color-gray-100)]'}
+                                ${statusColors[account.status]?.text || 'text-[var(--color-gray-700)]'}
+                                ${statusColors[account.status]?.border || 'border-[var(--color-gray-300)]'}
+                              `}
+                              style={{ 
+                                fontSize: isMobile ? '10px' : 'var(--font-size-xs)',
+                                fontWeight: 'var(--font-weight-medium)'
+                              }}>
                                 {account.status}
                               </span>
                             )}
                           </div>
                         </div>
                       </div>
-                      <span className={`
-                        font-semibold text-white ml-2
-                        ${isMobile ? 'text-xs' : 'text-sm'}
-                      `}>
+                      <span className="ml-2"
+                        style={{ 
+                          fontWeight: 'var(--font-weight-semibold)',
+                          fontSize: isMobile ? 'var(--font-size-xs)' : 'var(--font-size-sm)',
+                          color: 'var(--color-gray-900)'
+                        }}>
                         {(account.miles || 0).toLocaleString()}
                       </span>
                     </motion.button>
                   ))}
                 </div>
                 
-                {/* Summary Footer */}
-                <div className={`
-                  pt-2 border-t border-white/10 flex justify-between items-center
-                  ${isMobile ? 'text-xs' : 'text-sm'}
-                `}>
-                  <span className="text-white/60">
+                {/* Summary Footer - Untitled UI Style */}
+                <div className="pt-3 flex justify-between items-center"
+                  style={{ 
+                    borderTop: '1px solid var(--color-gray-200)',
+                    marginTop: 'var(--spacing-2)'
+                  }}>
+                  <span style={{ 
+                    fontSize: isMobile ? 'var(--font-size-xs)' : 'var(--font-size-sm)',
+                    color: 'var(--color-gray-500)'
+                  }}>
                     {Object.keys(accounts).length} {t('programs', language).toLowerCase()}
                   </span>
-                  <span className="font-semibold text-white/80">
+                  <span style={{ 
+                    fontWeight: 'var(--font-weight-semibold)',
+                    fontSize: isMobile ? 'var(--font-size-xs)' : 'var(--font-size-sm)',
+                    color: 'var(--color-gray-700)'
+                  }}>
                     {t('total', language)}: {totalMiles.toLocaleString()} miles
                   </span>
                 </div>

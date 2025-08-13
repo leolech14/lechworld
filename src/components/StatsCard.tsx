@@ -1,5 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { motion } from 'framer-motion';
 
 interface StatsCardProps {
   title: string;
@@ -8,34 +9,47 @@ interface StatsCardProps {
   color: 'blue' | 'amber' | 'emerald' | 'purple';
 }
 
+// Untitled UI color mappings for stats cards
 const colorStyles = {
   blue: { 
-    background: 'from-blue-500/20 to-blue-600/20',
-    border: 'border-blue-500/30',
-    icon: 'text-blue-400',
-    value: 'text-blue-100',
-    title: 'text-blue-200/70'
+    background: 'var(--color-blue-50)',
+    border: 'var(--color-blue-200)',
+    icon: 'var(--color-blue-600)',
+    iconBg: 'var(--color-blue-100)',
+    value: 'var(--color-gray-900)',
+    title: 'var(--color-gray-600)',
+    hoverBg: 'var(--color-blue-100)',
+    hoverBorder: 'var(--color-blue-300)'
   },
   amber: { 
-    background: 'from-amber-500/20 to-amber-600/20',
-    border: 'border-amber-500/30',
-    icon: 'text-amber-400',
-    value: 'text-amber-100',
-    title: 'text-amber-200/70'
+    background: 'var(--color-warning-50)',
+    border: 'var(--color-warning-200)',
+    icon: 'var(--color-warning-600)',
+    iconBg: 'var(--color-warning-100)',
+    value: 'var(--color-gray-900)',
+    title: 'var(--color-gray-600)',
+    hoverBg: 'var(--color-warning-100)',
+    hoverBorder: 'var(--color-warning-300)'
   },
   emerald: { 
-    background: 'from-emerald-500/20 to-emerald-600/20',
-    border: 'border-emerald-500/30',
-    icon: 'text-emerald-400',
-    value: 'text-emerald-100',
-    title: 'text-emerald-200/70'
+    background: 'var(--color-success-50)',
+    border: 'var(--color-success-200)',
+    icon: 'var(--color-success-600)',
+    iconBg: 'var(--color-success-100)',
+    value: 'var(--color-gray-900)',
+    title: 'var(--color-gray-600)',
+    hoverBg: 'var(--color-success-100)',
+    hoverBorder: 'var(--color-success-300)'
   },
   purple: { 
-    background: 'from-purple-500/20 to-purple-600/20',
-    border: 'border-purple-500/30',
-    icon: 'text-purple-400',
-    value: 'text-purple-100',
-    title: 'text-purple-200/70'
+    background: 'var(--color-primary-50)',
+    border: 'var(--color-primary-200)',
+    icon: 'var(--color-primary-600)',
+    iconBg: 'var(--color-primary-100)',
+    value: 'var(--color-gray-900)',
+    title: 'var(--color-gray-600)',
+    hoverBg: 'var(--color-primary-100)',
+    hoverBorder: 'var(--color-primary-300)'
   },
 };
 
@@ -44,57 +58,132 @@ export function StatsCard({ title, value, icon: Icon, color }: StatsCardProps) {
   const isMobile = useIsMobile();
   
   return (
-    <div 
-      className={`
-        rounded-lg border backdrop-blur-sm
-        transition-all duration-300
-        bg-gradient-to-br ${colors.background} ${colors.border}
-        ${isMobile ? '' : 'hover:shadow-lg hover:scale-[1.02]'}
-        ${isMobile ? 'p-3' : 'p-4'}
-      `}
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ scale: isMobile ? 1 : 1.02 }}
+      className="relative overflow-hidden transition-all"
+      style={{
+        backgroundColor: colors.background,
+        border: `1px solid ${colors.border}`,
+        borderRadius: 'var(--radius-lg)',
+        padding: isMobile ? 'var(--spacing-3)' : 'var(--spacing-4)',
+        boxShadow: 'var(--shadow-sm)',
+        transitionDuration: 'var(--duration-200)'
+      }}
+      onMouseEnter={(e) => {
+        if (!isMobile) {
+          e.currentTarget.style.backgroundColor = colors.hoverBg;
+          e.currentTarget.style.borderColor = colors.hoverBorder;
+          e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isMobile) {
+          e.currentTarget.style.backgroundColor = colors.background;
+          e.currentTarget.style.borderColor = colors.border;
+          e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+        }
+      }}
     >
-      {/* Mobile: Horizontal Layout - 60px height */}
+      {/* Subtle gradient overlay */}
+      <div 
+        className="absolute inset-0 opacity-50"
+        style={{
+          background: `linear-gradient(135deg, transparent 0%, ${colors.iconBg} 100%)`,
+          pointerEvents: 'none'
+        }}
+      />
+      
+      {/* Mobile: Horizontal Layout */}
       {isMobile ? (
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className={`
-              p-1.5 rounded-md bg-white/10 flex-shrink-0
-              ${colors.icon}
-            `}>
+        <div className="flex items-center justify-between gap-2 relative z-10">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div 
+              className="p-2 rounded-lg flex-shrink-0"
+              style={{ 
+                backgroundColor: colors.iconBg,
+                color: colors.icon
+              }}
+            >
               <Icon className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className={`text-[10px] font-medium uppercase tracking-wider ${colors.title} truncate`}>
+              <p className="truncate uppercase tracking-wider"
+                style={{ 
+                  fontSize: 'var(--font-size-xs)',
+                  fontWeight: 'var(--font-weight-medium)',
+                  color: colors.title,
+                  letterSpacing: 'var(--letter-spacing-wide)'
+                }}>
                 {title}
               </p>
-              <p className={`text-sm font-bold ${colors.value} truncate`}>
+              <p className="truncate"
+                style={{ 
+                  fontSize: 'var(--font-size-lg)',
+                  fontWeight: 'var(--font-weight-semibold)',
+                  color: colors.value,
+                  lineHeight: 'var(--line-height-lg)'
+                }}>
                 {value}
               </p>
             </div>
           </div>
         </div>
       ) : (
-        // Desktop: Vertical Layout with more space
-        <div className="space-y-3">
+        // Desktop: Enhanced Layout with more visual hierarchy
+        <div className="space-y-3 relative z-10">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className={`text-xs font-semibold uppercase tracking-wider ${colors.title}`}>
+              <p className="uppercase tracking-wider"
+                style={{ 
+                  fontSize: 'var(--font-size-xs)',
+                  fontWeight: 'var(--font-weight-semibold)',
+                  color: colors.title,
+                  letterSpacing: 'var(--letter-spacing-wide)',
+                  marginBottom: 'var(--spacing-2)'
+                }}>
                 {title}
               </p>
-              <p className={`text-xl font-bold mt-1 ${colors.value}`}>
+              <p style={{ 
+                fontSize: 'var(--font-size-2xl)',
+                fontWeight: 'var(--font-weight-bold)',
+                color: colors.value,
+                lineHeight: 'var(--line-height-2xl)'
+              }}>
                 {value}
               </p>
             </div>
-            <div className={`
-              p-2 rounded-lg bg-white/10 
-              ${colors.icon}
-              transition-transform duration-300 hover:scale-110
-            `}>
+            <motion.div 
+              className="p-3 rounded-lg"
+              style={{ 
+                backgroundColor: colors.iconBg,
+                color: colors.icon
+              }}
+              whileHover={{ scale: 1.1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
               <Icon className="w-5 h-5" />
-            </div>
+            </motion.div>
+          </div>
+          
+          {/* Progress indicator or trend (placeholder for future enhancement) */}
+          <div className="h-1 rounded-full overflow-hidden"
+            style={{ backgroundColor: colors.iconBg }}>
+            <motion.div 
+              className="h-full rounded-full"
+              style={{ 
+                backgroundColor: colors.icon,
+                width: '65%'
+              }}
+              initial={{ width: 0 }}
+              animate={{ width: '65%' }}
+              transition={{ duration: 1, delay: 0.5 }}
+            />
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

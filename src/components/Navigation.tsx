@@ -158,43 +158,43 @@ export function Navigation() {
     {
       title: t('home', language),
       icon: (
-        <HomeIcon className='h-full w-full' style={{ color: '#FFFFFF' }} />
+        <HomeIcon className='h-full w-full' />
       ),
       onClick: () => router.push('/dashboard'),
-      bgColor: '#4CC2D7',
-      borderColor: '#026E81'
+      gradient: 'from-primary-600 to-primary-700',
+      iconColor: 'text-white'
     },
     {
       title: t('shareReport', language),
       icon: (
-        <Share2 className='h-full w-full' style={{ color: '#FFFFFF' }} />
+        <Share2 className='h-full w-full' />
       ),
       onClick: handleShare,
-      bgColor: '#4CC2D7',
-      borderColor: '#026E81'
+      gradient: 'from-blue-600 to-blue-700',
+      iconColor: 'text-white'
     },
     {
       title: t('export', language),
       icon: (
-        <Download className='h-full w-full' style={{ color: '#FFFFFF' }} />
+        <Download className='h-full w-full' />
       ),
       onClick: handleExport,
-      bgColor: '#4CC2D7',
-      borderColor: '#026E81'
+      gradient: 'from-success-600 to-success-700',
+      iconColor: 'text-white'
     },
     {
       title: t('import', language),
       icon: (
-        <Upload className='h-full w-full' style={{ color: '#FFFFFF' }} />
+        <Upload className='h-full w-full' />
       ),
       onClick: handleImport,
-      bgColor: '#4CC2D7',
-      borderColor: '#026E81'
+      gradient: 'from-success-600 to-success-700',
+      iconColor: 'text-white'
     },
     {
       title: t('refresh', language),
       icon: (
-        <RefreshCw className='h-full w-full' style={{ color: '#FFFFFF' }} />
+        <RefreshCw className='h-full w-full' />
       ),
       onClick: () => {
         // Force a re-render without page reload
@@ -207,70 +207,73 @@ export function Navigation() {
           setTimeout(() => icon.classList.remove('animate-spin'), 1000);
         }
       },
-      bgColor: '#4CC2D7',
-      borderColor: '#026E81'
+      gradient: 'from-blue-600 to-blue-700',
+      iconColor: 'text-white'
     },
     {
       title: t('statistics', language),
       icon: (
-        <BarChart3 className='h-full w-full' style={{ color: '#FFFFFF' }} />
+        <BarChart3 className='h-full w-full' />
       ),
       onClick: () => router.push('/statistics'),
-      bgColor: '#4CC2D7',
-      borderColor: '#026E81'
+      gradient: 'from-warning-600 to-warning-700',
+      iconColor: 'text-white'
     },
     {
       title: t('settings', language),
       icon: (
-        <Settings className='h-full w-full' style={{ color: '#FFFFFF' }} />
+        <Settings className='h-full w-full' />
       ),
       onClick: () => router.push('/settings'),
-      bgColor: '#4CC2D7',
-      borderColor: '#026E81'
+      gradient: 'from-gray-600 to-gray-700',
+      iconColor: 'text-white'
     },
     {
       title: t('guide', language),
       icon: (
-        <Book className='h-full w-full' style={{ color: '#FFFFFF' }} />
+        <Book className='h-full w-full' />
       ),
       onClick: () => router.push('/guide'),
-      bgColor: '#4CC2D7',
-      borderColor: '#026E81'
+      gradient: 'from-primary-600 to-primary-700',
+      iconColor: 'text-white'
     },
     {
       title: t('help', language),
       icon: (
-        <HelpCircle className='h-full w-full' style={{ color: '#FFFFFF' }} />
+        <HelpCircle className='h-full w-full' />
       ),
       onClick: () => setShowHelp(true),
-      bgColor: '#4CC2D7',
-      borderColor: '#026E81'
+      gradient: 'from-blue-600 to-blue-700',
+      iconColor: 'text-white'
     },
     {
       title: t('logout', language),
       icon: (
-        <LogOut className='h-full w-full' style={{ color: '#FFFFFF' }} />
+        <LogOut className='h-full w-full' />
       ),
       onClick: handleLogout,
-      bgColor: '#4CC2D7',
-      borderColor: '#026E81'
+      gradient: 'from-error-600 to-error-700',
+      iconColor: 'text-white'
     },
   ];
 
   return (
     <>
-      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 backdrop-blur-md shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderBottom: '1px solid rgba(76, 194, 215, 0.2)' }}>
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 shadow-sm">
         <div className="flex items-center gap-2 sm:gap-4">
           <button 
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 sm:gap-3 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400 rounded-lg touch-target p-2"
+            className="flex items-center gap-2 sm:gap-3 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-600 rounded-lg touch-target p-2"
           >
-            <img src="/lechworld-logo.png" alt="LechWorld" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
-            <span className="hidden sm:inline" style={{ color: '#026E81', fontWeight: 'bold', fontSize: '1.5rem' }}>LechWorld</span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl flex items-center justify-center shadow-lg">
+              <Plane className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+            </div>
+            <span className="hidden sm:inline text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">LechWorld</span>
           </button>
           {currentUser && (
-            <span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold shadow-md" style={{ background: '#FFD700', color: '#026E81' }}>
-              👤 {currentUser.name}
+            <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 rounded-full text-xs sm:text-sm font-semibold border border-primary-200 dark:border-primary-800">
+              <Users className="inline w-3 h-3 mr-1" />
+              {currentUser.name}
             </span>
           )}
         </div>
@@ -288,8 +291,7 @@ export function Navigation() {
             >
               <DockLabel>{item.title}</DockLabel>
               <DockIcon>
-                <div className="w-full h-full rounded-full flex items-center justify-center p-2 sm:p-3"
-                     style={{ backgroundColor: item.bgColor, border: `2px solid ${item.borderColor}` }}>
+                <div className={`w-full h-full rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center p-2 sm:p-3 shadow-lg hover:shadow-xl transition-all ${item.iconColor}`}>
                   {item.icon}
                 </div>
               </DockIcon>
@@ -300,21 +302,17 @@ export function Navigation() {
 
       {/* Mobile-optimized Help Modal */}
       {showHelp && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-end sm:items-center justify-center z-[60]" 
-             style={{ backgroundColor: 'rgba(2, 110, 129, 0.6)' }}
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[60]" 
              onClick={() => setShowHelp(false)}>
-          <div className="rounded-t-2xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 w-full sm:max-w-2xl max-h-[80vh] sm:max-h-[90vh] overflow-y-auto" 
-               style={{ backgroundColor: 'rgba(255, 255, 255, 0.98)', border: '1px solid rgba(76, 194, 215, 0.5)' }}
+          <div className="bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 w-full sm:max-w-2xl max-h-[80vh] sm:max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-800" 
                onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-start mb-4 sm:mb-6">
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold" style={{ color: '#026E81' }}>{t('lechWorldHelp', language)}</h2>
-                <p className="text-xs sm:text-sm mt-1" style={{ color: '#026E81' }}>{t('milesManagementCompanion', language)}</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('lechWorldHelp', language)}</h2>
+                <p className="text-xs sm:text-sm mt-1 text-gray-600 dark:text-gray-400">{t('milesManagementCompanion', language)}</p>
               </div>
-              <button onClick={() => setShowHelp(false)} className="touch-target p-2 rounded-lg transition-colors"
-                      style={{ color: '#026E81', minWidth: '48px', minHeight: '48px' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(76, 194, 215, 0.2)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              <button onClick={() => setShowHelp(false)} className="touch-target p-2 rounded-lg transition-colors text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      style={{ minWidth: '48px', minHeight: '48px' }}
                       aria-label="Close help">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -323,51 +321,51 @@ export function Navigation() {
             </div>
 
             <div className="space-y-6">
-              <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(76, 194, 215, 0.1)', border: '1px solid rgba(76, 194, 215, 0.2)' }}>
-                <h3 className="font-bold mb-2" style={{ color: '#026E81' }}>{t('quickStart', language)}</h3>
-                <p className="text-sm" style={{ color: '#026E81' }}>{t('welcomeHelp', language)}</p>
-                <ul className="mt-2 space-y-1 text-sm" style={{ color: '#026E81' }}>
+              <div className="p-4 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
+                <h3 className="font-bold mb-2 text-primary-700 dark:text-primary-400">{t('quickStart', language)}</h3>
+                <p className="text-sm text-primary-600 dark:text-primary-500">{t('welcomeHelp', language)}</p>
+                <ul className="mt-2 space-y-1 text-sm text-primary-600 dark:text-primary-500">
                   <li>• {t('clickMemberCard', language)}</li>
                   <li>• {t('useDockActions', language)}</li>
                   <li>• {t('dataAutoSaved', language)}</li>
                 </ul>
               </div>
 
-              <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(255, 215, 0, 0.1)', border: '1px solid rgba(255, 215, 0, 0.3)' }}>
-                <h3 className="font-bold mb-2" style={{ color: '#026E81' }}>{t('features', language)}</h3>
+              <div className="p-4 rounded-xl bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800">
+                <h3 className="font-bold mb-2 text-warning-700 dark:text-warning-400">{t('features', language)}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="font-semibold" style={{ color: '#026E81' }}>{t('dashboard', language)}</p>
-                    <p style={{ color: '#4CC2D7' }}>{t('viewFamilyMembers', language)}</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{t('dashboard', language)}</p>
+                    <p className="text-gray-600 dark:text-gray-400">{t('viewFamilyMembers', language)}</p>
                   </div>
                   <div>
-                    <p className="font-semibold" style={{ color: '#026E81' }}>{t('statistics', language)}</p>
-                    <p style={{ color: '#4CC2D7' }}>{t('analyzePortfolio', language)}</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{t('statistics', language)}</p>
+                    <p className="text-gray-600 dark:text-gray-400">{t('analyzePortfolio', language)}</p>
                   </div>
                   <div>
-                    <p className="font-semibold" style={{ color: '#026E81' }}>{t('shareReport', language)}</p>
-                    <p style={{ color: '#4CC2D7' }}>{t('sendWhatsApp', language)}</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{t('shareReport', language)}</p>
+                    <p className="text-gray-600 dark:text-gray-400">{t('sendWhatsApp', language)}</p>
                   </div>
                   <div>
-                    <p className="font-semibold" style={{ color: '#026E81' }}>{t('import', language)}/{t('export', language)}</p>
-                    <p style={{ color: '#4CC2D7' }}>{t('backupRestore', language)}</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{t('import', language)}/{t('export', language)}</p>
+                    <p className="text-gray-600 dark:text-gray-400">{t('backupRestore', language)}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(175, 243, 255, 0.2)', border: '1px solid rgba(76, 194, 215, 0.3)' }}>
-                <h3 className="font-bold mb-2" style={{ color: '#026E81' }}>{t('settingsHelp', language)}</h3>
-                <p className="text-sm" style={{ color: '#026E81' }}>{t('customizeMiles', language)}</p>
+              <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <h3 className="font-bold mb-2 text-blue-700 dark:text-blue-400">{t('settingsHelp', language)}</h3>
+                <p className="text-sm text-blue-600 dark:text-blue-500">{t('customizeMiles', language)}</p>
               </div>
 
-              <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(2, 110, 129, 0.1)', border: '1px solid rgba(2, 110, 129, 0.2)' }}>
-                <h3 className="font-bold mb-2" style={{ color: '#026E81' }}>{t('security', language)}</h3>
-                <p className="text-sm" style={{ color: '#026E81' }}>{t('dataStoredLocally', language)}</p>
+              <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <h3 className="font-bold mb-2 text-gray-900 dark:text-gray-100">{t('security', language)}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{t('dataStoredLocally', language)}</p>
               </div>
 
-              <div className="p-4 rounded-xl border" style={{ borderColor: '#4CC2D7' }}>
-                <h3 className="font-bold mb-2" style={{ color: '#026E81' }}>{t('tips', language)}</h3>
-                <ul className="space-y-1 text-sm" style={{ color: '#026E81' }}>
+              <div className="p-4 rounded-xl border border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/10">
+                <h3 className="font-bold mb-2 text-primary-700 dark:text-primary-400">{t('tips', language)}</h3>
+                <ul className="space-y-1 text-sm text-primary-600 dark:text-primary-500">
                   <li>• {t('clickOutsideClose', language)}</li>
                   <li>• {t('pressEnterNavigate', language)}</li>
                   <li>• {t('useRefresh', language)}</li>
@@ -375,9 +373,9 @@ export function Navigation() {
                 </ul>
               </div>
 
-              <div className="text-center pt-4" style={{ borderTop: '1px solid rgba(76, 194, 215, 0.2)' }}>
-                <p className="text-sm" style={{ color: '#026E81' }}>{t('version', language)}</p>
-                <p className="text-xs mt-1" style={{ color: '#026E81' }}>{t('copyright', language)}</p>
+              <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-800">
+                <p className="text-sm text-gray-600 dark:text-gray-400">{t('version', language)}</p>
+                <p className="text-xs mt-1 text-gray-500 dark:text-gray-500">{t('copyright', language)}</p>
               </div>
             </div>
           </div>
