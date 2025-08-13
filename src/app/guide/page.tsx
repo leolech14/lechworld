@@ -490,10 +490,15 @@ const getAirlinePrograms = (language: 'pt' | 'en'): AirlineProgram[] => [
 ];
 
 export default function AirlineGuidePage() {
-  const { currentUser, language } = useStore();
+  const { currentUser, language, initializeAuth } = useStore();
   const router = useRouter();
   const [selectedProgram, setSelectedProgram] = useState<AirlineProgram | null>(null);
   const [activeTab, setActiveTab] = useState<'transfer' | 'wallet' | 'credentials' | 'integration' | 'googleWallet'>('transfer');
+
+  useEffect(() => {
+    // Initialize authentication from sessionStorage
+    initializeAuth();
+  }, [initializeAuth]);
 
   useEffect(() => {
     if (!currentUser) {

@@ -11,8 +11,20 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const { login, language } = useStore();
+  const { login, language, currentUser, initializeAuth } = useStore();
   const router = useRouter();
+
+  useEffect(() => {
+    // Initialize authentication from sessionStorage
+    initializeAuth();
+  }, [initializeAuth]);
+
+  useEffect(() => {
+    // If user is already logged in, redirect to dashboard
+    if (currentUser) {
+      router.push('/dashboard');
+    }
+  }, [currentUser, router]);
 
   useEffect(() => {
     if (showPassword && passwordRef.current) {

@@ -5,6 +5,36 @@ import { persist } from 'zustand/middleware';
 import { AppData, User, ActivityLog } from '@/types';
 import { initialData } from '@/lib/data';
 
+// LEGACY STORE - DEPRECATED
+// This store is maintained for backwards compatibility.
+// New applications should use useFirestoreStore for cloud sync capabilities.
+// Migration guide: Use FirestoreMigration component to upgrade existing data.
+
+// SessionStorage helpers for login state
+const sessionStorageLogin = {
+  getUser: (): User | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const stored = sessionStorage.getItem('lechworld-current-user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  },
+  setUser: (user: User | null) => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (user) {
+        sessionStorage.setItem('lechworld-current-user', JSON.stringify(user));
+      } else {
+        sessionStorage.removeItem('lechworld-current-user');
+      }
+    } catch (error) {
+      console.error('Failed to save user to sessionStorage:', error);
+    }
+  },
+};
+
 interface StoreState extends AppData {
   currentUser: User | null;
   showPasswords: boolean;
@@ -20,6 +50,7 @@ interface StoreState extends AppData {
   exportData: () => string;
   importData: (data: AppData) => void;
   setLanguage: (lang: 'pt' | 'en') => void;
+  initializeAuth: () => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -29,6 +60,13 @@ export const useStore = create<StoreState>()(
       currentUser: null,
       showPasswords: true,
       language: 'pt' as 'pt' | 'en',
+
+      initializeAuth: () => {
+        const storedUser = sessionStorageLogin.getUser();
+        if (storedUser) {
+          set({ currentUser: storedUser });
+        }
+      },
 
       login: (username: string) => {
         const validUsers = ['leonardo', 'osvandré', 'osvandre', 'marilise', 'graciela', 'denise'];
@@ -45,6 +83,8 @@ export const useStore = create<StoreState>()(
                   username.toLowerCase() === 'denise' ? 'staff' : 'family'
           };
           
+          // Store in sessionStorage for persistence across page refreshes
+          sessionStorageLogin.setUser(user);
           set({ currentUser: user });
           get().addActivity('LOGIN', { user: name });
           return true;
@@ -53,6 +93,8 @@ export const useStore = create<StoreState>()(
       },
 
       logout: () => {
+        // Clear from sessionStorage on logout
+        sessionStorageLogin.setUser(null);
         set({ currentUser: null });
       },
 
@@ -128,8 +170,8 @@ export const useStore = create<StoreState>()(
         milesValue: state.milesValue,
         activityLog: state.activityLog,
         showPasswords: state.showPasswords,
-        currentUser: state.currentUser,
         language: state.language
+        // currentUser is now excluded from localStorage and handled by sessionStorage
       })
     }
   )

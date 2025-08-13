@@ -10,8 +10,13 @@ import { Users, Plane, TrendingUp, DollarSign } from 'lucide-react';
 import { t } from '@/lib/translations';
 
 export default function DashboardPage() {
-  const { currentUser, accounts, milesValue, language } = useStore();
+  const { currentUser, accounts, milesValue, language, initializeAuth } = useStore();
   const router = useRouter();
+
+  useEffect(() => {
+    // Initialize authentication from sessionStorage
+    initializeAuth();
+  }, [initializeAuth]);
 
   useEffect(() => {
     if (!currentUser) {

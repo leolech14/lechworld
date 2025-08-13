@@ -8,9 +8,14 @@ import { TrendingUp, Award, Target, Activity, PieChart, BarChart3, Users, Plane 
 import { t } from '@/lib/translations';
 
 export default function StatisticsPage() {
-  const { currentUser, accounts, milesValue, language } = useStore();
+  const { currentUser, accounts, milesValue, language, initializeAuth } = useStore();
   const router = useRouter();
   const [selectedPeriod, setSelectedPeriod] = useState('all');
+
+  useEffect(() => {
+    // Initialize authentication from sessionStorage
+    initializeAuth();
+  }, [initializeAuth]);
 
   useEffect(() => {
     if (!currentUser) {

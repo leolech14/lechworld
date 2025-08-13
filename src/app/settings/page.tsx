@@ -8,12 +8,17 @@ import { Save, RefreshCw, DollarSign, Eye, EyeOff, Shield, Palette, Bell, Globe 
 import { t } from '@/lib/translations';
 
 export default function SettingsPage() {
-  const { currentUser, milesValue, updateMilesValue, showPasswords, togglePasswords, exportData, importData, language, setLanguage } = useStore();
+  const { currentUser, milesValue, updateMilesValue, showPasswords, togglePasswords, exportData, importData, language, setLanguage, initializeAuth } = useStore();
   const router = useRouter();
   const [values, setValues] = useState(milesValue);
   const [saved, setSaved] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    // Initialize authentication from sessionStorage
+    initializeAuth();
+  }, [initializeAuth]);
 
   useEffect(() => {
     if (!currentUser) {

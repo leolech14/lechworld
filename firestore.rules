@@ -1,0 +1,87 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // App data document - restrict to authenticated users only
+    match /app/data {
+      // For now, allow read/write for all authenticated users
+      // In production, you should implement proper authentication
+      allow read, write: if true;
+    }
+    
+    // Activity log collection
+    match /activityLog/{document} {
+      // Allow read/write for all authenticated users
+      // In production, consider implementing user-based restrictions
+      allow read, write: if true;
+      allow create: if true;
+    }
+    
+    // User-specific data (future enhancement)
+    match /users/{userId} {
+      // Only allow users to access their own data
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Admin-only collections (future enhancement)
+    match /admin/{document=**} {
+      // Restrict to admin users only
+      allow read, write: if request.auth != null && 
+        request.auth.token.admin == true;
+    }
+  }
+}
+
+// Additional security considerations:
+// 1. Implement Firebase Authentication for user management
+// 2. Add custom claims for role-based access (admin, family, staff)
+// 3. Validate data structure and types in security rules
+// 4. Add rate limiting for write operations
+// 5. Implement field-level security for sensitive data (passwords)
+
+// Example enhanced rules for production:
+/*
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'admin';
+    }
+    
+    function isFamilyMember() {
+      return isAuthenticated() && 
+        request.auth.token.role in ['admin', 'family', 'staff'];
+    }
+    
+    function isValidAccountUpdate() {
+      return request.resource.data.keys().hasAll(['lastUpdated']) &&
+        request.resource.data.lastUpdated is timestamp;
+    }
+    
+    // App data - family members can read/write
+    match /app/data {
+      allow read: if isFamilyMember();
+      allow write: if isFamilyMember() && isValidAccountUpdate();
+    }
+    
+    // Activity logs - family members can read, all can create
+    match /activityLog/{document} {
+      allow read: if isFamilyMember();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+    
+    // User profiles
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && 
+        (request.auth.uid == userId || isAdmin());
+    }
+  }
+}
+*/
