@@ -259,35 +259,36 @@ export function Navigation() {
 
   return (
     <>
-      <div className="flex items-center justify-between px-6 py-4 backdrop-blur-md shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderBottom: '1px solid rgba(76, 194, 215, 0.2)' }}>
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 backdrop-blur-md shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderBottom: '1px solid rgba(76, 194, 215, 0.2)' }}>
+        <div className="flex items-center gap-2 sm:gap-4">
           <button 
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-3 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400 rounded-lg"
+            className="flex items-center gap-2 sm:gap-3 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400 rounded-lg touch-target p-2"
           >
-            <img src="/lechworld-logo.png" alt="LechWorld" className="w-12 h-12 object-contain" />
-            <span style={{ color: '#026E81', fontWeight: 'bold', fontSize: '1.5rem' }}>LechWorld</span>
+            <img src="/lechworld-logo.png" alt="LechWorld" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+            <span className="hidden sm:inline" style={{ color: '#026E81', fontWeight: 'bold', fontSize: '1.5rem' }}>LechWorld</span>
           </button>
           {currentUser && (
-            <span className="px-3 py-1.5 rounded-full text-sm font-semibold shadow-md" style={{ background: '#FFD700', color: '#026E81' }}>
+            <span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold shadow-md" style={{ background: '#FFD700', color: '#026E81' }}>
               👤 {currentUser.name}
             </span>
           )}
         </div>
       </div>
       
-      {/* Apple-style Dock */}
-      <div className='fixed bottom-5 left-1/2 max-w-full -translate-x-1/2 z-50'>
-        <Dock className='items-end pb-3'>
+      {/* Mobile-optimized Dock - Bottom navigation for thumb zone */}
+      <div className='fixed bottom-0 left-0 right-0 pb-safe z-50 px-2 sm:px-0 sm:bottom-5 sm:left-1/2 sm:right-auto sm:max-w-full sm:-translate-x-1/2'>
+        <Dock className='items-end pb-2 sm:pb-3 w-full sm:w-auto'>
           {data.map((item, idx) => (
             <DockItem
               key={idx}
-              className='aspect-square rounded-full cursor-pointer shadow-sm backdrop-blur-sm'
+              className='aspect-square rounded-full cursor-pointer shadow-sm backdrop-blur-sm touch-target'
               onClick={item.onClick}
+              aria-label={item.title}
             >
               <DockLabel>{item.title}</DockLabel>
               <DockIcon>
-                <div className="w-full h-full rounded-full flex items-center justify-center p-3"
+                <div className="w-full h-full rounded-full flex items-center justify-center p-2 sm:p-3"
                      style={{ backgroundColor: item.bgColor, border: `2px solid ${item.borderColor}` }}>
                   {item.icon}
                 </div>
@@ -297,23 +298,24 @@ export function Navigation() {
         </Dock>
       </div>
 
-      {/* Help Modal */}
+      {/* Mobile-optimized Help Modal */}
       {showHelp && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-[60]" 
+        <div className="fixed inset-0 backdrop-blur-sm flex items-end sm:items-center justify-center z-[60]" 
              style={{ backgroundColor: 'rgba(2, 110, 129, 0.6)' }}
              onClick={() => setShowHelp(false)}>
-          <div className="rounded-2xl shadow-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" 
+          <div className="rounded-t-2xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 w-full sm:max-w-2xl max-h-[80vh] sm:max-h-[90vh] overflow-y-auto" 
                style={{ backgroundColor: 'rgba(255, 255, 255, 0.98)', border: '1px solid rgba(76, 194, 215, 0.5)' }}
                onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-start mb-6">
+            <div className="flex justify-between items-start mb-4 sm:mb-6">
               <div>
-                <h2 className="text-2xl font-bold" style={{ color: '#026E81' }}>{t('lechWorldHelp', language)}</h2>
-                <p className="text-sm mt-1" style={{ color: '#026E81' }}>{t('milesManagementCompanion', language)}</p>
+                <h2 className="text-xl sm:text-2xl font-bold" style={{ color: '#026E81' }}>{t('lechWorldHelp', language)}</h2>
+                <p className="text-xs sm:text-sm mt-1" style={{ color: '#026E81' }}>{t('milesManagementCompanion', language)}</p>
               </div>
-              <button onClick={() => setShowHelp(false)} className="p-1 rounded-lg transition-colors"
-                      style={{ color: '#026E81' }}
+              <button onClick={() => setShowHelp(false)} className="touch-target p-2 rounded-lg transition-colors"
+                      style={{ color: '#026E81', minWidth: '48px', minHeight: '48px' }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(76, 194, 215, 0.2)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      aria-label="Close help">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>

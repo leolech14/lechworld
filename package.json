@@ -12,7 +12,12 @@
     "pm2:restart": "pm2 restart lechworld-next",
     "pm2:logs": "pm2 logs lechworld-next",
     "export": "next build && next export",
-    "deploy": "next build && touch out/.nojekyll && echo 'www.lech.world' > out/CNAME && git add out -f && git commit -m 'Deploy to GitHub Pages' && git subtree push --prefix out origin gh-pages"
+    "deploy": "next build && touch out/.nojekyll && echo 'www.lech.world' > out/CNAME && git add out -f && git commit -m 'Deploy to GitHub Pages' && git subtree push --prefix out origin gh-pages",
+    "firebase:emulators": "firebase emulators:start",
+    "firebase:deploy": "npm run build && firebase deploy",
+    "firebase:deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "firebase:deploy:firestore": "firebase deploy --only firestore",
+    "firebase:serve": "npm run build && firebase serve"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.85.0",

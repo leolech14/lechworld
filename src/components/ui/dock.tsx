@@ -22,9 +22,10 @@ import {
 import { cn } from '@/lib/utils';
 
 const DOCK_HEIGHT = 128;
-const DEFAULT_MAGNIFICATION = 80;
-const DEFAULT_DISTANCE = 150;
-const DEFAULT_PANEL_HEIGHT = 64;
+const DEFAULT_MAGNIFICATION = 60; // Reduced for mobile
+const DEFAULT_DISTANCE = 100; // Reduced for mobile
+const DEFAULT_PANEL_HEIGHT = 56; // Touch-friendly height
+const MOBILE_PANEL_HEIGHT = 64; // Extra height for mobile
 
 type DockProps = {
   children: React.ReactNode;
@@ -83,12 +84,25 @@ function Dock({
 }: DockProps) {
   const mouseX = useMotionValue(Infinity);
   const isHovered = useMotionValue(0);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  const actualPanelHeight = isMobile ? MOBILE_PANEL_HEIGHT : panelHeight;
+  const actualMagnification = isMobile ? magnification * 0.8 : magnification;
 
   const maxHeight = useMemo(() => {
-    return Math.max(DOCK_HEIGHT, magnification + magnification / 2 + 4);
-  }, [magnification]);
+    return Math.max(DOCK_HEIGHT, actualMagnification + actualMagnification / 2 + 4);
+  }, [actualMagnification]);
 
-  const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
+  const heightRow = useTransform(isHovered, [0, 1], [actualPanelHeight, maxHeight]);
   const height = useSpring(heightRow, spring);
 
   return (
@@ -101,21 +115,33 @@ function Dock({
     >
       <motion.div
         onMouseMove={({ pageX }) => {
-          isHovered.set(1);
-          mouseX.set(pageX);
+          if (!isMobile) {
+            isHovered.set(1);
+            mouseX.set(pageX);
+          }
         }}
         onMouseLeave={() => {
+          if (!isMobile) {
+            isHovered.set(0);
+            mouseX.set(Infinity);
+          }
+        }}
+        onTouchStart={() => {
+          // Provide touch feedback without magnification
+          isHovered.set(0.5);
+        }}
+        onTouchEnd={() => {
           isHovered.set(0);
-          mouseX.set(Infinity);
         }}
         className={cn(
-          'mx-auto flex w-fit gap-4 rounded-2xl backdrop-blur-md px-4 shadow-xl',
+          'mx-auto flex w-full sm:w-fit gap-2 sm:gap-4 rounded-2xl backdrop-blur-md px-2 sm:px-4 shadow-xl overflow-x-auto',
           className
         )}
         style={{ 
-          height: panelHeight,
+          height: actualPanelHeight,
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          border: '1px solid rgba(76, 194, 215, 0.3)'
+          border: '1px solid rgba(76, 194, 215, 0.3)',
+          paddingBottom: 'env(safe-area-inset-bottom)'
         }}
         role='toolbar'
         aria-label='Application dock'
@@ -140,10 +166,24 @@ function DockItem({ children, className, onClick }: DockItemProps) {
     return val - domRect.x - domRect.width / 2;
   });
 
+  const { magnification: contextMagnification } = useDock();
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  const actualMagnification = isMobile ? 48 : contextMagnification; // Fixed size on mobile
+  
   const widthTransform = useTransform(
     mouseDistance,
     [-distance, 0, distance],
-    [40, magnification, 40]
+    isMobile ? [48, 48, 48] : [40, actualMagnification, 40] // No magnification on mobile
   );
 
   const width = useSpring(widthTransform, spring);
@@ -151,14 +191,14 @@ function DockItem({ children, className, onClick }: DockItemProps) {
   return (
     <motion.div
       ref={ref}
-      style={{ width }}
+      style={{ width, minWidth: '48px', minHeight: '48px' }}
       onHoverStart={() => isHovered.set(1)}
       onHoverEnd={() => isHovered.set(0)}
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
       className={cn(
-        'relative inline-flex items-center justify-center',
+        'relative inline-flex items-center justify-center touch-target',
         className
       )}
       tabIndex={0}
@@ -215,8 +255,18 @@ function DockLabel({ children, className, ...rest }: DockLabelProps) {
 function DockIcon({ children, className, ...rest }: DockIconProps) {
   const restProps = rest as Record<string, unknown>;
   const width = restProps['width'] as MotionValue<number>;
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
-  const widthTransform = useTransform(width, (val) => Math.max(val * 0.8, 32));
+  const widthTransform = useTransform(width, (val) => isMobile ? 40 : Math.max(val * 0.8, 32));
 
   return (
     <motion.div

@@ -43,28 +43,32 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #026E81 0%, #00ABBD 50%, #0099DD 100%)' }}>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-8" style={{ background: 'linear-gradient(135deg, #026E81 0%, #00ABBD 50%, #0099DD 100%)' }}>
       {/* Premium animated background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at top right, rgba(255, 153, 51, 0.2), transparent)' }} />
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at bottom left, rgba(161, 198, 223, 0.3), transparent)' }} />
       </div>
       
-      <div className="relative rounded-3xl shadow-2xl p-8 w-full max-w-md backdrop-blur-md" style={{ backgroundColor: 'rgba(175, 243, 255, 0.95)', border: '1px solid rgba(76, 194, 215, 0.5)' }}>
+      <div className="relative rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md backdrop-blur-md mx-auto" style={{ backgroundColor: 'rgba(175, 243, 255, 0.95)', border: '1px solid rgba(76, 194, 215, 0.5)' }}>
         {/* Premium glass effect overlay */}
-        <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{ background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%)' }} />
+        <div className="absolute inset-0 rounded-2xl sm:rounded-3xl pointer-events-none" style={{ background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%)' }} />
         
-        <div className="relative text-center mb-8 z-10">
+        <div className="relative text-center mb-6 sm:mb-8 z-10">
           <div className="inline-flex items-center justify-center mb-4">
-            <img src="/lechworld-logo.png" alt="LechWorld" className="w-24 h-24 object-contain drop-shadow-lg" />
+            <img src="/lechworld-logo.png" alt="LechWorld" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-lg" />
           </div>
-          <h1 className="text-3xl font-bold" style={{ color: '#026E81' }}>LechWorld</h1>
-          <p className="mt-2 font-medium" style={{ color: '#4CC2D7' }}>{t('tagline', language)}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#026E81' }}>LechWorld</h1>
+          <p className="mt-2 text-sm sm:text-base font-medium" style={{ color: '#4CC2D7' }}>{t('tagline', language)}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="relative space-y-4 z-10">
           <div>
+            <label htmlFor="username" className="block text-sm font-medium mb-2" style={{ color: '#026E81' }}>
+              {t('username', language) || 'Username'}
+            </label>
             <input
+              id="username"
               type="text"
               placeholder={t('enterUsername', language)}
               value={username}
@@ -75,55 +79,67 @@ export default function LoginPage() {
                   setShowPassword(true);
                 }
               }}
-              className="w-full p-3 rounded-xl backdrop-blur-sm focus:ring-2 outline-none transition-all duration-200"
+              className="w-full touch-target px-4 py-3 rounded-xl backdrop-blur-sm focus:ring-2 outline-none transition-all duration-200 text-base"
               style={{ 
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 border: '2px solid #4CC2D7',
-                color: '#026E81'
+                color: '#026E81',
+                fontSize: 'max(16px, 1rem)',
+                minHeight: '48px'
               }}
               onFocus={(e) => e.currentTarget.style.borderColor = '#FFD700'}
               onBlur={(e) => e.currentTarget.style.borderColor = '#4CC2D7'}
-              autoComplete="off"
+              autoComplete="username"
               autoFocus
             />
           </div>
 
           {showPassword && (
             <div>
+              <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: '#026E81' }}>
+                {t('password', language) || 'Password'}
+              </label>
               <input
+                id="password"
                 ref={passwordRef}
                 type="password"
                 placeholder={t('password', language)}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 rounded-xl backdrop-blur-sm focus:ring-2 outline-none transition-all duration-200"
+                className="w-full touch-target px-4 py-3 rounded-xl backdrop-blur-sm focus:ring-2 outline-none transition-all duration-200 text-base"
                 style={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',
                   border: '2px solid #4CC2D7',
-                  color: '#026E81'
+                  color: '#026E81',
+                  fontSize: 'max(16px, 1rem)',
+                  minHeight: '48px'
                 }}
                 onFocus={(e) => e.currentTarget.style.borderColor = '#FF9933'}
                 onBlur={(e) => e.currentTarget.style.borderColor = '#00ABBD'}
-                autoComplete="off"
+                autoComplete="current-password"
               />
             </div>
           )}
 
           <button
             type="submit"
-            className="w-full py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg transform hover:-translate-y-0.5 hover:shadow-xl"
+            className="w-full touch-target py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg transform hover:-translate-y-0.5 hover:shadow-xl active:scale-95 mt-6"
             style={{ 
               background: 'linear-gradient(135deg, #026E81 0%, #4CC2D7 100%)',
-              color: '#AFF3FF'
+              color: '#AFF3FF',
+              minHeight: '56px',
+              fontSize: 'max(16px, 1.125rem)'
             }}
             onMouseEnter={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #4CC2D7 0%, #AFF3FF 100%)'}
             onMouseLeave={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #026E81 0%, #4CC2D7 100%)'}
+            onTouchStart={(e) => e.currentTarget.classList.add('touch-loading')}
+            onTouchEnd={(e) => e.currentTarget.classList.remove('touch-loading')}
           >
             {t('enterLechWorld', language)}
           </button>
         </form>
 
-        <p className="relative text-xs text-center mt-6 z-10" style={{ color: '#026E81' }}>
+        <p className="relative text-sm sm:text-xs text-center mt-6 z-10" style={{ color: '#026E81' }}>
           {t('availableUsers', language)}: Leonardo, Osvandré, Marilise, Graciela
         </p>
       </div>

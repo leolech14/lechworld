@@ -15,6 +15,22 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "LechWorld - Family Miles Manager",
   description: "Track and manage your family airline miles portfolio",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover'
+  },
+  themeColor: '#026E81',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'LechWorld'
+  },
+  formatDetection: {
+    telephone: false
+  }
 };
 
 export default function RootLayout({

@@ -41,16 +41,16 @@ export function AccountModal({ isOpen, onClose, member, program, account }: Acco
   const value = (account.miles || 0) * milesValue[program];
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50" 
+    <div className="fixed inset-0 backdrop-blur-sm flex items-end sm:items-center justify-center z-50" 
          style={{ backgroundColor: 'rgba(2, 110, 129, 0.6)' }}
          onClick={onClose}>
-      <div className="rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto" 
+      <div className="rounded-t-2xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 w-full sm:max-w-md max-h-[80vh] sm:max-h-[90vh] overflow-y-auto" 
            style={{ backgroundColor: 'rgba(161, 198, 223, 0.98)', border: '1px solid rgba(161, 198, 223, 0.5)' }}
            onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex justify-between items-start mb-4 sm:mb-6">
           <div>
-            <h2 className="text-xl font-bold" style={{ color: '#026E81' }}>{program}</h2>
-            <p className="text-sm mt-1 font-medium" style={{ color: '#00ABBD' }}>{member}</p>
+            <h2 className="text-lg sm:text-xl font-bold" style={{ color: '#026E81' }}>{program}</h2>
+            <p className="text-xs sm:text-sm mt-1 font-medium" style={{ color: '#00ABBD' }}>{member}</p>
             {account.status && (
               <span className="inline-block mt-2 text-xs px-3 py-1 rounded-full font-semibold shadow-md"
                     style={{ backgroundColor: '#FFD700', color: '#026E81' }}>
@@ -58,10 +58,11 @@ export function AccountModal({ isOpen, onClose, member, program, account }: Acco
               </span>
             )}
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg transition-colors"
-                  style={{ color: '#026E81' }}
+          <button onClick={onClose} className="touch-target p-2 rounded-lg transition-colors"
+                  style={{ color: '#026E81', minWidth: '48px', minHeight: '48px' }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  aria-label="Close">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -78,11 +79,13 @@ export function AccountModal({ isOpen, onClose, member, program, account }: Acco
                     ...formData,
                     [field.key]: field.type === 'number' ? parseInt(e.target.value) || 0 : e.target.value
                   })}
-                  className="mt-1 w-full p-2 rounded-xl focus:ring-2 outline-none transition-all duration-200"
+                  className="mt-1 w-full touch-target px-3 py-2 rounded-xl focus:ring-2 outline-none transition-all duration-200"
                   style={{ 
                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
                     border: '2px solid #00ABBD',
-                    color: '#026E81'
+                    color: '#026E81',
+                    fontSize: 'max(16px, 1rem)',
+                    minHeight: '48px'
                   }}
                 />
               ) : (
@@ -113,55 +116,59 @@ export function AccountModal({ isOpen, onClose, member, program, account }: Acco
           </div>
         </div>
 
-        <div className="flex justify-between mt-6 pt-4" style={{ borderTop: '1px solid rgba(0, 171, 189, 0.3)' }}>
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-between mt-6 pt-4" style={{ borderTop: '1px solid rgba(0, 171, 189, 0.3)' }}>
           <button
             onClick={togglePasswords}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+            className="flex items-center justify-center gap-2 touch-target px-4 py-3 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
             style={{ 
               background: 'linear-gradient(135deg, #026E81 0%, #4CC2D7 100%)',
-              color: '#AFF3FF'
+              color: '#AFF3FF',
+              minHeight: '48px'
             }}
           >
             {showPasswords ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            {showPasswords ? t('hidePasswords', language) : t('showPasswords', language)}
+            <span className="text-sm sm:text-base">{showPasswords ? t('hidePasswords', language) : t('showPasswords', language)}</span>
           </button>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             {isEditing ? (
               <>
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 rounded-xl transition-all duration-200"
+                  className="touch-target flex-1 sm:flex-none px-4 py-3 rounded-xl transition-all duration-200 active:scale-95"
                   style={{ 
                     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                    color: '#026E81'
+                    color: '#026E81',
+                    minHeight: '48px'
                   }}
                 >
-                  {t('cancel', language)}
+                  <span className="text-sm sm:text-base">{t('cancel', language)}</span>
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                  className="touch-target flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
                   style={{ 
                     backgroundColor: '#4CC2D7',
-                    color: '#026E81'
+                    color: '#026E81',
+                    minHeight: '48px'
                   }}
                 >
                   <Save className="w-4 h-4" />
-                  {t('save', language)}
+                  <span className="text-sm sm:text-base">{t('save', language)}</span>
                 </button>
               </>
             ) : (
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                className="touch-target flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
                 style={{ 
                   backgroundColor: '#FFD700',
-                  color: '#026E81'
+                  color: '#026E81',
+                  minHeight: '48px'
                 }}
               >
                 <Edit className="w-4 h-4" />
-                {t('edit', language)}
+                <span className="text-sm sm:text-base">{t('edit', language)}</span>
               </button>
             )}
           </div>

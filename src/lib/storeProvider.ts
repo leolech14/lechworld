@@ -3,7 +3,7 @@
 // Store Provider - Centralized store selection
 // This utility helps manage the transition from localStorage to Firestore
 
-import { useStore as useLegacyStore } from '@/store/useStore';
+import { useStore } from '@/store/useStore';
 import { useFirestoreStore } from '@/store/useFirestoreStore';
 import { useEffect, useState } from 'react';
 import MigrationService from './migration';
@@ -17,7 +17,7 @@ export function useAppStore() {
   const [shouldUseFirestore, setShouldUseFirestore] = useState(false);
   const [migrationChecked, setMigrationChecked] = useState(false);
 
-  const legacyStore = useLegacyStore();
+  const legacyStore = useStore();
   const firestoreStore = useFirestoreStore();
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export function useAppStore() {
 
 // Direct store access for specific use cases
 export function useLegacyStore() {
-  return useLegacyStore();
+  return useStore();
 }
 
 export function useFirestore() {
