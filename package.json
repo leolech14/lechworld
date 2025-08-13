@@ -1,0 +1,36 @@
+{
+  "name": "lechworld-next",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 2020",
+    "build": "next build",
+    "start": "next start -p 2020",
+    "lint": "next lint",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop lechworld-next",
+    "pm2:restart": "pm2 restart lechworld-next",
+    "pm2:logs": "pm2 logs lechworld-next",
+    "export": "next build && next export",
+    "deploy": "next build && touch out/.nojekyll && echo 'www.lech.world' > out/CNAME && git add out -f && git commit -m 'Deploy to GitHub Pages' && git subtree push --prefix out origin gh-pages"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.85.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.539.0",
+    "next": "15.4.6",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "tailwind-merge": "^3.3.1",
+    "zustand": "^5.0.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
