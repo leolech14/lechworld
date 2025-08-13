@@ -54,26 +54,32 @@ export default function DashboardPage() {
   const members = ['Osvandré', 'Marilise', 'Graciela', 'Leonardo'];
 
   return (
-    <div className="min-h-screen relative overflow-hidden bottom-safe" style={{ background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)' }}>
-      {/* Premium animated background */}
+    <div className="min-h-screen relative overflow-hidden bottom-safe scroll-smooth" 
+         style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #1a1a2e 50%, #0f3460 75%, #1a1a2e 100%)' }}>
+      {/* Enhanced animated background for gradient cards */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at top right, rgba(76, 194, 215, 0.08), transparent)' }} />
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at bottom left, rgba(2, 110, 129, 0.08), transparent)' }} />
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 20% 30%, rgba(76, 194, 215, 0.15), transparent 70%)' }} />
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 80% 70%, rgba(2, 110, 129, 0.15), transparent 70%)' }} />
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.03), transparent 60%)' }} />
+        {/* Floating particles for depth */}
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400/20 rounded-full blur-sm animate-pulse" />
+        <div className="absolute top-3/4 right-1/4 w-3 h-3 bg-purple-400/20 rounded-full blur-sm animate-pulse delay-1000" />
+        <div className="absolute bottom-1/4 left-3/4 w-1 h-1 bg-green-400/30 rounded-full blur-sm animate-pulse delay-500" />
       </div>
       <div className="relative z-10">
       <Navigation />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {/* Mobile-optimized header */}
-        <div className="mb-4 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#026E81' }}>
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-6">
+        {/* Compact header with better contrast */}
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 text-white drop-shadow-lg">
             {t('familyOverview', language)}
           </h2>
-          <p className="text-sm sm:text-base" style={{ color: '#4CC2D7' }}>{t('trackManageMiles', language)}</p>
+          <p className="text-sm sm:text-base text-blue-200/80">{t('trackManageMiles', language)}</p>
         </div>
         
-        {/* Mobile-first Stats Grid - 2 columns on mobile */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-8">
+        {/* Compact Stats Grid - optimized for smaller cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6 sm:mb-8">
           <StatsCard
             title={t('totalMembers', language)}
             value={stats.totalMembers}
@@ -100,8 +106,8 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Mobile-first Members Grid - Single column on mobile */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pb-24 sm:pb-32">
+        {/* Optimized Members Grid for compact cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 pb-20 sm:pb-24">
           {members.map(member => (
             <MemberCard
               key={member}
